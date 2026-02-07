@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env*
+!.env.example
+
+# Next.js
+.next/
+out/
+
+# Build
+build/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Temporary folders
+tmp/
+temp/
+
+# Next.js cache
+.cache/
+
+# VS Code
+.vscode/

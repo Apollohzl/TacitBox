@@ -1,9 +1,20 @@
 import React from 'react';
+import Image from 'next/image';
+import logo from '../../public/logo.png';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#61f7c0' }}>
       <div className="text-center p-8">
+        <div className="mb-6">
+          <Image 
+            src="/logo.png" 
+            alt="默契盒子 Logo" 
+            width={120} 
+            height={120} 
+            className="mx-auto"
+          />
+        </div>
         <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">默契盒子</h1>
         <p className="text-xl md:text-2xl text-white mb-8">测试你和朋友间的默契程度</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

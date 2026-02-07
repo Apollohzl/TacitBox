@@ -1,10 +1,9 @@
-// src/app/layout.tsx
 import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: '默契盒子 - TacitBox',
-  description: '通过问答游戏增进朋友间默契度的趣味小程序',
+  title: '默契盒子 (TacitBox)',
+  description: '通过出题和答题来测试朋友间的默契度',
 };
 
 export default function RootLayout({

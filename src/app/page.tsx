@@ -1,27 +1,20 @@
-// src/app/page.tsx
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: '默契盒子 - TacitBox',
-  description: '通过问答游戏增进朋友间默契度的趣味小程序',
-};
+import React from 'react';
 
 export default function HomePage() {
   return (
-    <div 
-      className="min-h-screen w-full"
-      style={{ backgroundColor: '#61f7c0' }}
-    >
-      <main className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
-            TacitBox默契盒子 🧩✨
-          </h1>
-          <p className="text-white text-lg mt-4 drop-shadow">
-            与朋友一起测试默契，增进了解
-          </p>
+    <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#61f7c0' }}>
+      <div className="text-center p-8">
+        <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">默契盒子</h1>
+        <p className="text-xl md:text-2xl text-white mb-8">测试你和朋友间的默契程度</p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button className="bg-white text-green-500 font-bold py-3 px-6 rounded-full text-lg hover:bg-gray-100 transition duration-300">
+            开始游戏
+          </button>
+          <button className="bg-transparent border-2 border-white text-white font-bold py-3 px-6 rounded-full text-lg hover:bg-white hover:bg-opacity-20 transition duration-300">
+            查看排行榜
+          </button>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

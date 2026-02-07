@@ -9,10 +9,7 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <main 
-      className="min-h-screen w-full p-8"
-      style={{ backgroundColor: '#61f7c0' }}
-    >
+    <main className="min-h-screen w-full p-8 home-page">
       {/* 顶部标题 */}
       <div className="text-center mb-10">
         <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
@@ -29,10 +26,7 @@ export default function HomePage() {
         <div className="space-y-6">
           {/* 去出题卡片 - 最大卡片 */}
           <Link href="/create-quiz" className="block">
-            <div 
-              className="rounded-lg p-6 h-32 flex flex-col justify-between cursor-pointer hover:opacity-90 transition-opacity shadow"
-              style={{ backgroundColor: '#4A90E2' }}
-            >
+            <div className="bg-[#4A90E2] rounded-lg p-6 h-32 flex flex-col justify-between cursor-pointer hover:opacity-90 transition-opacity shadow">
               <h2 className="text-white text-xl font-semibold">去出题</h2>
               <div className="flex space-x-4">
                 <span className="text-yellow-300 text-2xl">👇</span>
@@ -44,10 +38,7 @@ export default function HomePage() {
 
           {/* 获得的奖励卡片 - 橙色 */}
           <Link href="/rewards" className="block">
-            <div 
-              className="rounded-lg p-4 h-24 flex items-center cursor-pointer hover:opacity-90 transition-opacity shadow"
-              style={{ backgroundColor: '#D98C52' }}
-            >
+            <div className="bg-[#D98C52] rounded-lg p-4 h-24 flex items-center cursor-pointer hover:opacity-90 transition-opacity shadow">
               <h2 className="text-white text-lg font-semibold">获得的奖励</h2>
             </div>
           </Link>
@@ -57,30 +48,21 @@ export default function HomePage() {
         <div className="space-y-6">
           {/* 出题记录卡片 - 蓝色 */}
           <Link href="/my-questions" className="block">
-            <div 
-              className="rounded-lg p-4 h-24 flex items-center cursor-pointer hover:opacity-90 transition-opacity shadow"
-              style={{ backgroundColor: '#4A90E2' }}
-            >
+            <div className="bg-[#4A90E2] rounded-lg p-4 h-24 flex items-center cursor-pointer hover:opacity-90 transition-opacity shadow">
               <h2 className="text-white text-lg font-semibold">出题记录</h2>
             </div>
           </Link>
 
           {/* 答题记录卡片 - 蓝色 */}
           <Link href="/my-answers" className="block">
-            <div 
-              className="rounded-lg p-4 h-24 flex items-center cursor-pointer hover:opacity-90 transition-opacity shadow"
-              style={{ backgroundColor: '#4A90E2' }}
-            >
+            <div className="bg-[#4A90E2] rounded-lg p-4 h-24 flex items-center cursor-pointer hover:opacity-90 transition-opacity shadow">
               <h2 className="text-white text-lg font-semibold">答题记录</h2>
             </div>
           </Link>
 
           {/* 发出的奖励卡片 - 橙色 */}
           <Link href="/rewards" className="block">
-            <div 
-              className="rounded-lg p-4 h-24 flex items-center cursor-pointer hover:opacity-90 transition-opacity shadow"
-              style={{ backgroundColor: '#D98C52' }}
-            >
+            <div className="bg-[#D98C52] rounded-lg p-4 h-24 flex items-center cursor-pointer hover:opacity-90 transition-opacity shadow">
               <h2 className="text-white text-lg font-semibold">发出的奖励</h2>
             </div>
           </Link>

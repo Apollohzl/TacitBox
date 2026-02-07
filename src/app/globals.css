@@ -22,3 +22,8 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+/* 为特定页面设置自定义背景 */
+.home-page {
+  background-color: #61f7c0 !important;
+}

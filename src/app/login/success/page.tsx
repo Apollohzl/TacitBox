@@ -19,9 +19,9 @@ export default function LoginSuccess() {
       console.log("/success："+userInfo);
       // 只保存social_uid
       localStorage.setItem('social_uid', userInfo.social_uid);
-      console.log("social_uid保存成功：值为【【"+social_uid+"】】】");
+      console.log("social_uid保存成功：值为【【"+userInfo.social_uid+"】】】");
       localStorage.setItem('isLoggedIn', 'true');
-      console.log("isLoggedIn保存成功：值为【【"+isLoggedIn+"】】】");
+      console.log("isLoggedIn保存成功：值为【【"+"true"+"】】】");
 
       // 跳转到首页
       window.location.href = '/';

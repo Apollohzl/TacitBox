@@ -7,7 +7,7 @@ export default function HomePage() {
       <div className="text-center p-8">
         <div className="mb-6">
           <Image 
-            href="https://tb.vicral.cn/logo.png" 
+            src="https://tb.vicral.cn/logo.png" 
             alt="默契盒子 Logo" 
             width={150} 
             height={150} 

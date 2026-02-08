@@ -110,9 +110,10 @@ const HomePage = () => {
             initial={{ opacity: 0 }}
             animate={textAnimationComplete ? { opacity: 1 } : {}}
             transition={{ duration: 0.5 }}
+            className="flex flex-col items-center"
           >
             <button 
-              className="text-2xl font-bold rounded-lg"
+              className="text-2xl font-bold rounded-lg mb-4"
               style={{ 
                 backgroundColor: '#ff9f1c00', // 透明背景
                 color: '#ff8c11', // 橙色文字
@@ -125,14 +126,74 @@ const HomePage = () => {
             >
               【去出题】
             </button>
+            
+            {/* 电脑端其他按钮 */}
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                className="text-lg font-bold rounded-lg py-2"
+                style={{ 
+                  backgroundColor: '#4ECDC4', // 青色
+                  color: 'white',
+                  width: '170px',
+                  height: '60px',
+                  borderWidth: '5px',
+                  borderStyle: 'solid',
+                  borderColor: '#3AA89F' // 深青色边框
+                }}
+              >
+                【出题记录】
+              </button>
+              <button 
+                className="text-lg font-bold rounded-lg py-2"
+                style={{ 
+                  backgroundColor: '#FF6B6B', // 红色
+                  color: 'white',
+                  width: '170px',
+                  height: '60px',
+                  borderWidth: '5px',
+                  borderStyle: 'solid',
+                  borderColor: '#E55555' // 深红色边框
+                }}
+              >
+                【答题记录】
+              </button>
+              <button 
+                className="text-lg font-bold rounded-lg py-2"
+                style={{ 
+                  backgroundColor: '#FFE66D', // 黄色
+                  color: '#333',
+                  width: '170px',
+                  height: '60px',
+                  borderWidth: '5px',
+                  borderStyle: 'solid',
+                  borderColor: '#DCC55D' // 深黄色边框
+                }}
+              >
+                【获得的奖励】
+              </button>
+              <button 
+                className="text-lg font-bold rounded-lg py-2"
+                style={{ 
+                  backgroundColor: '#6A0572', // 紫色
+                  color: 'white',
+                  width: '170px',
+                  height: '60px',
+                  borderWidth: '5px',
+                  borderStyle: 'solid',
+                  borderColor: '#52045B' // 深紫色边框
+                }}
+              >
+                【发出的奖励】
+              </button>
+            </div>
           </motion.div>
         )}
         
         {/* 移动端和平板按钮 - 直接显示 */}
         {deviceType !== 'desktop' && (
-          <div className="w-full max-w-[500px] mt-4">
+          <div className="w-full max-w-[500px] mt-4 flex flex-col items-center">
             <button 
-              className="w-full text-xl font-bold rounded-lg"
+              className="w-full text-xl font-bold rounded-lg mb-4"
               style={{ 
                 backgroundColor: '#FF9F1C', 
                 color: 'white',
@@ -143,6 +204,56 @@ const HomePage = () => {
               }}
             >
               【去出题】
+            </button>
+            
+            {/* 移动端其他按钮 - 垂直排列 */}
+            <button 
+              className="w-full text-lg font-bold rounded-lg mb-3 py-3"
+              style={{ 
+                backgroundColor: '#4ECDC4', // 青色
+                color: 'white',
+                borderWidth: '5px',
+                borderStyle: 'solid',
+                borderColor: '#3AA89F' // 深青色边框
+              }}
+            >
+              【出题记录】
+            </button>
+            <button 
+              className="w-full text-lg font-bold rounded-lg mb-3 py-3"
+              style={{ 
+                backgroundColor: '#FF6B6B', // 红色
+                color: 'white',
+                borderWidth: '5px',
+                borderStyle: 'solid',
+                borderColor: '#E55555' // 深红色边框
+              }}
+            >
+              【答题记录】
+            </button>
+            <button 
+              className="w-full text-lg font-bold rounded-lg mb-3 py-3"
+              style={{ 
+                backgroundColor: '#FFE66D', // 黄色
+                color: '#333',
+                borderWidth: '5px',
+                borderStyle: 'solid',
+                borderColor: '#DCC55D' // 深黄色边框
+              }}
+            >
+              【获得的奖励】
+            </button>
+            <button 
+              className="w-full text-lg font-bold rounded-lg py-3"
+              style={{ 
+                backgroundColor: '#6A0572', // 紫色
+                color: 'white',
+                borderWidth: '5px',
+                borderStyle: 'solid',
+                borderColor: '#52045B' // 深紫色边框
+              }}
+            >
+              【发出的奖励】
             </button>
           </div>
         )}

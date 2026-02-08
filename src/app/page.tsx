@@ -57,21 +57,6 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#61f7c0' }}>
-      {/* 电脑端装饰框 - 仅在检测到桌面端时显示 */}
-      {deviceType === 'desktop' && (
-        <div className="absolute" style={{ left: 'calc(50% - 150px)', top: 'calc(50% + 150px)' }}>
-          <div 
-            className="border-2 rounded-lg" 
-            style={{ 
-              borderColor: `#${Math.floor(Math.random()*16777215).toString(16)}`, // 随机彩色边框
-              borderWidth: '3px',
-              width: '300px',
-              height: '200px'
-            }}
-          ></div>
-        </div>
-      )}
-      
       <div className="w-full flex flex-col items-center p-4">
         {/* Logo - 在移动端占满屏幕宽度 */}
         <div className="w-full max-w-[500px] mb-4">

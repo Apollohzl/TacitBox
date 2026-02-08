@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 const HomePage = () => {
+  const [textAnimationComplete, setTextAnimationComplete] = useState(false);
   const text = "测试你和朋友间的默契程度";
   const colors = [
     '#FF6B6B', // 红色
@@ -25,18 +26,33 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#61f7c0' }}>
-      <div className="text-center p-8">
-        <div className="mb-6">
+      {/* 电脑端装饰框 */}
+      <div className="hidden md:block absolute" style={{ left: 'calc(50% - 150px)', top: 'calc(50% + 150px)' }}>
+        <div 
+          className="border-4 rounded-lg" 
+          style={{ 
+            borderColor: `#${Math.floor(Math.random()*16777215).toString(16)}`, // 随机彩色边框
+            width: '300px',
+            height: '300px'
+          }}
+        ></div>
+      </div>
+      
+      <div className="w-full flex flex-col items-center p-4">
+        {/* Logo - 在移动端占满屏幕宽度 */}
+        <div className="w-full max-w-[500px] mb-4">
           <Image 
             src="https://tb.vicral.cn/logo.png" 
             alt="默契盒子 Logo" 
             width={150} 
             height={150} 
             quality={100}
-            className="mx-auto object-cover"
+            className="w-full h-auto object-contain mx-auto md:mx-0 md:w-[150px] md:h-[150px]"
           />
         </div>
-        <div className="flex flex-wrap justify-center mt-8">
+        
+        {/* 动画文本 */}
+        <div className="flex flex-wrap justify-center mb-6">
           {text.split('').map((char, index) => (
             <motion.span
               key={index}
@@ -58,10 +74,40 @@ const HomePage = () => {
               }}
               className="text-3xl md:text-4xl font-bold"
               style={{ color: colors[index % colors.length] }}
+              onAnimationComplete={() => {
+                if (index === text.length - 1) {
+                  setTextAnimationComplete(true);
+                }
+              }}
             >
               {char}
             </motion.span>
           ))}
+        </div>
+        
+        {/* 【去出题】按钮 - 仅在电脑端在文本动画完成后显示 */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={textAnimationComplete ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5 }}
+          className="hidden md:block"
+        >
+          <button 
+            className="px-8 py-4 text-2xl font-bold rounded-full border-2 border-transparent"
+            style={{ backgroundColor: '#FF9F1C', color: 'white' }} // 橙色按钮
+          >
+            【去出题】
+          </button>
+        </motion.div>
+        
+        {/* 移动端按钮 - 直接显示 */}
+        <div className="md:hidden w-full max-w-[500px] mt-4">
+          <button 
+            className="w-full py-4 text-xl font-bold rounded-full border-2 border-transparent"
+            style={{ backgroundColor: '#FF9F1C', color: 'white' }} // 橙色按钮
+          >
+            【去出题】
+          </button>
         </div>
       </div>
     </div>

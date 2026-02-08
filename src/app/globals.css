@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'CustomFont';
+  font-family: 'ZeosevenFont';
   src: url('https://fontsapi.zeoseven.com/31/main/52c0a6199c9be3511dc2e1240264eb98.woff2') format('woff2');
   font-display: swap;
 }
@@ -22,7 +22,7 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
-  font-family: 'CustomFont', 'Xiaolai Mono SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: 'ZeosevenFont', system-ui, -apple-system, sans-serif;
 }
 
 /* 确保所有文本元素都使用自定义字体 */

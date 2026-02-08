@@ -78,7 +78,7 @@ const HomePage = () => {
     const fetchUserInfo = async (socialUid: string) => {
       try {
         const response = await fetch(
-          `https://u.daib.cn/connect.php?act=query&appid=2423&appkey=${process.env.NEXT_PUBLIC_JUHE_Appkey || process.env.JUHE_Appkey}&type=wx&social_uid=${socialUid}`
+          `https://u.daib.cn/connect.php?act=query&appid=2423&appkey=${process.env.JUHE_Appkey}&type=wx&social_uid=${socialUid}`
         );
         
         const userData = await response.json();
@@ -89,7 +89,8 @@ const HomePage = () => {
             avatar_url: userData.faceimg
           });
         } else {
-          // 如果获取用户信息失败，也视为未登录
+          // 如果
+          console.log("获取用户信息失败，也视为未登录");
           localStorage.removeItem('isLoggedIn');
           localStorage.removeItem('social_uid');
           setIsLoggedIn(false);

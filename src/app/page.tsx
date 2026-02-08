@@ -32,6 +32,7 @@ function detectDevice() {
 const HomePage = () => {
   const [textAnimationComplete, setTextAnimationComplete] = useState(false);
   const [deviceType, setDeviceType] = useState('desktop'); // 默认为desktop
+  const [userData, setUserData] = useState<any>(null);
   const text = "测试你和朋友间的默契程度";
   const colors = [
     '#FF6B6B', // 红色
@@ -53,10 +54,54 @@ const HomePage = () => {
   useEffect(() => {
     const detectedDevice = detectDevice();
     setDeviceType(detectedDevice);
+    
+    // 从localStorage获取用户信息
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      try {
+        setUserData(JSON.parse(storedUserData));
+      } catch (error) {
+        console.error('解析用户数据失败:', error);
+      }
+    }
   }, []);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#61f7c0' }}>
+      {/* 右上角用户状态显示 */}
+      <div className="absolute top-4 right-4">
+        {userData ? (
+          <div className="flex items-center space-x-2">
+            <div className="relative">
+              <Image 
+                src={userData.avatar_url || '/images/logo-192x192.png'} 
+                alt="用户头像" 
+                width={40} 
+                height={40} 
+                className="w-10 h-10 rounded-full border-2 border-white object-cover"
+              />
+            </div>
+            <span className="hidden md:inline text-white font-bold text-lg" style={{ fontFamily: "'MaShanZheng', 'Xiaolai Mono SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" }}>
+              {userData.nickname}
+            </span>
+          </div>
+        ) : (
+          <button 
+            onClick={() => window.location.href = '/login'}
+            className="px-4 py-2 rounded-lg"
+            style={{ 
+              backgroundColor: '#FF9F1C', 
+              color: 'white',
+              borderWidth: '3px',
+              borderStyle: 'solid',
+              borderColor: '#ff8c11'
+            }}
+          >
+            登录
+          </button>
+        )}
+      </div>
+      
       <div className="w-full flex flex-col items-center p-4">
         {/* Logo - 在移动端占满屏幕宽度 */}
         <div className="w-full max-w-[500px] mb-4">

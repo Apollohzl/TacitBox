@@ -8,7 +8,7 @@
    2：架构：服务端渲染(SSR) + 静态生成(SSG)
    3：每次编写完程序后进行本地构建，测试是否有bug，然后再进行推送远程Github仓库
    4：远程Github仓库：https://github.com/Apollohzl/TacitBox（使用main分支）
-   5：网站链接：https://tacit.ken520.top（无服务器网站）
+   5：网站链接：https://tb.vicral.cn/（无服务器网站）
    6：本地项目根目录：E:\TacitBox
    7：公司邮箱（如有需要）：959855534@qq.com
    8：公司名（如有需要）：小黄の数字宇宙工作室

@@ -7,11 +7,12 @@ export default function HomePage() {
       <div className="text-center p-8">
         <div className="mb-6">
           <Image 
-            src="/logo.png" 
+            src="/images/logo-512x512.png" 
             alt="默契盒子 Logo" 
             width={150} 
             height={150} 
-            className="mx-auto"
+            quality={100}
+            className="mx-auto rounded-full object-cover"
           />
         </div>
         <p className="text-xl md:text-2xl text-white mt-4">测试你和朋友间的默契程度</p>

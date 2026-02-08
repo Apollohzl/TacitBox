@@ -5,7 +5,7 @@ const pool = mysql.createPool({
   host: 'mysql6.sqlpub.com',
   port: 3311,
   user: 'apollo198',
-  password: '3JGjy1JcTEosb1bK',
+  password: process.env.SQLPub_password,
   database: 'tacitbox',
   waitForConnections: true,
   connectionLimit: 10,

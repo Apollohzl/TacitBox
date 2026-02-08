@@ -110,10 +110,10 @@ const HomePage = () => {
             initial={{ opacity: 0 }}
             animate={textAnimationComplete ? { opacity: 1 } : {}}
             transition={{ duration: 0.5 }}
-            className="flex flex-col items-center"
+            className="flex items-center"
           >
             <button 
-              className="text-2xl font-bold rounded-lg mb-4"
+              className="text-2xl font-bold rounded-lg mr-4"
               style={{ 
                 backgroundColor: '#ff9f1c00', // 透明背景
                 color: '#ff8c11', // 橙色文字
@@ -127,8 +127,8 @@ const HomePage = () => {
               【去出题】
             </button>
             
-            {/* 电脑端其他按钮 */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* 电脑端其他按钮 - 放在【去出题】按钮右边 */}
+            <div className="flex flex-col gap-4">
               <button 
                 className="text-lg font-bold rounded-lg py-2"
                 style={{ 

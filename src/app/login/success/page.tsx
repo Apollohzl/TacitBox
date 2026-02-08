@@ -67,6 +67,22 @@ export default function LoginSuccess() {
         console.log("isLoggedIn保存成功：值为【【"+"true"+"】】】");
         localStorage.setItem('login_type', 'wx');
 
+        // 更新最后登录时间
+        try {
+          await fetch('/api/user/update-last-login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              social_uid: userInfo.social_uid,
+              social_type: userInfo.social_type || 'wx'
+            }),
+          });
+        } catch (error) {
+          console.error('更新最后登录时间失败:', error);
+        }
+
         // 跳转到首页
         window.location.href = '/';
       } catch (error) {

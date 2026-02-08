@@ -84,6 +84,22 @@ export default function QQLoginCallback() {
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('login_type', 'qq');
 
+        // 更新最后登录时间
+        try {
+          await fetch('/api/user/update-last-login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              social_uid: userData.social_uid,
+              social_type: 'qq'
+            }),
+          });
+        } catch (error) {
+          console.error('更新最后登录时间失败:', error);
+        }
+
         // 跳转到首页
         window.location.href = '/';
       } catch (error) {

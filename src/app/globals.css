@@ -3,15 +3,15 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'ZeosevenFont';
-  src: url('https://fontsapi.zeoseven.com/31/main/52c0a6199c9be3511dc2e1240264eb98.woff2') format('woff2');
+  font-family: 'MaShanZheng';
+  src: url('/MaShanZheng-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @theme {
-  --font-family-sans: 'ZeosevenFont', ui-sans-serif, system-ui, sans-serif;
+  --font-family-sans: 'MaShanZheng', ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -28,7 +28,7 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
-  font-family: 'ZeosevenFont', system-ui, -apple-system, sans-serif;
+  font-family: 'MaShanZheng', system-ui, -apple-system, sans-serif;
 }
 
 /* 确保所有文本元素都使用自定义字体 */

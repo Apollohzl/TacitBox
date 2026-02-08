@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const LoginPage = () => {
   const router = useRouter();
@@ -15,7 +16,7 @@ const LoginPage = () => {
     try {
       // Step 1: 获取跳转登录地址
       const response = await fetch(
-        `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=5182677ea009b870808053105a2ded54&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`
+        `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${process.env.NEXT_PUBLIC_JUHE_Appkey || process.env.JUHE_Appkey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`
       );
 
       const data = await response.json();
@@ -71,6 +72,28 @@ const LoginPage = () => {
                 微信登录
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => window.location.href = '/login/qq'}
+            disabled={loading}
+            className={`w-full flex items-center justify-center py-4 px-6 rounded-xl text-white font-bold text-lg transition-all ${
+              loading 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700'
+            }`}
+            style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+          >
+            <span className="flex items-center">
+              <Image 
+                src="https://qq-web.cdn-go.cn/monorepo/f414dc61/zc.qq.com_v3/assets/qq-logo-t-50bcQd.svg" 
+                alt="QQ图标" 
+                width={24} 
+                height={24} 
+                className="w-6 h-6 mr-2" 
+              />
+              QQ登录
+            </span>
           </button>
         </div>
 

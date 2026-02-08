@@ -61,17 +61,13 @@ const HomePage = () => {
       const isLoggedInStorage = localStorage.getItem('isLoggedIn');
       const socialUidStorage = localStorage.getItem('social_uid');
       console.log("登录信息："+isLoggedInStorage+socialUidStorage);
-      if (!isLoggedInStorage && !socialUidStorage) {
-        // 条件1：2个都没有 -> 未登录
-        setIsLoggedIn(false);
-        setUserData(null);
-      } else if (isLoggedInStorage === 'true' && socialUidStorage && socialUidStorage !== '') {
+     if (isLoggedInStorage === 'true' && socialUidStorage && socialUidStorage !== '') {
         // 条件2：isLoggedIn==true且social_uid内容不为空 -> 已登录
-        // 通过social_uid获取用户信息
+        console.log(" 通过social_uid获取用户信息");
         fetchUserInfo(socialUidStorage);
         setIsLoggedIn(true);
       } else {
-        // 条件3：其余结果 -> 清除变量，未登录
+        console.log(" 条件3：其余结果 -> 清除变量，未登录"+isLoggedInStorage+"[]"+socialUidStorage+"[]"+(socialUidStorage !== ''))
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('social_uid');
         setIsLoggedIn(false);

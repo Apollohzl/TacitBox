@@ -38,6 +38,32 @@ export default function QQLoginCallback() {
           return;
         }
 
+        // 将用户信息保存到数据库
+        try {
+          const response = await fetch('/api/user/save', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              social_uid: userData.social_uid,
+              social_type: 'qq',  // QQ登录
+              nickname: userData.nickname,
+              avatar_url: userData.faceimg,
+              gender: userData.gender,
+              location: userData.location,
+              access_token: userData.access_token,
+              ip: userData.ip
+            }),
+          });
+
+          if (!response.ok) {
+            console.error('保存用户信息到数据库失败');
+          }
+        } catch (error) {
+          console.error('保存用户信息到数据库时发生错误:', error);
+        }
+
         // 将用户信息保存到localStorage（只保存social_uid和登录类型）
         localStorage.setItem('social_uid', userData.social_uid);
         localStorage.setItem('isLoggedIn', 'true');

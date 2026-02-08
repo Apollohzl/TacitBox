@@ -14,22 +14,53 @@ export default function LoginSuccess() {
       return;
     }
 
-    try {
-      const userInfo = JSON.parse(decodeURIComponent(userInfoString));
-      console.log("/success："+userInfo);
-      // 只保存social_uid，并保存登录类型
-      localStorage.setItem('social_uid', userInfo.social_uid);
-      console.log("social_uid保存成功：值为【【"+userInfo.social_uid+"】】】");
-      localStorage.setItem('isLoggedIn', 'true');
-      console.log("isLoggedIn保存成功：值为【【"+"true"+"】】】");
-      localStorage.setItem('login_type', 'wx');
+    const saveUserInfo = async () => {
+      try {
+        const userInfo = JSON.parse(decodeURIComponent(userInfoString));
+        console.log("/success："+userInfo);
 
-      // 跳转到首页
-      window.location.href = '/';
-    } catch (error) {
-      console.error('解析用户信息失败:', error);
-      window.location.href = '/login?error=parse_error';
-    }
+        // 将用户信息保存到数据库
+        try {
+          const response = await fetch('/api/user/save', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              social_uid: userInfo.social_uid,
+              social_type: userInfo.social_type || 'wx',  // 默认为wx
+              nickname: userInfo.nickname,
+              avatar_url: userInfo.avatar_url,
+              gender: userInfo.gender,
+              location: userInfo.location,
+              access_token: userInfo.access_token,
+              ip: userInfo.ip_address
+            }),
+          });
+
+          if (!response.ok) {
+            console.error('保存用户信息到数据库失败');
+          }
+        } catch (error) {
+          console.error('保存用户信息到数据库时发生错误:', error);
+        }
+
+        // 只保存social_uid，并保存登录类型
+        localStorage.setItem('social_uid', userInfo.social_uid);
+        console.log("social_uid保存成功：值为【【"+userInfo.social_uid+"】】】");
+        localStorage.setItem('isLoggedIn', 'true');
+        console.log("isLoggedIn保存成功：值为【【"+"true"+"】】】");
+        localStorage.setItem('login_type', 'wx');
+
+        // 跳转到首页
+        window.location.href = '/';
+      } catch (error) {
+        console.error('解析用户信息失败:', error);
+        window.location.href = '/login?error=parse_error';
+      }
+    };
+
+    saveUserInfo();
   }, [searchParams]);
 
   return (

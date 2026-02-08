@@ -22,7 +22,7 @@ export default function LoginLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="font-sans">
+    <div className="login-container font-sans">
       <Suspense fallback={<Loading />}>
         {children}
       </Suspense>

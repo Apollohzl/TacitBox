@@ -13,7 +13,7 @@ export default function AccountPage() {
     // 从localStorage获取用户信息
     const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
     const storedSocialUid = localStorage.getItem('social_uid');
-    const storedLoginType = localStorage.getItem('loginType'); // 获取登录类型
+    const storedLoginType = localStorage.getItem('login_type'); // 获取登录类型
 
     if (storedIsLoggedIn === 'true' && storedSocialUid) {
       setIsLoggedIn(true);

@@ -190,7 +190,7 @@ export default function AccountPage() {
               </li>
               <li className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-100 gap-1 sm:gap-0">
                 <span className="text-gray-700 text-sm sm:text-base">最后登录时间</span>
-                <span className="text-gray-900 font-medium text-sm sm:text-base">{userData?.last_login || new Date().toLocaleString()}</span>
+                <span className="text-gray-900 font-medium text-sm sm:text-base">{userData?.last_login_at || '未知'}</span>
               </li>
             </ul>
           </div>

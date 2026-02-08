@@ -6,8 +6,14 @@ import Image from 'next/image';
 export default function QQLoginPage() {
   useEffect(() => {
     // 重定向到聚合登录的QQ登录页面
+    const appKey = process.env.NEXT_PUBLIC_JUHE_Appkey;
+    if (!appKey) {
+      console.error('NEXT_PUBLIC_JUHE_Appkey 未定义');
+      return;
+    }
+    
     const redirectUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://tb.vicral.cn'}/login/process`;
-    window.location.href = `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${process.env.NEXT_PUBLIC_JUHE_Appkey || process.env.JUHE_Appkey}&type=qq&redirect_uri=${encodeURIComponent(redirectUrl)}`;
+    window.location.href = `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${appKey}&type=qq&redirect_uri=${encodeURIComponent(redirectUrl)}`;
   }, []);
 
   return (

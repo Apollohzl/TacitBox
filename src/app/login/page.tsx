@@ -14,9 +14,15 @@ const LoginPage = () => {
     setError(null);
 
     try {
+      const appKey = process.env.NEXT_PUBLIC_JUHE_Appkey;
+      if (!appKey) {
+        setError('系统配置错误：缺少AppKey');
+        return;
+      }
+      
       // Step 1: 获取跳转登录地址
       const response = await fetch(
-        `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${process.env.NEXT_PUBLIC_JUHE_Appkey || process.env.JUHE_Appkey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`
+        `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`
       );
 
       const data = await response.json();

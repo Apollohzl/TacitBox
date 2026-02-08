@@ -27,13 +27,14 @@ const HomePage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#61f7c0' }}>
       {/* 电脑端装饰框 */}
-      <div className="hidden md:block absolute" style={{ left: 'calc(50% - 150px)', top: 'calc(50% + 150px)' }}>
+      <div className="hidden lg:block absolute" style={{ left: 'calc(50% - 150px)', top: 'calc(50% + 150px)' }}>
         <div 
-          className="border-4 rounded-lg" 
+          className="border-2 rounded-lg" 
           style={{ 
             borderColor: `#${Math.floor(Math.random()*16777215).toString(16)}`, // 随机彩色边框
+            borderWidth: '3px',
             width: '300px',
-            height: '300px'
+            height: '200px'
           }}
         ></div>
       </div>
@@ -47,7 +48,7 @@ const HomePage = () => {
             width={150} 
             height={150} 
             quality={100}
-            className="w-full h-auto object-contain mx-auto md:mx-0 md:w-[150px] md:h-[150px]"
+            className="w-full h-auto object-contain mx-auto lg:mx-0 lg:w-[150px] lg:h-[150px]"
           />
         </div>
         
@@ -72,7 +73,7 @@ const HomePage = () => {
                 type: "spring",
                 stiffness: 100,
               }}
-              className="text-3xl md:text-4xl font-bold"
+              className="text-3xl lg:text-4xl font-bold"
               style={{ color: colors[index % colors.length] }}
               onAnimationComplete={() => {
                 if (index === text.length - 1) {
@@ -90,7 +91,7 @@ const HomePage = () => {
           initial={{ opacity: 0 }}
           animate={textAnimationComplete ? { opacity: 1 } : {}}
           transition={{ duration: 0.5 }}
-          className="hidden md:block"
+          className="hidden lg:block"
         >
           <button 
             className="px-8 py-4 text-2xl font-bold rounded-full border-2 border-transparent"
@@ -101,7 +102,7 @@ const HomePage = () => {
         </motion.div>
         
         {/* 移动端按钮 - 直接显示 */}
-        <div className="md:hidden w-full max-w-[500px] mt-4">
+        <div className="lg:hidden w-full max-w-[500px] mt-4">
           <button 
             className="w-full py-4 text-xl font-bold rounded-full border-2 border-transparent"
             style={{ backgroundColor: '#FF9F1C', color: 'white' }} // 橙色按钮

@@ -38,6 +38,21 @@ export default function QQLoginCallback() {
           return;
         }
 
+        // 检查位置信息是否为空，如果为空则获取位置
+        let finalLocation = userData.location;
+        if (!finalLocation || finalLocation === "" || finalLocation === null) {
+          try {
+            const ipResponse = await fetch('https://uapis.cn/api/v1/network/myip?source=commercial');
+            const ipData = await ipResponse.json();
+            
+            if (ipData && ipData.region && ipData.district) {
+              finalLocation = `${ipData.region} ${ipData.district}`;
+            }
+          } catch (error) {
+            console.error('获取位置信息失败:', error);
+          }
+        }
+
         // 将用户信息保存到数据库
         try {
           const response = await fetch('/api/user/save', {
@@ -51,7 +66,7 @@ export default function QQLoginCallback() {
               nickname: userData.nickname,
               avatar_url: userData.faceimg,
               gender: userData.gender,
-              location: userData.location,
+              location: finalLocation,
               access_token: userData.access_token,
               ip: userData.ip
             }),

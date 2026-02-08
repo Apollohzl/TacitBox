@@ -19,6 +19,21 @@ export default function LoginSuccess() {
         const userInfo = JSON.parse(decodeURIComponent(userInfoString));
         console.log("/success："+userInfo);
 
+        // 检查位置信息是否为空，如果为空则获取位置
+        let finalLocation = userInfo.location;
+        if (!finalLocation || finalLocation === "" || finalLocation === null) {
+          try {
+            const ipResponse = await fetch('https://uapis.cn/api/v1/network/myip?source=commercial');
+            const ipData = await ipResponse.json();
+            
+            if (ipData && ipData.region && ipData.district) {
+              finalLocation = `${ipData.region} ${ipData.district}`;
+            }
+          } catch (error) {
+            console.error('获取位置信息失败:', error);
+          }
+        }
+
         // 将用户信息保存到数据库
         try {
           const response = await fetch('/api/user/save', {
@@ -32,7 +47,7 @@ export default function LoginSuccess() {
               nickname: userInfo.nickname,
               avatar_url: userInfo.avatar_url,
               gender: userInfo.gender,
-              location: userInfo.location,
+              location: finalLocation,
               access_token: userInfo.access_token,
               ip: userInfo.ip_address
             }),

@@ -38,9 +38,10 @@ export default function QQLoginCallback() {
           return;
         }
 
-        // 将用户信息保存到localStorage（只保存social_uid）
+        // 将用户信息保存到localStorage（只保存social_uid和登录类型）
         localStorage.setItem('social_uid', userData.social_uid);
         localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('login_type', 'qq');
 
         // 跳转到首页
         window.location.href = '/';

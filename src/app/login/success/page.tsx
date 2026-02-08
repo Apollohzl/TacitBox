@@ -17,11 +17,12 @@ export default function LoginSuccess() {
     try {
       const userInfo = JSON.parse(decodeURIComponent(userInfoString));
       console.log("/success："+userInfo);
-      // 只保存social_uid
+      // 只保存social_uid，并保存登录类型
       localStorage.setItem('social_uid', userInfo.social_uid);
       console.log("social_uid保存成功：值为【【"+userInfo.social_uid+"】】】");
       localStorage.setItem('isLoggedIn', 'true');
       console.log("isLoggedIn保存成功：值为【【"+"true"+"】】】");
+      localStorage.setItem('login_type', 'wx');
 
       // 跳转到首页
       window.location.href = '/';

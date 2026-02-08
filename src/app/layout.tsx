@@ -5,9 +5,9 @@ export const metadata: Metadata = {
   title: '默契盒子 (TacitBox)',
   description: '通过出题和答题来测试朋友间的默契度',
   icons: {
-    icon: 'https://tb.vicral.cn/favicon.ico',
-    shortcut: 'https://tb.vicral.cn/favicon.ico',
-    apple: 'https://tb.vicral.cn/apple-icon.png',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-icon.png',
   },
 };
 

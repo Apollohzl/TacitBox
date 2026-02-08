@@ -10,10 +10,10 @@ export const viewport = {
 export default function Head() {
   return (
     <head>
-      <link rel="icon" type="image/x-icon" href="https://tb.vicral.cn/favicon.ico" />
-      <link rel="icon" type="image/png" sizes="32x32" href="https://tb.vicral.cn/favicon.ico" />
-      <link rel="icon" type="image/png" sizes="16x16" href="https://tb.vicral.cn/favicon.ico" />
-      <link rel="apple-touch-icon" sizes="180x180" href="https://tb.vicral.cn/apple-icon.png" />
+      <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+      <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico" />
+      <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico" />
+      <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
     </head>
   );
 }

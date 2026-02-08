@@ -1,19 +1,45 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 export default function QQLoginPage() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    // 重定向到聚合登录的QQ登录页面
-    const appKey = process.env.NEXT_PUBLIC_JUHE_Appkey;
-    if (!appKey) {
-      console.error('NEXT_PUBLIC_JUHE_Appkey 未定义');
-      return;
-    }
-    
-    const redirectUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://tb.vicral.cn'}/login/qq/callback`;
-    window.location.href = `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${appKey}&type=qq&redirect_uri=${encodeURIComponent(redirectUrl)}`;
+    const handleQQLogin = async () => {
+      const appKey = process.env.NEXT_PUBLIC_JUHE_Appkey;
+      if (!appKey) {
+        console.error('NEXT_PUBLIC_JUHE_Appkey 未定义');
+        setError('系统配置错误：缺少AppKey');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Step 1: 获取跳转登录地址
+        const response = await fetch(
+          `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${appKey}&type=qq&redirect_uri=${encodeURIComponent(window.location.origin + '/login/qq/callback')}`
+        );
+
+        const data = await response.json();
+
+        if (data.code === 0) {
+          // Step 2: 跳转到登录地址
+          window.location.href = data.url;
+        } else {
+          setError(data.msg || '获取登录地址失败');
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('登录请求失败:', err);
+        setError('网络错误，请稍后重试');
+        setLoading(false);
+      }
+    };
+
+    handleQQLogin();
   }, []);
 
   return (
@@ -29,7 +55,9 @@ export default function QQLoginPage() {
               className="w-20 h-20"
             />
           </div>
-          <p className="text-lg text-gray-700">正在跳转到QQ登录...</p>
+          <p className="text-lg text-gray-700">
+            {loading ? '正在跳转到QQ登录...' : (error ? '错误：' + error : '跳转中...')}
+          </p>
         </div>
       </div>
     </div>

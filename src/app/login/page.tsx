@@ -37,7 +37,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 to-cyan-500 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">默契盒子</h1>
           <p className="text-gray-600">登录以开始体验</p>
         </div>
@@ -51,6 +51,7 @@ const LoginPage = () => {
                 ? 'bg-gray-400 cursor-not-allowed' 
                 : 'bg-green-500 hover:bg-green-600 active:bg-green-700'
             }`}
+            style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
           >
             {loading ? (
               <span className="flex items-center">
@@ -74,12 +75,12 @@ const LoginPage = () => {
         </div>
 
         {error && (
-          <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-lg text-center">
+          <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-lg text-center" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
             {error}
           </div>
         )}
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-sm text-gray-600" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}>
           <p>登录即表示您同意我们的服务条款和隐私政策</p>
         </div>
       </div>

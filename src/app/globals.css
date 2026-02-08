@@ -1,42 +1,52 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* app/globals.css */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 @font-face {
   font-family: 'ZeosevenFont';
   src: url('https://fontsapi.zeoseven.com/31/main/52c0a6199c9be3511dc2e1240264eb98.woff2') format('woff2');
+  font-weight: 400; /* 必须指定字重 */
+  font-style: normal; /* 必须指定样式 */
   font-display: swap;
 }
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+@layer base {
+  :root {
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 214, 219, 220;
+    --background-end-rgb: 255, 255, 255;
+  }
+
+  html {
+    font-family: 'ZeosevenFont', system-ui, -apple-system, sans-serif;
+  }
+  
+  body {
+    color: rgb(var(--foreground-rgb));
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        rgb(var(--background-end-rgb))
+      )
+      rgb(var(--background-start-rgb));
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 确保继承字体 */
+  h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select, label {
+    font-family: inherit;
+  }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-  font-family: 'ZeosevenFont', system-ui, -apple-system, sans-serif;
-}
-
-/* 确保所有文本元素都使用自定义字体 */
-h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select, label {
-  font-family: inherit;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+@layer components {
+  .min-h-screen {
+    min-height: 100vh;
+  }
 }
 
 /* 自定义样式 */
-.min-h-screen {
-  min-height: 100vh;
+* {
+  box-sizing: border-box;
 }

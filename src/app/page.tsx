@@ -1,6 +1,5 @@
 import React from 'react';
 import Image from 'next/image';
-import logo from '../../public/logo.png';
 
 export default function HomePage() {
   return (
@@ -10,21 +9,12 @@ export default function HomePage() {
           <Image 
             src="/logo.png" 
             alt="默契盒子 Logo" 
-            width={120} 
-            height={120} 
+            width={150} 
+            height={150} 
             className="mx-auto"
           />
         </div>
-        <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">默契盒子</h1>
-        <p className="text-xl md:text-2xl text-white mb-8">测试你和朋友间的默契程度</p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="bg-white text-green-500 font-bold py-3 px-6 rounded-full text-lg hover:bg-gray-100 transition duration-300">
-            开始游戏
-          </button>
-          <button className="bg-transparent border-2 border-white text-white font-bold py-3 px-6 rounded-full text-lg hover:bg-white hover:bg-opacity-20 transition duration-300">
-            查看排行榜
-          </button>
-        </div>
+        <p className="text-xl md:text-2xl text-white mt-4">测试你和朋友间的默契程度</p>
       </div>
     </div>
   );

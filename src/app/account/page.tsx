@@ -21,13 +21,28 @@ export default function AccountPage() {
       // 获取完整用户信息
       const fetchUserInfo = async () => {
         try {
-          // 使用实际的登录类型，如果不存在则默认为qq
+          // 首先尝试从本地API获取用户详情（包含创建时间和登录时间）
+          const localResponse = await fetch(`/api/user/detail?social_uid=${storedSocialUid}&social_type=${storedLoginType || 'wx'}`);
+          if (localResponse.ok) {
+            const localData = await localResponse.json();
+            if (localData.success) {
+              setUserData(localData.data);
+              return;
+            }
+          }
+          
+          // 如果本地API获取失败，再从第三方API获取基本信息
           const loginType = storedLoginType || 'qq';
           const response = await fetch(`https://u.daib.cn/connect.php?act=query&appid=2423&appkey=5182677ea009b870808053105a2ded54&type=${loginType}&social_uid=${storedSocialUid}`);
           if (response.ok) {
             const data = await response.json();
             if (data.code === 0) {
-              setUserData(data);
+              // 合并数据
+              setUserData({
+                ...data,
+                created_at: '未知',
+                last_login_at: '未知'
+              });
             } else {
               console.error('获取用户信息失败:', data.msg);
             }

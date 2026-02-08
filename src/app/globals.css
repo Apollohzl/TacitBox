@@ -25,6 +25,11 @@ body {
   font-family: 'CustomFont', 'Xiaolai Mono SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
+/* 确保所有文本元素都使用自定义字体 */
+h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select, label {
+  font-family: inherit;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;

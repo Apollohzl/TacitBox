@@ -17,8 +17,8 @@ export default function LoginSuccess() {
     try {
       const userInfo = JSON.parse(decodeURIComponent(userInfoString));
 
-      // 将用户信息存储到localStorage
-      localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      // 只保存social_uid
+      localStorage.setItem('social_uid', userInfo.social_uid);
       localStorage.setItem('isLoggedIn', 'true');
 
       // 跳转到首页

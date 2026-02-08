@@ -33,6 +33,7 @@ const HomePage = () => {
   const [textAnimationComplete, setTextAnimationComplete] = useState(false);
   const [deviceType, setDeviceType] = useState('desktop'); // 默认为desktop
   const [userData, setUserData] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const text = "测试你和朋友间的默契程度";
   const colors = [
     '#FF6B6B', // 红色
@@ -55,22 +56,82 @@ const HomePage = () => {
     const detectedDevice = detectDevice();
     setDeviceType(detectedDevice);
     
-    // 从localStorage获取用户信息
-    const storedUserData = localStorage.getItem('userData');
-    if (storedUserData) {
-      try {
-        setUserData(JSON.parse(storedUserData));
-      } catch (error) {
-        console.error('解析用户数据失败:', error);
+    // 根据条件判断登录状态
+    const checkLoginStatus = () => {
+      const isLoggedInStorage = localStorage.getItem('isLoggedIn');
+      const socialUidStorage = localStorage.getItem('social_uid');
+      
+      if (!isLoggedInStorage && !socialUidStorage) {
+        // 条件1：2个都没有 -> 未登录
+        setIsLoggedIn(false);
+        setUserData(null);
+      } else if (isLoggedInStorage === 'true' && socialUidStorage && socialUidStorage.trim() !== '') {
+        // 条件2：isLoggedIn==true且social_uid内容不为空 -> 已登录
+        // 通过social_uid获取用户信息
+        fetchUserInfo(socialUidStorage);
+        setIsLoggedIn(true);
+      } else {
+        // 条件3：其余结果 -> 清除变量，未登录
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('social_uid');
+        setIsLoggedIn(false);
+        setUserData(null);
       }
-    }
+    };
+    
+    const fetchUserInfo = async (socialUid: string) => {
+      try {
+        const response = await fetch(
+          `https://u.daib.cn/connect.php?act=query&appid=2423&appkey=${process.env.NEXT_PUBLIC_JUHE_Appkey || process.env.JUHE_Appkey}&type=wx&social_uid=${socialUid}`
+        );
+        
+        const userData = await response.json();
+        
+        if (userData.code === 0) {
+          setUserData({
+            nickname: userData.nickname,
+            avatar_url: userData.faceimg
+          });
+        } else {
+          // 如果获取用户信息失败，也视为未登录
+          localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('social_uid');
+          setIsLoggedIn(false);
+          setUserData(null);
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+        // 如果获取用户信息失败，也视为未登录
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('social_uid');
+        setIsLoggedIn(false);
+        setUserData(null);
+      }
+    };
+    
+    checkLoginStatus();
   }, []);
+
+  const handleLogin = () => {
+    window.location.href = '/login';
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('social_uid');
+    setIsLoggedIn(true); // 临时设为true以触发重新渲染，然后马上设为false
+    setTimeout(() => {
+      setIsLoggedIn(false);
+      setUserData(null);
+      window.location.reload();
+    }, 10);
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#61f7c0' }}>
       {/* 右上角用户状态显示 */}
       <div className="absolute top-4 right-4">
-        {userData ? (
+        {isLoggedIn && userData ? (
           <div className="flex items-center space-x-2">
             <div className="relative">
               <Image 
@@ -84,10 +145,23 @@ const HomePage = () => {
             <span className="hidden md:inline text-white font-bold text-lg" style={{ fontFamily: "'MaShanZheng', 'Xiaolai Mono SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" }}>
               {userData.nickname}
             </span>
+            <button 
+              onClick={handleLogout}
+              className="ml-2 px-2 py-1 text-sm rounded"
+              style={{ 
+                backgroundColor: '#FF6B6B', 
+                color: 'white',
+                borderWidth: '2px',
+                borderStyle: 'solid',
+                borderColor: '#E55555'
+              }}
+            >
+              退出
+            </button>
           </div>
         ) : (
           <button 
-            onClick={() => window.location.href = '/login'}
+            onClick={handleLogin}
             className="px-4 py-2 rounded-lg"
             style={{ 
               backgroundColor: '#FF9F1C', 

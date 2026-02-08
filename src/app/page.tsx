@@ -36,7 +36,7 @@ const HomePage = () => {
             className="mx-auto rounded-full object-cover"
           />
         </div>
-        <div className="flex justify-center mt-8">
+        <div className="flex flex-wrap justify-center mt-8">
           {text.split('').map((char, index) => (
             <motion.span
               key={index}
@@ -56,7 +56,7 @@ const HomePage = () => {
                 type: "spring",
                 stiffness: 100,
               }}
-              className="text-2xl md:text-3xl font-bold"
+              className="text-3xl md:text-4xl font-bold"
               style={{ color: colors[index % colors.length] }}
             >
               {char}

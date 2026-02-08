@@ -151,7 +151,8 @@ const HomePage = () => {
                 alt="用户头像" 
                 width="40" 
                 height="40" 
-                className="w-10 h-10 rounded-full border-2 border-white object-cover"
+                className="w-10 h-10 rounded-full border-2 border-white object-cover cursor-pointer"
+                onClick={() => window.location.href = '/account'}
               />
             </div>
             <span className="text-white font-bold text-lg">

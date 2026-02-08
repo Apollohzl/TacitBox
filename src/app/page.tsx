@@ -143,11 +143,11 @@ const HomePage = () => {
         {isLoggedIn && userData ? (
           <div className="flex items-center space-x-2">
             <div className="relative">
-              <Image 
+              <img 
                 src={userData.avatar_url || '/images/logo-192x192.png'} 
                 alt="用户头像" 
-                width={40} 
-                height={40} 
+                width="40" 
+                height="40" 
                 className="w-10 h-10 rounded-full border-2 border-white object-cover"
               />
             </div>

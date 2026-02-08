@@ -60,12 +60,12 @@ const HomePage = () => {
     const checkLoginStatus = () => {
       const isLoggedInStorage = localStorage.getItem('isLoggedIn');
       const socialUidStorage = localStorage.getItem('social_uid');
-      
+      console.log("登录信息："+isLoggedInStorage+socialUidStorage);
       if (!isLoggedInStorage && !socialUidStorage) {
         // 条件1：2个都没有 -> 未登录
         setIsLoggedIn(false);
         setUserData(null);
-      } else if (isLoggedInStorage === 'true' && socialUidStorage && socialUidStorage.trim() !== '') {
+      } else if (isLoggedInStorage === 'true' && socialUidStorage && socialUidStorage !== '') {
         // 条件2：isLoggedIn==true且social_uid内容不为空 -> 已登录
         // 通过social_uid获取用户信息
         fetchUserInfo(socialUidStorage);

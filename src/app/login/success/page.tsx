@@ -16,10 +16,12 @@ export default function LoginSuccess() {
 
     try {
       const userInfo = JSON.parse(decodeURIComponent(userInfoString));
-
+      console.log("/success："+userInfo);
       // 只保存social_uid
       localStorage.setItem('social_uid', userInfo.social_uid);
+      console.log("social_uid保存成功：值为【【"+social_uid+"】】】");
       localStorage.setItem('isLoggedIn', 'true');
+      console.log("isLoggedIn保存成功：值为【【"+isLoggedIn+"】】】");
 
       // 跳转到首页
       window.location.href = '/';

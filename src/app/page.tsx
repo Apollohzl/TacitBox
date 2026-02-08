@@ -112,12 +112,15 @@ const HomePage = () => {
             transition={{ duration: 0.5 }}
           >
             <button 
-              className="text-2xl font-bold rounded-lg border-2 border-transparent"
+              className="text-2xl font-bold rounded-lg"
               style={{ 
                 backgroundColor: '#ff9f1c00', // 透明背景
                 color: '#ff8c11', // 橙色文字
                 width: '354px',
-                height: '204px'
+                height: '204px',
+                borderWidth: '5px',
+                borderStyle: 'solid',
+                borderColor: '#ff8c11' // 统一边框颜色
               }}
             >
               【去出题】
@@ -129,11 +132,14 @@ const HomePage = () => {
         {deviceType !== 'desktop' && (
           <div className="w-full max-w-[500px] mt-4">
             <button 
-              className="w-full text-xl font-bold rounded-lg border-2 border-transparent"
+              className="w-full text-xl font-bold rounded-lg"
               style={{ 
                 backgroundColor: '#FF9F1C', 
                 color: 'white',
-                height: '100px' // 移动端高度100px
+                height: '100px', // 移动端高度100px
+                borderWidth: '5px',
+                borderStyle: 'solid',
+                borderColor: '#ff8c11' // 统一边框颜色
               }}
             >
               【去出题】

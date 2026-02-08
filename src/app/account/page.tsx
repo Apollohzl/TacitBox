@@ -102,7 +102,7 @@ export default function AccountPage() {
 
               {/* 用户信息 */}
               <div className="flex-1 text-center w-full">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800" style={{ fontFamily: "'MaShanZheng', 'Xiaolai Mono SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" }}>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
                   {userData?.nickname || '未知用户'}
                 </h2>
                 <div className="mt-2 flex flex-wrap justify-center gap-2">

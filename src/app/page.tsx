@@ -154,7 +154,7 @@ const HomePage = () => {
                 className="w-10 h-10 rounded-full border-2 border-white object-cover"
               />
             </div>
-            <span className="text-white font-bold text-lg" style={{ fontFamily: "'MaShanZheng', 'Xiaolai Mono SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" }}>
+            <span className="text-white font-bold text-lg">
               {userData.nickname}
             </span>
             <button 

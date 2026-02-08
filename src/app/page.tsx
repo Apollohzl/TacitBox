@@ -77,8 +77,20 @@ const HomePage = () => {
     
     const fetchUserInfo = async (socialUid: string) => {
       try {
+        // 在客户端，环境变量必须以 NEXT_PUBLIC_ 开头
+        const appKey = process.env.NEXT_PUBLIC_JUHE_Appkey;
+        if (!appKey) {
+          console.error('NEXT_PUBLIC_JUHE_Appkey 未定义');
+          // 如果客户端没有定义，则无法获取用户信息
+          localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('social_uid');
+          setIsLoggedIn(false);
+          setUserData(null);
+          return;
+        }
+        
         const response = await fetch(
-          `https://u.daib.cn/connect.php?act=query&appid=2423&appkey=${process.env.JUHE_Appkey}&type=wx&social_uid=${socialUid}`
+          `https://u.daib.cn/connect.php?act=query&appid=2423&appkey=${appKey}&type=wx&social_uid=${socialUid}`
         );
         
         const userData = await response.json();

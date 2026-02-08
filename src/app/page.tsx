@@ -112,20 +112,29 @@ const HomePage = () => {
             transition={{ duration: 0.5 }}
           >
             <button 
-              className="px-8 py-4 text-2xl font-bold rounded-full border-2 border-transparent"
-              style={{ backgroundColor: '#FF9F1C', color: 'white' }} // 橙色按钮
+              className="text-2xl font-bold rounded-lg border-2 border-transparent"
+              style={{ 
+                backgroundColor: '#ff9f1c00', // 透明背景
+                color: '#ff8c11', // 橙色文字
+                width: '354px',
+                height: '204px'
+              }}
             >
               【去出题】
             </button>
           </motion.div>
         )}
         
-        {/* 移动端和tablet按钮 - 直接显示 */}
+        {/* 移动端和平板按钮 - 直接显示 */}
         {deviceType !== 'desktop' && (
           <div className="w-full max-w-[500px] mt-4">
             <button 
-              className="w-full py-4 text-xl font-bold rounded-full border-2 border-transparent"
-              style={{ backgroundColor: '#FF9F1C', color: 'white' }} // 橙色按钮
+              className="w-full text-xl font-bold rounded-lg border-2 border-transparent"
+              style={{ 
+                backgroundColor: '#FF9F1C', 
+                color: 'white',
+                height: '100px' // 移动端高度100px
+              }}
             >
               【去出题】
             </button>

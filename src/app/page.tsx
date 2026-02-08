@@ -33,7 +33,7 @@ const HomePage = () => {
             width={150} 
             height={150} 
             quality={100}
-            className="mx-auto rounded-full object-cover"
+            className="mx-auto object-cover"
           />
         </div>
         <div className="flex flex-wrap justify-center mt-8">

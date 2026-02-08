@@ -12,7 +12,7 @@ export default function QQLoginPage() {
       return;
     }
     
-    const redirectUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://tb.vicral.cn'}/login/process`;
+    const redirectUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://tb.vicral.cn'}/login/qq/callback`;
     window.location.href = `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${appKey}&type=qq&redirect_uri=${encodeURIComponent(redirectUrl)}`;
   }, []);
 

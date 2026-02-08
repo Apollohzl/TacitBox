@@ -12,7 +12,7 @@
    6：本地项目根目录：E:\TacitBox
    7：公司邮箱（如有需要）：959855534@qq.com
    8：公司名（如有需要）：小黄の数字宇宙工作室
-   9：数据库：想要采用MongoDB Atlas数据库
+   9：数据库：采用SQLPub数据库
    10：网站：本地编辑->Github->vercel->域名
 工具箱信息：
    操作系统：Windows 11，工具箱路径：C:\Tools\MinGW64，环境变量：MinGW_HOME。

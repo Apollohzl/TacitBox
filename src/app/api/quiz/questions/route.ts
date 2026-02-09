@@ -64,11 +64,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('获取题目失败:', error);
-    // 为了安全起见，我们不返回具体的错误信息给客户端
-    // 但在服务器端记录详细错误
     return NextResponse.json({ 
       success: false, 
-      error: '服务器内部错误' 
+      error: '服务器内部错误' +error
     }, { status: 500 });
   }
 }

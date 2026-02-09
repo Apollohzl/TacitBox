@@ -28,12 +28,31 @@ export async function GET(request: NextRequest) {
     const connection = await pool.getConnection();
     
     // 获取指定分类下的题目
-    const [questions] = await connection.execute(
+    const [rows] = await connection.execute(
       'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? AND is_active = TRUE ORDER BY id LIMIT ?', 
       [categoryIdNum, limitNum]
     ) as [any[], any];
     
     connection.release();
+    
+    // 处理JSON字段
+    const questions = rows.map((row: any) => {
+      // 如果options是JSON字符串，解析它
+      let parsedOptions = row.options;
+      if (typeof row.options === 'string') {
+        try {
+          parsedOptions = JSON.parse(row.options);
+        } catch (e) {
+          console.warn('解析选项JSON失败:', e);
+          parsedOptions = row.options; // 保持原始值
+        }
+      }
+      
+      return {
+        ...row,
+        options: parsedOptions
+      };
+    });
     
     return NextResponse.json({ 
       success: true, 

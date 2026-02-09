@@ -25,23 +25,40 @@ export async function GET(request: NextRequest) {
     const connection = await pool.getConnection();
     
     // 获取指定分类下的随机题目
-    const [questions] = await connection.execute(
+    const [rows] = await connection.execute(
       'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? AND is_active = TRUE ORDER BY RAND() LIMIT 1', 
       [categoryIdNum]
     ) as [any[], any];
     
     connection.release();
     
-    if (questions.length === 0) {
+    if (rows.length === 0) {
       return NextResponse.json({ 
         success: false, 
         error: '该分类下暂无题目' 
       }, { status: 404 });
     }
     
+    // 处理JSON字段
+    const question = rows[0];
+    let parsedOptions = question.options;
+    if (typeof question.options === 'string') {
+      try {
+        parsedOptions = JSON.parse(question.options);
+      } catch (e) {
+        console.warn('解析选项JSON失败:', e);
+        parsedOptions = question.options; // 保持原始值
+      }
+    }
+    
+    const result = {
+      ...question,
+      options: parsedOptions
+    };
+    
     return NextResponse.json({ 
       success: true, 
-      data: questions[0] 
+      data: result 
     });
   } catch (error: any) {
     console.error('获取随机题目失败:', error);

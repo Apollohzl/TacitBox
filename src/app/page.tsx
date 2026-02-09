@@ -239,6 +239,7 @@ const HomePage = () => {
                 borderStyle: 'solid',
                 borderColor: '#ff8c11' // 统一边框颜色
               }}
+              onClick={() => window.location.href = '/quiz'}
             >
               【去出题】
             </button>
@@ -318,6 +319,7 @@ const HomePage = () => {
                 borderStyle: 'solid',
                 borderColor: '#ff8c11' // 统一边框颜色
               }}
+              onClick={() => window.location.href = '/quiz'}
             >
               【去出题】
             </button>

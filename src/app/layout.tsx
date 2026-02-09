@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { QuizProvider } from './context/QuizContext';
 
 export const metadata: Metadata = {
   title: '默契盒子 (TacitBox)',
@@ -18,7 +19,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        <QuizProvider>
+          {children}
+        </QuizProvider>
+      </body>
     </html>
   );
 }

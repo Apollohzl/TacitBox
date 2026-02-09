@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuiz } from '../../context/QuizContext';
 
 export default function QuizPage() {
   const router = useRouter();
+  const { setQuizResults } = useQuiz();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -16,6 +18,8 @@ export default function QuizPage() {
   const [categoryQuestions, setCategoryQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<{questionId: number, option: string, questionText: string, correctAnswer: string}[]>([]);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   // 检查用户是否登录
   useEffect(() => {
@@ -97,18 +101,44 @@ export default function QuizPage() {
 
   // 处理选项选择
   const handleOptionSelect = (option: string) => {
-    // 模拟选择选项后的行为，0.5秒后切换到下一题
+    // 设置选中的选项
+    setSelectedOption(option);
+    
+    // 将当前选择保存到数组中
+    const currentQ = selectedQuestions[currentQuestionIndex];
+    const correctAnswer = currentQ?.correct_answer || '';
+    const questionText = currentQ?.question_text || '';
+    const questionId = currentQ?.id || 0;
+    
+    const newSelection = {
+      questionId,
+      option,
+      questionText,
+      correctAnswer
+    };
+    
+    setSelectedOptions(prev => [...prev, newSelection]);
+    
+    // 等待1秒后执行后续操作
     setTimeout(() => {
-      if (currentQuestionIndex < 9) { // 最多10题
+      // 如果还没到第10题，则切换到下一题
+      if (currentQuestionIndex < 9) {
         setCurrentQuestionIndex(prev => prev + 1);
         if (selectedQuestions[currentQuestionIndex + 1]) {
           setCurrentQuestion(selectedQuestions[currentQuestionIndex + 1]);
         }
+        // 重置选中选项状态以便下一题使用
+        setSelectedOption(null);
       } else {
-        // 选择完10题后，跳转到结果页面
+        // 选择完10题后，将答案信息存储在全局上下文中
+        const resultsData = {
+          selectedOptions,
+          questions: selectedQuestions.slice(0, 10)
+        };
+        setQuizResults(resultsData);
         router.push('/quiz/result');
       }
-    }, 500);
+    }, 1000);
   };
 
   // 换一题功能
@@ -309,7 +339,11 @@ export default function QuizPage() {
                 currentQuestion.options).map((option: string, index: number) => (
                 <button
                   key={index}
-                  className="w-full bg-white bg-opacity-80 hover:bg-opacity-100 py-3 px-4 rounded-lg text-left transition-all duration-300"
+                  className={`w-full py-3 px-4 rounded-lg text-left transition-all duration-300 ${
+                    selectedOption === option 
+                      ? 'bg-green-500 text-white'  // 选中时的样式
+                      : 'bg-white bg-opacity-80 hover:bg-opacity-100'
+                  }`}
                   onClick={() => handleOptionSelect(option)}
                 >
                   {String.fromCharCode(65 + index)}. {option}
@@ -318,7 +352,11 @@ export default function QuizPage() {
               ['A. 选项1', 'B. 选项2', 'C. 选项3', 'D. 选项4'].map((option, index) => (
                 <button
                   key={index}
-                  className="w-full bg-white bg-opacity-80 hover:bg-opacity-100 py-3 px-4 rounded-lg text-left transition-all duration-300"
+                  className={`w-full py-3 px-4 rounded-lg text-left transition-all duration-300 ${
+                    selectedOption === option 
+                      ? 'bg-green-500 text-white'  // 选中时的样式
+                      : 'bg-white bg-opacity-80 hover:bg-opacity-100'
+                  }`}
                   onClick={() => handleOptionSelect(option)}
                 >
                   {option}

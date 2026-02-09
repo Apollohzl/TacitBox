@@ -33,7 +33,7 @@ export default function AccountPage() {
           
           // 如果本地API获取失败，再从第三方API获取基本信息
           const loginType = storedLoginType || 'qq';
-          const response = await fetch(`https://u.daib.cn/connect.php?act=query&appid=2423&appkey=5182677ea009b870808053105a2ded54&type=${loginType}&social_uid=${storedSocialUid}`);
+          const response = await fetch(`https://u.zibll1.com/connect.php?act=query&appid=1018&appkey=577cebc9b4c2ed9c3c97b9d5f1e639b9&type=${loginType}&social_uid=${storedSocialUid}`);
           if (response.ok) {
             const data = await response.json();
             if (data.code === 0) {

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     // Step 4: 通过Authorization Code获取用户信息
     const userResponse = await fetch(
-      `https://u.daib.cn/connect.php?act=callback&appid=2423&appkey=${process.env.JUHE_Appkey}&type=${type}&code=${code}`
+      `https://u.zibll1.com/connect.php?act=callback&appid=1018&appkey=${process.env.JUHE_Appkey}&type=${type}&code=${code}`
     );
 
     const userData = await userResponse.json();

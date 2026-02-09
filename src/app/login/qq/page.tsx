@@ -20,7 +20,7 @@ export default function QQLoginPage() {
       try {
         // Step 1: 获取跳转登录地址
         const response = await fetch(
-          `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${appKey}&type=qq&redirect_uri=${encodeURIComponent(window.location.origin + '/login/qq/callback')}`
+          `https://u.zibll1.com/connect.php?act=login&appid=1018&appkey=${appKey}&type=qq&redirect_uri=${encodeURIComponent(window.location.origin + '/login/qq/callback')}`
         );
 
         const data = await response.json();

@@ -27,7 +27,7 @@ export default function QQLoginCallback() {
         }
 
         const response = await fetch(
-          `https://u.daib.cn/connect.php?act=callback&appid=2423&appkey=${appKey}&type=${type}&code=${code}`
+          `https://u.zibll1.com/connect.php?act=callback&appid=1018&appkey=${appKey}&type=${type}&code=${code}`
         );
 
         const userData = await response.json();

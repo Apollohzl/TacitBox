@@ -92,10 +92,9 @@ const HomePage = () => {
         // 从localStorage获取登录类型，如果没有则默认为微信
         const loginType = localStorage.getItem('login_type') || 'wx';
         
-        const response = await fetch(
-          `https://u.daib.cn/connect.php?act=query&appid=2423&appkey=${appKey}&type=${loginType}&social_uid=${socialUid}`
-        );
-        
+                  const response = await fetch(
+                    `https://u.zibll1.com/connect.php?act=query&appid=1018&appkey=${appKey}&type=${loginType}&social_uid=${socialUid}`
+                  );        
         const userData = await response.json();
         
         if (userData.code === 0) {

@@ -22,7 +22,7 @@ const LoginPage = () => {
       
       // Step 1: 获取跳转登录地址
       const response = await fetch(
-        `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`
+        `https://u.zibll1.com/connect.php?act=login&appid=1018&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`
       );
 
       const data = await response.json();

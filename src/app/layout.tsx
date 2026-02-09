@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { QuizProvider } from './context/QuizContext';
+import { QuizProvider } from '../context/QuizContext';
 
 export const metadata: Metadata = {
   title: '默契盒子 (TacitBox)',

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       success: true, 
       data: categories 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取题库分类失败:', error);
     return NextResponse.json({ 
       success: false, 

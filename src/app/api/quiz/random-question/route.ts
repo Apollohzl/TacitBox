@@ -14,12 +14,20 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
+    const categoryIdNum = parseInt(categoryId);
+    if (isNaN(categoryIdNum)) {
+      return NextResponse.json({ 
+        success: false, 
+        error: '分类ID必须是有效数字' 
+      }, { status: 400 });
+    }
+
     const connection = await pool.getConnection();
     
     // 获取指定分类下的随机题目
     const [questions] = await connection.execute(
       'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? AND is_active = TRUE ORDER BY RAND() LIMIT 1', 
-      [parseInt(categoryId)]
+      [categoryIdNum]
     ) as [any[], any];
     
     connection.release();
@@ -35,7 +43,7 @@ export async function GET(request: NextRequest) {
       success: true, 
       data: questions[0] 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取随机题目失败:', error);
     return NextResponse.json({ 
       success: false, 

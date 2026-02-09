@@ -25,12 +25,16 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // 确保参数是数字类型，以避免MySQL参数类型错误
+    const categoryIdForQuery = Number(categoryIdNum);
+    const limitForQuery = Number(limitNum);
+
     const connection = await pool.getConnection();
     
     // 获取指定分类下的题目
     const [rows] = await connection.execute(
       'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? AND is_active = TRUE ORDER BY id LIMIT ?', 
-      [categoryIdNum, limitNum]
+      [categoryIdForQuery, limitForQuery]
     ) as [any[], any];
     
     connection.release();
@@ -64,7 +68,7 @@ export async function GET(request: NextRequest) {
     // 但在服务器端记录详细错误
     return NextResponse.json({ 
       success: false, 
-      error: '服务器内部错误'+error 
+      error: '服务器内部错误' 
     }, { status: 500 });
   }
 }

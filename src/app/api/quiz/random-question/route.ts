@@ -22,12 +22,15 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // 确保参数是数字类型，以避免MySQL参数类型错误
+    const categoryIdForQuery = Number(categoryIdNum);
+
     const connection = await pool.getConnection();
     
     // 获取指定分类下的随机题目
     const [rows] = await connection.execute(
       'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? AND is_active = TRUE ORDER BY RAND() LIMIT 1', 
-      [categoryIdNum]
+      [categoryIdForQuery]
     ) as [any[], any];
     
     connection.release();

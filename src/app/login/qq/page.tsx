@@ -18,23 +18,26 @@ export default function QQLoginPage() {
       }
 
       try {
-        // Step 1: 获取跳转登录地址
-        const response = await fetch(
-          `https://u.zibll1.com/connect.php?act=login&appid=1018&appkey=${appKey}&type=qq&redirect_uri=${encodeURIComponent(window.location.origin + '/login/qq/callback')}`
-        );
-
+        // 通过代理API获取登录URL，避免CORS问题
+        const proxyUrl = `/api/proxy-login?appid=1018&appkey=${appKey}&type=qq&redirect_uri=${encodeURIComponent(window.location.origin + '/login/qq/callback')}`;
+        const response = await fetch(proxyUrl);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `请求失败: ${response.status}`);
+        }
+        
         const data = await response.json();
-
+        
         if (data.code === 0) {
-          // Step 2: 跳转到登录地址
+          // 跳转到登录URL
           window.location.href = data.url;
         } else {
-          setError(data.msg || '获取登录地址失败');
-          setLoading(false);
+          throw new Error(data.msg || '获取登录地址失败');
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('登录请求失败:', err);
-        setError('网络错误，请稍后重试');
+        setError(err.message || '登录请求失败');
         setLoading(false);
       }
     };

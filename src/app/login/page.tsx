@@ -12,30 +12,33 @@ const LoginPage = () => {
   const handleWechatLogin = async () => {
     setLoading(true);
     setError(null);
-
+    
     try {
       const appKey = process.env.NEXT_PUBLIC_JUHE_Appkey;
       if (!appKey) {
-        setError('系统配置错误：缺少AppKey');
-        return;
+        throw new Error('应用配置错误：缺少AppKey');
+      }
+
+      // 通过代理API获取登录URL，避免CORS问题
+      const proxyUrl = `/api/proxy-login?appid=1018&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`;
+      const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `请求失败: ${response.status}`);
       }
       
-      // Step 1: 获取跳转登录地址
-      const response = await fetch(
-        `https://u.zibll1.com/connect.php?act=login&appid=1018&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`
-      );
-
       const data = await response.json();
-
+      
       if (data.code === 0) {
-        // Step 2: 跳转到登录地址
+        // 跳转到登录URL
         window.location.href = data.url;
       } else {
-        setError(data.msg || '获取登录地址失败');
+        throw new Error(data.msg || '获取登录地址失败');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('登录请求失败:', err);
-      setError('网络错误，请稍后重试');
+      setError(err.message || '登录请求失败');
     } finally {
       setLoading(false);
     }

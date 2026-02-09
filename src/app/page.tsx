@@ -75,51 +75,36 @@ const HomePage = () => {
       }
     };
     
-    const fetchUserInfo = async (socialUid: string) => {
-      try {
-        // 在客户端，环境变量必须以 NEXT_PUBLIC_ 开头
-        const appKey = process.env.NEXT_PUBLIC_JUHE_Appkey;
-        if (!appKey) {
-          console.error('NEXT_PUBLIC_JUHE_Appkey 未定义');
-          // 如果客户端没有定义，则无法获取用户信息
-          localStorage.removeItem('isLoggedIn');
-          localStorage.removeItem('social_uid');
-          setIsLoggedIn(false);
-          setUserData(null);
-          return;
-        }
-        
-        // 从localStorage获取登录类型，如果没有则默认为微信
-        const loginType = localStorage.getItem('login_type') || 'wx';
-        
-                  const response = await fetch(
-                    `https://u.zibll1.com/connect.php?act=query&appid=1018&appkey=${appKey}&type=${loginType}&social_uid=${socialUid}`
-                  );        
-        const userData = await response.json();
-        
-        if (userData.code === 0) {
-          setUserData({
-            nickname: userData.nickname,
-            avatar_url: userData.faceimg
-          });
-        } else {
-          // 如果
-          console.log("获取用户信息失败，也视为未登录");
-          localStorage.removeItem('isLoggedIn');
-          localStorage.removeItem('social_uid');
-          setIsLoggedIn(false);
-          setUserData(null);
-        }
-      } catch (error) {
-        console.error('获取用户信息失败:', error);
-        // 如果获取用户信息失败，也视为未登录
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('social_uid');
-        setIsLoggedIn(false);
-        setUserData(null);
-      }
-    };
-    
+            const fetchUserInfo = async (socialUid: string) => {
+          try {
+            // 从localStorage获取登录类型，如果没有则默认为微信
+            const loginType = localStorage.getItem('login_type') || 'wx';
+            
+            // 使用本地API获取用户详情，避免CORS问题
+            const response = await fetch(`/api/user/detail?social_uid=${socialUid}&social_type=${loginType}`);
+            const localData = await response.json();
+            
+            if (localData.success) {
+              setUserData({
+                nickname: localData.data.nickname,
+                avatar_url: localData.data.avatar_url
+              });
+            } else {
+              console.log("获取用户信息失败，也视为未登录");
+              localStorage.removeItem('isLoggedIn');
+              localStorage.removeItem('social_uid');
+              setIsLoggedIn(false);
+              setUserData(null);
+            }
+          } catch (error) {
+            console.error('获取用户信息失败:', error);
+            // 如果获取用户信息失败，也视为未登录
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('social_uid');
+            setIsLoggedIn(false);
+            setUserData(null);
+          }
+        };    
     checkLoginStatus();
   }, []);
 

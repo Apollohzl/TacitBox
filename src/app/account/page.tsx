@@ -21,7 +21,7 @@ export default function AccountPage() {
       // 获取完整用户信息
       const fetchUserInfo = async () => {
         try {
-          // 首先尝试从本地API获取用户详情（包含创建时间和登录时间）
+          // 使用本地API获取用户详情（包含创建时间和登录时间）
           const localResponse = await fetch(`/api/user/detail?social_uid=${storedSocialUid}&social_type=${storedLoginType || 'wx'}`);
           if (localResponse.ok) {
             const localData = await localResponse.json();
@@ -31,24 +31,7 @@ export default function AccountPage() {
             }
           }
           
-          // 如果本地API获取失败，再从第三方API获取基本信息
-          const loginType = storedLoginType || 'qq';
-          const response = await fetch(`https://u.zibll1.com/connect.php?act=query&appid=1018&appkey=577cebc9b4c2ed9c3c97b9d5f1e639b9&type=${loginType}&social_uid=${storedSocialUid}`);
-          if (response.ok) {
-            const data = await response.json();
-            if (data.code === 0) {
-              // 合并数据
-              setUserData({
-                ...data,
-                created_at: '未知',
-                last_login_at: '未知'
-              });
-            } else {
-              console.error('获取用户信息失败:', data.msg);
-            }
-          } else {
-            console.error('获取用户信息请求失败');
-          }
+          console.error('从本地API获取用户信息失败');
         } catch (error) {
           console.error('获取用户信息出错:', error);
         }

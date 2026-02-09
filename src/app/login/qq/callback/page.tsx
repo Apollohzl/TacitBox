@@ -26,9 +26,14 @@ export default function QQLoginCallback() {
           return;
         }
 
-        const response = await fetch(
-          `https://u.zibll1.com/connect.php?act=callback&appid=1018&appkey=${appKey}&type=${type}&code=${code}`
-        );
+        // 使用代理API避免CORS问题
+        const proxyUrl = `/api/proxy-callback?appid=1018&appkey=${appKey}&type=${type}&code=${code}`;
+        const response = await fetch(proxyUrl);
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `请求失败: ${response.status}`);
+        }
 
         const userData = await response.json();
 

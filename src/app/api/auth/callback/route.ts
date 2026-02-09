@@ -13,11 +13,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Step 4: 通过Authorization Code获取用户信息
-    const userResponse = await fetch(
-      `https://u.zibll1.com/connect.php?act=callback&appid=1018&appkey=${process.env.JUHE_Appkey}&type=${type}&code=${code}`
-    );
+      const response = await fetch(
+        `https://u.zibll1.com/connect.php?act=callback&appid=1018&appkey=${process.env.JUHE_Appkey}&type=${type}&code=${code}`
+      );
 
-    const userData = await userResponse.json();
+    const userData = await response.json();
 
     if (userData.code !== 0) {
       return NextResponse.json({ error: userData.msg || '获取用户信息失败' }, { status: 400 });

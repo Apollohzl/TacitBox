@@ -103,9 +103,9 @@ export default function AccountPage() {
             <div className="flex flex-col items-center gap-4 sm:gap-6">
               {/* 头像 */}
               <div className="flex-shrink-0">
-                {userData?.faceimg ? (
+                {userData?.avatar_url ? (
                   <img 
-                    src={userData.faceimg} 
+                    src={userData.avatar_url} 
                     alt="用户头像" 
                     className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-indigo-200 object-cover"
                   />

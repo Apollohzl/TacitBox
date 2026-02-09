@@ -101,6 +101,11 @@ export default function QuizPage() {
 
   // 处理选项选择
   const handleOptionSelect = (option: string) => {
+    // 防止重复选择同一题
+    if (selectedOption !== null) {
+      return; // 如果已经选择了选项，则不再处理
+    }
+    
     // 设置选中的选项
     setSelectedOption(option);
     
@@ -119,6 +124,13 @@ export default function QuizPage() {
     
     // 使用函数式更新来确保获取到最新的状态
     setSelectedOptions(prev => {
+      // 检查当前问题是否已经存在于选项数组中，避免重复添加
+      const isQuestionAlreadyAnswered = prev.some(selection => selection.questionId === questionId);
+      
+      if (isQuestionAlreadyAnswered) {
+        return prev; // 如果已回答过此题，则直接返回当前状态
+      }
+      
       const updatedOptions = [...prev, newSelection];
       
       // 等待1秒后执行后续操作

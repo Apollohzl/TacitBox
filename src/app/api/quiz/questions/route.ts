@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     console.error('获取题目失败:', error);
     return NextResponse.json({ 
       success: false, 
-      error: '服务器内部错误' +error
+      error: '服务器内部错误\questions:' +error
     }, { status: 500 });
   }
 }

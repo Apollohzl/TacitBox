@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     console.error('获取随机题目失败:', error);
     return NextResponse.json({ 
       success: false, 
-      error: '服务器内部错误' +error
+      error: '服务器内部错误random-question:' +error
     }, { status: 500 });
   }
 }

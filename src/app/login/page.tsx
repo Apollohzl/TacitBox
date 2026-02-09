@@ -8,6 +8,24 @@ const LoginPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkingLogin, setCheckingLogin] = useState(true);
+
+  // 检查用户是否已登录
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
+      const storedSocialUid = localStorage.getItem('social_uid');
+      
+      if (storedIsLoggedIn === 'true' && storedSocialUid) {
+        // 如果用户已登录，重定向到主页
+        router.push('/');
+        return;
+      }
+      setCheckingLogin(false);
+    };
+    
+    checkLoginStatus();
+  }, [router]);
 
   const handleWechatLogin = async () => {
     setLoading(true);
@@ -43,6 +61,16 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+
+  if (checkingLogin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 to-cyan-500 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center">
+          <p className="text-gray-700">检查登录状态中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 to-cyan-500 p-4">

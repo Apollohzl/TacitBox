@@ -117,28 +117,33 @@ export default function QuizPage() {
       correctAnswer
     };
     
-    setSelectedOptions(prev => [...prev, newSelection]);
-    
-    // 等待1秒后执行后续操作
-    setTimeout(() => {
-      // 如果还没到第10题，则切换到下一题
-      if (currentQuestionIndex < 9) {
-        setCurrentQuestionIndex(prev => prev + 1);
-        if (selectedQuestions[currentQuestionIndex + 1]) {
-          setCurrentQuestion(selectedQuestions[currentQuestionIndex + 1]);
+    // 使用函数式更新来确保获取到最新的状态
+    setSelectedOptions(prev => {
+      const updatedOptions = [...prev, newSelection];
+      
+      // 等待1秒后执行后续操作
+      setTimeout(() => {
+        // 如果还没到第10题，则切换到下一题
+        if (currentQuestionIndex < 9) {
+          setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+          if (selectedQuestions[currentQuestionIndex + 1]) {
+            setCurrentQuestion(selectedQuestions[currentQuestionIndex + 1]);
+          }
+          // 重置选中选项状态以便下一题使用
+          setSelectedOption(null);
+        } else {
+          // 选择完10题后，将答案信息存储在全局上下文中
+          const resultsData = {
+            selectedOptions: updatedOptions,
+            questions: selectedQuestions.slice(0, 10)
+          };
+          setQuizResults(resultsData);
+          router.push('/quiz/result');
         }
-        // 重置选中选项状态以便下一题使用
-        setSelectedOption(null);
-      } else {
-        // 选择完10题后，将答案信息存储在全局上下文中
-        const resultsData = {
-          selectedOptions,
-          questions: selectedQuestions.slice(0, 10)
-        };
-        setQuizResults(resultsData);
-        router.push('/quiz/result');
-      }
-    }, 1000);
+      }, 1000);
+      
+      return updatedOptions;
+    });
   };
 
   // 换一题功能

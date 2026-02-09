@@ -8,14 +8,14 @@ export default function QuizPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<any[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [showCategorySelection, setShowCategorySelection] = useState(false);
-  const [categories] = useState([
-    '学校生活', '个人喜好', '游戏世界', '中奖率高', '美食口味', 
-    '择偶标准', '你懂我吗', '性格特征', '心理匹配', '人际交往', 
-    '有趣灵魂', '日常了解', '生活细节', '三观匹配', '情侣测试'
-  ]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [categoryQuestions, setCategoryQuestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 检查用户是否登录
   useEffect(() => {
@@ -33,37 +33,67 @@ export default function QuizPage() {
     checkLoginStatus();
   }, [router]);
 
-  // 初始化题目
+  // 获取题库分类
   useEffect(() => {
-    if (isLoggedIn && !selectedCategory) {
-      // 默认选择第一个分类
-      setSelectedCategory(categories[0]);
-    }
-  }, [isLoggedIn, categories, selectedCategory]);
-
-  // 获取题目（模拟数据）
-  useEffect(() => {
-    if (selectedCategory && isLoggedIn) {
-      // 模拟从数据库获取题目的逻辑
-      const mockQuestions = [
-        { id: 1, text: '你最喜欢的食物是什么？', category: selectedCategory },
-        { id: 2, text: '你理想的周末怎么度过？', category: selectedCategory },
-        { id: 3, text: '你最想去哪里旅行？', category: selectedCategory },
-        { id: 4, text: '你最喜欢的电影类型是什么？', category: selectedCategory },
-        { id: 5, text: '你每天早上第一件事是什么？', category: selectedCategory },
-        { id: 6, text: '你觉得自己最大的优点是什么？', category: selectedCategory },
-        { id: 7, text: '你最不能容忍别人什么行为？', category: selectedCategory },
-        { id: 8, text: '你理想中的另一半是什么样的？', category: selectedCategory },
-        { id: 9, text: '你最害怕的是什么？', category: selectedCategory },
-        { id: 10, text: '你认为幸福的定义是什么？', category: selectedCategory },
-      ];
+    if (isLoggedIn) {
+      const fetchCategories = async () => {
+        try {
+          setLoading(true);
+          const response = await fetch('/api/quiz/categories');
+          const result = await response.json();
+          
+          if (result.success) {
+            setCategories(result.data);
+            if (result.data.length > 0 && !selectedCategory) {
+              // 默认选择第一个分类
+              const firstCategory = result.data[0];
+              setSelectedCategory(firstCategory.name);
+              setSelectedCategoryId(firstCategory.id);
+            }
+          } else {
+            setError('获取题库分类失败');
+          }
+        } catch (err) {
+          console.error('获取题库分类失败:', err);
+          setError('获取题库分类失败');
+        } finally {
+          setLoading(false);
+        }
+      };
       
-      if (selectedQuestions.length === 0) {
-        setSelectedQuestions(mockQuestions);
-        setCurrentQuestion(mockQuestions[0]);
-      }
+      fetchCategories();
     }
-  }, [selectedCategory, isLoggedIn, selectedQuestions.length]);
+  }, [isLoggedIn, selectedCategory]);
+
+  // 获取当前分类的题目
+  useEffect(() => {
+    if (selectedCategoryId && isLoggedIn) {
+      const fetchCategoryQuestions = async () => {
+        try {
+          const response = await fetch(`/api/quiz/questions?categoryId=${selectedCategoryId}&limit=10`);
+          const result = await response.json();
+          
+          if (result.success) {
+            setCategoryQuestions(result.data);
+            // 如果还没有选择题目，则初始化前10个题目
+            if (selectedQuestions.length === 0) {
+              setSelectedQuestions(result.data);
+              if (result.data.length > 0) {
+                setCurrentQuestion(result.data[0]);
+              }
+            }
+          } else {
+            setError('获取题目失败');
+          }
+        } catch (err) {
+          console.error('获取题目失败:', err);
+          setError('获取题目失败');
+        }
+      };
+      
+      fetchCategoryQuestions();
+    }
+  }, [selectedCategoryId, isLoggedIn, selectedQuestions.length]);
 
   // 处理选项选择
   const handleOptionSelect = (option: string) => {
@@ -71,7 +101,9 @@ export default function QuizPage() {
     setTimeout(() => {
       if (currentQuestionIndex < 9) { // 最多10题
         setCurrentQuestionIndex(prev => prev + 1);
-        setCurrentQuestion(selectedQuestions[currentQuestionIndex + 1]);
+        if (selectedQuestions[currentQuestionIndex + 1]) {
+          setCurrentQuestion(selectedQuestions[currentQuestionIndex + 1]);
+        }
       } else {
         // 选择完10题后，跳转到结果页面
         router.push('/quiz/result');
@@ -81,19 +113,25 @@ export default function QuizPage() {
 
   // 换一题功能
   const handleGetNewQuestion = async () => {
-    if (!selectedCategory) return;
+    if (!selectedCategoryId) return;
     
-    // 这里模拟请求同分类下的随机题目
-    const mockNewQuestion = {
-      id: Date.now(), // 使用时间戳作为唯一ID
-      text: `随机新题目 - ${selectedCategory}`,
-      category: selectedCategory
-    };
-    
-    const newQuestions = [...selectedQuestions];
-    newQuestions[currentQuestionIndex] = mockNewQuestion;
-    setSelectedQuestions(newQuestions);
-    setCurrentQuestion(mockNewQuestion);
+    try {
+      const response = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        const newQuestion = result.data;
+        const newQuestions = [...selectedQuestions];
+        newQuestions[currentQuestionIndex] = newQuestion;
+        setSelectedQuestions(newQuestions);
+        setCurrentQuestion(newQuestion);
+      } else {
+        setError('获取新题目失败');
+      }
+    } catch (err) {
+      console.error('获取新题目失败:', err);
+      setError('获取新题目失败');
+    }
   };
 
   // 返回首页
@@ -120,6 +158,30 @@ export default function QuizPage() {
     );
   }
 
+  if (loading && !selectedCategory) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-lg">加载中...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-6 rounded-lg shadow">
+          <p className="text-red-500 text-lg">错误: {error}</p>
+          <button 
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+            onClick={() => window.location.reload()}
+          >
+            重试
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (showCategorySelection) {
     return (
       <div className="min-h-screen bg-gray-100 p-4">
@@ -133,17 +195,32 @@ export default function QuizPage() {
             <div className="w-1/3 bg-white rounded-lg shadow p-4 h-[500px] overflow-y-auto">
               <h2 className="font-bold mb-3">题库分类</h2>
               <div className="space-y-2">
-                {categories.map((category, index) => (
+                {categories.map((category) => (
                   <button
-                    key={index}
+                    key={category.id}
                     className={`w-full py-2 px-4 rounded-lg text-left ${
-                      selectedCategory === category 
+                      selectedCategoryId === category.id 
                         ? 'bg-yellow-400 border-2 border-black' 
                         : 'bg-yellow-200 hover:bg-yellow-300'
                     }`}
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={async () => {
+                      setSelectedCategory(category.name);
+                      setSelectedCategoryId(category.id);
+                      
+                      // 获取新分类的题目
+                      try {
+                        const response = await fetch(`/api/quiz/questions?categoryId=${category.id}&limit=10`);
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                          setCategoryQuestions(result.data);
+                        }
+                      } catch (err) {
+                        console.error('获取分类题目失败:', err);
+                      }
+                    }}
                   >
-                    {category}
+                    {category.name}
                   </button>
                 ))}
               </div>
@@ -153,7 +230,7 @@ export default function QuizPage() {
             <div className="w-2/3 bg-white rounded-lg shadow p-4 h-[500px] overflow-y-auto">
               <h2 className="font-bold mb-3">题目列表 - {selectedCategory}</h2>
               <div className="space-y-3">
-                {selectedQuestions.slice(0, 10).map((question, index) => (
+                {categoryQuestions.map((question) => (
                   <div 
                     key={question.id} 
                     className="bg-pink-100 p-4 rounded-lg cursor-pointer hover:bg-pink-200 transition-colors"
@@ -166,7 +243,7 @@ export default function QuizPage() {
                       setShowCategorySelection(false);
                     }}
                   >
-                    <p className="font-medium">{question.text}</p>
+                    <p className="font-medium">{question.question_text}</p>
                   </div>
                 ))}
               </div>
@@ -194,22 +271,35 @@ export default function QuizPage() {
         <div className="bg-white rounded-lg shadow p-4 mb-4">
           <div className="text-sm text-gray-600 mb-2">题目 {currentQuestionIndex + 1}/10</div>
           <div className="bg-pink-300 rounded-lg p-4 min-h-[60px] flex items-center">
-            <p className="text-lg font-medium">{currentQuestion?.text || '加载中...'}</p>
+            <p className="text-lg font-medium">{currentQuestion?.question_text || '加载中...'}</p>
           </div>
         </div>
 
         {/* 选项区域 */}
         <div className="bg-gradient-to-r from-blue-200 to-purple-200 rounded-lg p-4 mb-4 min-h-[200px]">
           <div className="space-y-3">
-            {['A. 选项1', 'B. 选项2', 'C. 选项3', 'D. 选项4'].map((option, index) => (
-              <button
-                key={index}
-                className="w-full bg-white bg-opacity-80 hover:bg-opacity-100 py-3 px-4 rounded-lg text-left transition-all duration-300"
-                onClick={() => handleOptionSelect(option)}
-              >
-                {option}
-              </button>
-            ))}
+            {currentQuestion?.options ? 
+              (typeof currentQuestion.options === 'string' ? 
+                JSON.parse(currentQuestion.options) : 
+                currentQuestion.options).map((option: string, index: number) => (
+                <button
+                  key={index}
+                  className="w-full bg-white bg-opacity-80 hover:bg-opacity-100 py-3 px-4 rounded-lg text-left transition-all duration-300"
+                  onClick={() => handleOptionSelect(option)}
+                >
+                  {String.fromCharCode(65 + index)}. {option}
+                </button>
+              )) :
+              ['A. 选项1', 'B. 选项2', 'C. 选项3', 'D. 选项4'].map((option, index) => (
+                <button
+                  key={index}
+                  className="w-full bg-white bg-opacity-80 hover:bg-opacity-100 py-3 px-4 rounded-lg text-left transition-all duration-300"
+                  onClick={() => handleOptionSelect(option)}
+                >
+                  {option}
+                </button>
+              ))
+            }
           </div>
         </div>
 

@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     // 但在服务器端记录详细错误
     return NextResponse.json({ 
       success: false, 
-      error: '服务器内部错误' 
+      error: '服务器内部错误'+error 
     }, { status: 500 });
   }
 }

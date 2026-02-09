@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     console.error('获取题库分类失败:', error);
     return NextResponse.json({ 
       success: false, 
-      error: '服务器内部错误' 
+      error: '服务器内部错误，获取题库分类失败:'+error 
     }, { status: 500 });
   }
 }

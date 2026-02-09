@@ -123,7 +123,7 @@ export default function AccountPage() {
                 </h2>
                 <div className="mt-2 flex flex-wrap justify-center gap-2">
                   <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs sm:text-sm">
-                    {userData?.type || 'QQ'} 用户
+                    {userData?.social_type === 'wx' ? '微信' : userData?.social_type === 'qq' ? 'QQ' : '第三方'} 用户
                   </span>
                   <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs sm:text-sm">
                     已验证
@@ -178,7 +178,7 @@ export default function AccountPage() {
             <ul className="space-y-3">
               <li className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-100 gap-1 sm:gap-0">
                 <span className="text-gray-700 text-sm sm:text-base">登录方式</span>
-                <span className="text-gray-900 font-medium text-sm sm:text-base">{userData?.type || 'QQ'}</span>
+                <span className="text-gray-900 font-medium text-sm sm:text-base">{userData?.social_type === 'wx' ? '微信' : userData?.social_type === 'qq' ? 'QQ' : userData?.social_type || '第三方'}</span>
               </li>
               <li className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-100 gap-1 sm:gap-0">
                 <span className="text-gray-700 text-sm sm:text-base">账户状态</span>

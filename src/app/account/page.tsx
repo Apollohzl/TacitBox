@@ -61,12 +61,57 @@ export default function AccountPage() {
     }
   }, [router]);
 
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  
   const handleLogout = () => {
     // 清除登录状态
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('social_uid');
     // 重定向到首页
     router.push('/');
+  };
+
+  const handleAccountDeletion = () => {
+    setShowDeleteConfirmation(true);
+  };
+
+  const confirmAccountDeletion = async () => {
+    if (!userData) return;
+    
+    try {
+      const response = await fetch('/api/user/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          social_uid: userData.social_uid,
+          social_type: userData.social_type
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('账户已成功注销');
+        // 清除本地存储并重定向到首页
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('social_uid');
+        localStorage.removeItem('login_type');
+        router.push('/');
+      } else {
+        alert(`注销失败: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('注销账户时发生错误:', error);
+      alert('注销账户时发生错误，请稍后重试');
+    } finally {
+      setShowDeleteConfirmation(false);
+    }
+  };
+
+  const cancelAccountDeletion = () => {
+    setShowDeleteConfirmation(false);
   };
 
   if (!isLoggedIn) {
@@ -203,6 +248,40 @@ export default function AccountPage() {
             <WeatherDisplay />
           </div>
         </div>
+
+        {/* 注销账户按钮 */}
+        <div className="mt-6 sm:mt-8 text-center">
+          <button 
+            onClick={handleAccountDeletion}
+            className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-colors border-2 border-red-300"
+          >
+            注销账户
+          </button>
+        </div>
+
+        {/* 确认对话框 */}
+        {showDeleteConfirmation && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold text-red-600 mb-4">确认注销账户</h3>
+              <p className="text-gray-700 mb-6">您确定要注销账户吗？此操作将永久删除您的所有数据，且无法恢复。</p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={confirmAccountDeletion}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
+                >
+                  确认注销
+                </button>
+                <button
+                  onClick={cancelAccountDeletion}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition-colors"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 底部导航 */}
         <div className="mt-8 text-center">

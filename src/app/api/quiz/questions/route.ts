@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     // 获取指定分类下的题目
     const [rows] = await connection.execute(
       'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? AND is_active = TRUE ORDER BY id LIMIT ?', 
-      [categoryIdForQuery, limitForQuery]
+      [categoryIdForQuery+ "", limitForQuery+ ""]
     ) as [any[], any];
     
     connection.release();

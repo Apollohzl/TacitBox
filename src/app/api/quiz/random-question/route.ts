@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     // 获取指定分类下的随机题目
     const [rows] = await connection.execute(
       'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? AND is_active = TRUE ORDER BY RAND() LIMIT 1', 
-      [categoryIdForQuery]
+      [categoryIdForQuery+ ""]
     ) as [any[], any];
     
     connection.release();

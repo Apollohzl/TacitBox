@@ -11,8 +11,8 @@ export default function QuizPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-  const [selectedQuestions, setSelectedQuestions] = useState<any[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
+  const [questionsHistory, setQuestionsHistory] = useState<any[]>([]); // 记录已经获取过的题目，避免重复
   const [showCategorySelection, setShowCategorySelection] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [categoryQuestions, setCategoryQuestions] = useState<any[]>([]);
@@ -69,23 +69,17 @@ export default function QuizPage() {
     }
   }, [isLoggedIn, selectedCategory]);
 
-  // 获取当前分类的题目
+  // 初始化第一个随机题目
   useEffect(() => {
-    if (selectedCategoryId && isLoggedIn) {
-      const fetchCategoryQuestions = async () => {
+    if (selectedCategoryId && isLoggedIn && !currentQuestion) {
+      const fetchRandomQuestion = async () => {
         try {
-          const response = await fetch(`/api/quiz/questions?categoryId=${selectedCategoryId}&limit=10`);
+          const response = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
           const result = await response.json();
           
           if (result.success) {
-            setCategoryQuestions(result.data);
-            // 如果还没有选择题目，则初始化前10个题目
-            if (selectedQuestions.length === 0) {
-              setSelectedQuestions(result.data);
-              if (result.data.length > 0) {
-                setCurrentQuestion(result.data[0]);
-              }
-            }
+            setCurrentQuestion(result.data);
+            setQuestionsHistory([result.data]); // 初始化历史记录
           } else {
             setError('获取题目失败');
           }
@@ -95,9 +89,9 @@ export default function QuizPage() {
         }
       };
       
-      fetchCategoryQuestions();
+      fetchRandomQuestion();
     }
-  }, [selectedCategoryId, isLoggedIn, selectedQuestions.length]);
+  }, [selectedCategoryId, isLoggedIn, currentQuestion]);
 
   // 处理选项选择
   const handleOptionSelect = (option: string) => {
@@ -110,17 +104,10 @@ export default function QuizPage() {
     setSelectedOption(option);
     
     // 将当前选择保存到数组中
-    const currentQ = selectedQuestions[currentQuestionIndex];
+    const currentQ = currentQuestion; // 使用当前题目而不是索引
     const correctAnswer = currentQ?.correct_answer || '';
     const questionText = currentQ?.question_text || '';
     const questionId = currentQ?.id || 0;
-    
-    const newSelection = {
-      questionId,
-      option,
-      questionText,
-      correctAnswer
-    };
     
     // 使用函数式更新来确保获取到最新的状态
     setSelectedOptions(prev => {
@@ -131,21 +118,66 @@ export default function QuizPage() {
         return prev; // 如果已回答过此题，则直接返回当前状态
       }
       
+      const newSelection = {
+        questionId,
+        option,
+        questionText,
+        correctAnswer
+      };
+      
       const updatedOptions = [...prev, newSelection];
       
       // 等待1秒后执行后续操作
-      setTimeout(() => {
-        // 如果还没到第10题，则切换到下一题
-        if (currentQuestionIndex < 9) {
-          setCurrentQuestionIndex(prevIndex => prevIndex + 1);
-          if (selectedQuestions[currentQuestionIndex + 1]) {
-            setCurrentQuestion(selectedQuestions[currentQuestionIndex + 1]);
+      setTimeout(async () => {
+        // 如果还没到第10题，则获取下一题随机题目
+        if (updatedOptions.length < 10) {
+          try {
+            // 确保selectedCategoryId存在
+            if (selectedCategoryId) {
+              const response = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
+              const result = await response.json();
+              
+              if (result.success) {
+                // 检查是否已经出现过这个题目
+                const isRepeated = questionsHistory.some(q => q.id === result.data.id);
+                
+                if (!isRepeated) {
+                  setCurrentQuestion(result.data);
+                  setQuestionsHistory(prev => [...prev, result.data]);
+                } else {
+                  // 如果题目重复，再获取一次
+                  const retryResponse = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
+                  const retryResult = await retryResponse.json();
+                  
+                  if (retryResult.success) {
+                    setCurrentQuestion(retryResult.data);
+                    setQuestionsHistory(prev => [...prev, retryResult.data]);
+                  } else {
+                    // 如果再次失败，使用当前题目
+                    setCurrentQuestion(result.data);
+                    setQuestionsHistory(prev => [...prev, result.data]);
+                  }
+                }
+              } else {
+                setError('获取题目失败');
+              }
+            }
+            
+            // 重置选中选项状态以便下一题使用
+            setSelectedOption(null);
+          } catch (err) {
+            console.error('获取新题目失败:', err);
+            setError('获取新题目失败');
           }
-          // 重置选中选项状态以便下一题使用
-          setSelectedOption(null);
         } else {
-                // 选择完10题后，跳转到创建奖励题目页面
-                router.push('/quiz/create');        }
+          // 选择完10题后，将答案信息存储在全局上下文中并跳转到创建页面
+          const resultsData = {
+            selectedOptions: updatedOptions,
+            questions: questionsHistory // 使用历史记录的题目
+          };
+          setQuizResults(resultsData);
+          router.push('/quiz/create');
+        }
       }, 1000);
       
       return updatedOptions;
@@ -162,10 +194,15 @@ export default function QuizPage() {
       
       if (result.success) {
         const newQuestion = result.data;
-        const newQuestions = [...selectedQuestions];
-        newQuestions[currentQuestionIndex] = newQuestion;
-        setSelectedQuestions(newQuestions);
         setCurrentQuestion(newQuestion);
+        // 更新历史记录，如果当前题目不在历史中
+        setQuestionsHistory(prev => {
+          const exists = prev.some(q => q.id === newQuestion.id);
+          if (!exists) {
+            return [...prev, newQuestion];
+          }
+          return prev;
+        });
       } else {
         console.error('获取新题目失败:', result.error);
         // 使用模拟数据
@@ -177,10 +214,14 @@ export default function QuizPage() {
           is_active: true,
           created_at: new Date().toISOString()
         };
-        const newQuestions = [...selectedQuestions];
-        newQuestions[currentQuestionIndex] = mockNewQuestion;
-        setSelectedQuestions(newQuestions);
         setCurrentQuestion(mockNewQuestion);
+        setQuestionsHistory(prev => {
+          const exists = prev.some(q => q.id === mockNewQuestion.id);
+          if (!exists) {
+            return [...prev, mockNewQuestion];
+          }
+          return prev;
+        });
       }
     } catch (err) {
       console.error('获取新题目失败:', err);
@@ -193,10 +234,14 @@ export default function QuizPage() {
         is_active: true,
         created_at: new Date().toISOString()
       };
-      const newQuestions = [...selectedQuestions];
-      newQuestions[currentQuestionIndex] = mockNewQuestion;
-      setSelectedQuestions(newQuestions);
       setCurrentQuestion(mockNewQuestion);
+      setQuestionsHistory(prev => {
+        const exists = prev.some(q => q.id === mockNewQuestion.id);
+        if (!exists) {
+          return [...prev, mockNewQuestion];
+        }
+        return prev;
+      });
     }
   };
 
@@ -297,21 +342,25 @@ export default function QuizPage() {
               <h2 className="font-bold mb-3">题目列表 - {selectedCategory}</h2>
               <div className="space-y-3">
                 {categoryQuestions.map((question) => (
-                  <div 
-                    key={question.id} 
-                    className="bg-pink-100 p-4 rounded-lg cursor-pointer hover:bg-pink-200 transition-colors"
-                    onClick={() => {
-                      // 用选中的题目替换当前题目
-                      const newQuestions = [...selectedQuestions];
-                      newQuestions[currentQuestionIndex] = question;
-                      setSelectedQuestions(newQuestions);
-                      setCurrentQuestion(question);
-                      setShowCategorySelection(false);
-                    }}
-                  >
-                    <p className="font-medium">{question.question_text}</p>
-                  </div>
-                ))}
+                                <div 
+                                  key={question.id} 
+                                  className="bg-pink-100 p-4 rounded-lg cursor-pointer hover:bg-pink-200 transition-colors"
+                                  onClick={() => {
+                                    // 设置当前题目
+                                    setCurrentQuestion(question);
+                                    // 更新历史记录，如果当前题目不在历史中
+                                    setQuestionsHistory(prev => {
+                                      const exists = prev.some(q => q.id === question.id);
+                                      if (!exists) {
+                                        return [...prev, question];
+                                      }
+                                      return prev;
+                                    });
+                                    setShowCategorySelection(false);
+                                  }}
+                                >
+                                  <p className="font-medium">{question.question_text}</p>
+                                </div>                ))}
               </div>
             </div>
           </div>
@@ -335,7 +384,7 @@ export default function QuizPage() {
       <div className="max-w-2xl mx-auto">
         {/* 题目展示框 */}
         <div className="bg-white rounded-lg shadow p-4 mb-4">
-          <div className="text-sm text-gray-600 mb-2">题目 {currentQuestionIndex + 1}/10</div>
+          <div className="text-sm text-gray-600 mb-2">题目 {selectedOptions.length + 1}/10</div>
           <div className="bg-pink-300 rounded-lg p-4 min-h-[60px] flex items-center">
             <p className="text-lg font-medium">{currentQuestion?.question_text || '加载中...'}</p>
           </div>

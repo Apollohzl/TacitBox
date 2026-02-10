@@ -270,13 +270,7 @@ export default function CreateQuizPage() {
         </div>
         
         {/* 底部导航 */}
-        <div className="flex justify-between">
-          <button
-            className="bg-gray-200 hover:bg-gray-300 py-3 px-6 rounded-lg"
-            onClick={() => router.push('/quiz')}
-          >
-            返回答题
-          </button>
+        <div className="flex justify-center">
           <button
             className="bg-gray-200 hover:bg-gray-300 py-3 px-6 rounded-lg"
             onClick={() => router.push('/')}

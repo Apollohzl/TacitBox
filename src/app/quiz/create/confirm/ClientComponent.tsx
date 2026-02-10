@@ -177,7 +177,7 @@ export default function ConfirmQuizClient() {
           {/* 出题人信息 */}
           <div className="flex items-center justify-center mb-8 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
             <div className="flex items-center">
-              <Image 
+              <img 
                 src={quizData.user.avatar_url || '/images/logo-192x192.png'} 
                 alt="出题人头像" 
                 width={60} 

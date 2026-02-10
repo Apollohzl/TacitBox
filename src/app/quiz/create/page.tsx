@@ -121,7 +121,7 @@ export default function CreateQuizPage() {
           {/* 用户信息展示 */}
           <div className="flex items-center justify-center mb-8">
             <div className="relative">
-              <Image 
+              <img 
                 src={userData.avatar_url || '/images/logo-192x192.png'} 
                 alt="用户头像" 
                 width={80} 

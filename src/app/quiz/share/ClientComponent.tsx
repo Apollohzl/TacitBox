@@ -105,7 +105,7 @@ export default function QuizShareClient() {
           {userData && (
             <div className="flex items-center justify-center mb-8 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
               <div className="flex items-center">
-                <Image 
+                <img 
                   src={userData.avatar_url || '/images/logo-192x192.png'} 
                   alt="用户头像" 
                   width={60} 

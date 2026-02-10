@@ -259,7 +259,7 @@ const HomePage = () => {
                 }}
                 onClick={() => window.location.href = '/quiz/create'}
               >
-                【奖励出题】
+                【发出的奖励】
               </button>
               <button 
                 className="text-lg font-bold rounded-lg py-2"
@@ -337,7 +337,7 @@ const HomePage = () => {
               }}
               onClick={() => window.location.href = '/quiz/create'}
             >
-              【奖励出题】
+              【发出的奖励】
             </button>
             <button 
               className="w-full text-lg font-bold rounded-lg mb-3 py-3"

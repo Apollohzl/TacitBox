@@ -85,8 +85,13 @@ export default function QuizShareClient() {
   };
 
   const handlePublishQuiz = () => {
-    // 跳转到发布成功页面
-    router.push('/quiz/result/publish-success');
+    // 跳转到发布成功页面（如果用户已登录）
+    if (isLoggedIn) {
+      router.push(`/push-success?k=${shareId}`);
+    } else {
+      // 如果用户未登录，跳转到首页
+      router.push('/');
+    }
   };
 
   if (!shareId) {

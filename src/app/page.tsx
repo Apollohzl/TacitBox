@@ -257,8 +257,9 @@ const HomePage = () => {
                   borderStyle: 'solid',
                   borderColor: '#3AA89F' // 深青色边框
                 }}
+                onClick={() => window.location.href = '/quiz/create'}
               >
-                【出题记录】
+                【奖励出题】
               </button>
               <button 
                 className="text-lg font-bold rounded-lg py-2"
@@ -272,7 +273,7 @@ const HomePage = () => {
                   borderColor: '#E55555' // 深红色边框
                 }}
               >
-                【答题记录】
+                【出题记录】
               </button>
               <button 
                 className="text-lg font-bold rounded-lg py-2"
@@ -286,7 +287,7 @@ const HomePage = () => {
                   borderColor: '#DCC55D' // 深黄色边框
                 }}
               >
-                【获得的奖励】
+                【答题记录】
               </button>
               <button 
                 className="text-lg font-bold rounded-lg py-2"
@@ -298,6 +299,20 @@ const HomePage = () => {
                   borderWidth: '5px',
                   borderStyle: 'solid',
                   borderColor: '#52045B' // 深紫色边框
+                }}
+              >
+                【获得的奖励】
+              </button>
+              <button 
+                className="text-lg font-bold rounded-lg py-2"
+                style={{ 
+                  backgroundColor: '#9B5DE5', // 紫粉色
+                  color: 'white',
+                  width: '170px',
+                  height: '60px',
+                  borderWidth: '5px',
+                  borderStyle: 'solid',
+                  borderColor: '#7B3DB4' // 深紫粉色边框
                 }}
               >
                 【发出的奖励】
@@ -334,8 +349,9 @@ const HomePage = () => {
                 borderStyle: 'solid',
                 borderColor: '#3AA89F' // 深青色边框
               }}
+              onClick={() => window.location.href = '/quiz/create'}
             >
-              【出题记录】
+              【奖励出题】
             </button>
             <button 
               className="w-full text-lg font-bold rounded-lg mb-3 py-3"
@@ -347,7 +363,7 @@ const HomePage = () => {
                 borderColor: '#E55555' // 深红色边框
               }}
             >
-              【答题记录】
+              【出题记录】
             </button>
             <button 
               className="w-full text-lg font-bold rounded-lg mb-3 py-3"
@@ -359,7 +375,7 @@ const HomePage = () => {
                 borderColor: '#DCC55D' // 深黄色边框
               }}
             >
-              【获得的奖励】
+              【答题记录】
             </button>
             <button 
               className="w-full text-lg font-bold rounded-lg py-3"
@@ -371,7 +387,7 @@ const HomePage = () => {
                 borderColor: '#52045B' // 深紫色边框
               }}
             >
-              【发出的奖励】
+              【获得的奖励】
             </button>
           </div>
         )}

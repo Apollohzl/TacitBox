@@ -18,10 +18,7 @@ export default function QuizShareClient() {
   useEffect(() => {
     const kValue = searchParams.get('k');
     
-    // 检查用户是否登录且是否有k参数
-    const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
-    const storedSocialUid = localStorage.getItem('social_uid');
-    
+    // 检查是否有k参数
     if (!kValue) {
       // 如果没有k参数，跳转到主页
       router.push('/');
@@ -29,6 +26,10 @@ export default function QuizShareClient() {
     }
     
     setShareId(kValue); // 设置分享ID
+    
+    // 检查用户是否登录
+    const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
+    const storedSocialUid = localStorage.getItem('social_uid');
     
     if (storedIsLoggedIn === 'true' && storedSocialUid) {
       setIsLoggedIn(true);
@@ -52,29 +53,28 @@ export default function QuizShareClient() {
         }
       };
       
-      // 获取活动信息
-      const fetchActivityInfo = async () => {
-        try {
-          const response = await fetch(`/api/quiz/activity-info?id=${kValue}`);
-          const data = await response.json();
-          
-          if (data.success) {
-            setActivityInfo(data.activity);
-          } else {
-            console.error('获取活动信息失败:', data.error);
-          }
-        } catch (error) {
-          console.error('获取活动信息失败:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      
       fetchUserInfo();
-      fetchActivityInfo();
-    } else {
-      router.push('/');
     }
+    
+    // 获取活动信息（无论用户是否登录）
+    const fetchActivityInfo = async () => {
+      try {
+        const response = await fetch(`/api/quiz/activity-info?id=${kValue}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setActivityInfo(data.activity);
+        } else {
+          console.error('获取活动信息失败:', data.error);
+        }
+      } catch (error) {
+        console.error('获取活动信息失败:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchActivityInfo();
   }, [router, searchParams]);
 
   // 检查是否有测验结果，如果没有则不跳转（允许访问分享页面）
@@ -89,7 +89,7 @@ export default function QuizShareClient() {
     router.push('/quiz/result/publish-success');
   };
 
-  if (!isLoggedIn || !shareId) {
+  if (!shareId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-teal-100">
         <p className="text-lg">正在检查访问权限...</p>

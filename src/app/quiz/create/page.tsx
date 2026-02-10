@@ -15,11 +15,11 @@ export default function CreateQuizPage() {
   
   // 模拟奖励券列表
   const rewardOptions = [
-    { id: 'coupon_1', name: '咖啡券', description: '一杯香浓咖啡' },
-    { id: 'coupon_2', name: '电影票', description: '观看最新大片' },
-    { id: 'coupon_3', name: '餐厅券', description: '美食大餐' },
-    { id: 'coupon_4', name: '购物券', description: '购物优惠' },
-    { id: 'coupon_5', name: '游戏币', description: '游戏道具' },
+    { id: 'coupon_1', name: '咖啡券', description: '凭咖啡券找我领取午后咖啡' },
+    { id: 'coupon_2', name: '电影票', description: '凭此电影票找我一起看电影' },
+    { id: 'coupon_3', name: '分享秘密券', description: '凭此券找我分享一个秘密给你' },
+    { id: 'coupon_4', name: '提问券', description: '凭次券可向我提问一个问题' },
+    { id: 'coupon_5', name: '红包券', description: '凭此券可向我索要一个随机红包' },
   ];
 
   useEffect(() => {
@@ -79,20 +79,84 @@ export default function CreateQuizPage() {
     }
     
     try {
-      // 调用API生成加密ID
-      const response = await fetch(`/api/user/generate-encrypted-id?social_uid=${userData.social_uid}`);
+      // 调用API发布活动
+      const response = await fetch('/api/quiz/publish-activity', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          creator_user_id: userData.social_uid,
+          questions: [ // 使用模拟数据，实际项目中应使用真实题目数据
+            {
+              question_text: "你最喜欢的颜色是什么？",
+              options: ["红色", "蓝色", "绿色", "黄色"],
+              correct_answer: "蓝色"
+            },
+            {
+              question_text: "你最喜欢的食物是什么？",
+              options: ["披萨", "寿司", "面条", "汉堡"],
+              correct_answer: "面条"
+            },
+            {
+              question_text: "你最喜欢的季节是？",
+              options: ["春季", "夏季", "秋季", "冬季"],
+              correct_answer: "秋季"
+            },
+            {
+              question_text: "你最想去的地方是？",
+              options: ["海滩", "山区", "城市", "乡村"],
+              correct_answer: "山区"
+            },
+            {
+              question_text: "你最喜欢的休闲活动是？",
+              options: ["读书", "运动", "看电影", "游戏"],
+              correct_answer: "读书"
+            },
+            {
+              question_text: "你最擅长的技能是？",
+              options: ["编程", "绘画", "音乐", "写作"],
+              correct_answer: "编程"
+            },
+            {
+              question_text: "你最重视的品质是？",
+              options: ["诚实", "善良", "智慧", "勇敢"],
+              correct_answer: "善良"
+            },
+            {
+              question_text: "你的性格偏向是？",
+              options: ["外向", "内向", "中间", "情境性"],
+              correct_answer: "中间"
+            },
+            {
+              question_text: "你最看重友谊中的什么？",
+              options: ["信任", "理解", "支持", "陪伴"],
+              correct_answer: "理解"
+            },
+            {
+              question_text: "你的人生格言是？",
+              options: ["努力", "坚持", "善良", "成长"],
+              correct_answer: "成长"
+            }
+          ],
+          reward_id: parseInt(selectedReward.split('_')[1]), // 从选择的奖励ID中提取数字部分
+          min_correct: minCorrect,
+          max_reward_count: rewardCount
+        }),
+      });
+      
       const result = await response.json();
       
       if (result.success) {
-        // 跳转到分享页面，传递ID参数
-        router.push(`/quiz/share?k=${result.encryptedId}`);
+        // 跳转到push-success页面，传递生成的活动ID
+        router.push(`/push-success?k=${result.activityId}`);
       } else {
-        alert('生成分享ID失败');
-        console.error('生成加密ID失败:', result.error);
+        alert('发布题目失败: ' + result.error);
+        console.error('发布题目失败:', result.error);
       }
     } catch (error) {
-      alert('生成分享ID失败');
-      console.error('调用API生成加密ID失败:', error);
+      alert('发布题目失败');
+      console.error('调用API发布题目失败:', error);
     }
   };
 

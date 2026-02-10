@@ -1,87 +1,67 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuiz } from '../../../context/QuizContext';
 import Image from 'next/image';
 
-export default function QuizResultPage() {
+export default function QuizSharePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { quizResults } = useQuiz();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<any>(null);
-  const [encryptedLink, setEncryptedLink] = useState<string | null>(null);
+  const [shareId, setShareId] = useState<string | null>(null);
 
-  // 检查用户是否登录
+  // 获取URL参数中的k值
   useEffect(() => {
-    const checkLoginStatus = () => {
-      const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
-      const storedSocialUid = localStorage.getItem('social_uid');
-      
-      if (storedIsLoggedIn === 'true' && storedSocialUid) {
-        setIsLoggedIn(true);
-        
-        // 获取用户数据
-        const fetchUserInfo = async () => {
-          try {
-            const loginType = localStorage.getItem('login_type') || 'wx';
-            const response = await fetch(`/api/user/detail?social_uid=${storedSocialUid}&social_type=${loginType}`);
-            const localData = await response.json();
-            
-            if (localData.success) {
-              setUserData({
-                nickname: localData.data.nickname,
-                avatar_url: localData.data.avatar_url,
-                social_uid: storedSocialUid
-              });
-              
-              // 调用API生成加密链接
-              try {
-                const response = await fetch(`/api/user/generate-encrypted-id?social_uid=${storedSocialUid}`);
-                const result = await response.json();
-                
-                if (result.success) {
-                  setEncryptedLink(result.encryptedId);
-                } else {
-                  console.error('生成加密ID失败:', result.error);
-                  // 如果API失败，使用客户端生成的备用方案
-                  const timestamp = Date.now();
-                  const username = localData.data.nickname || 'user';
-                  const unicodeStr = `${timestamp}${username}`;
-                  const encodedStr = encodeURIComponent(unicodeStr);
-                  const encryptedValue = btoa(encodedStr).substring(0, 16);
-                  setEncryptedLink(encryptedValue);
-                }
-              } catch (error) {
-                console.error('调用API生成加密ID失败:', error);
-                // 使用客户端生成的备用方案
-                const timestamp = Date.now();
-                const username = localData.data.nickname || 'user';
-                const unicodeStr = `${timestamp}${username}`;
-                const encodedStr = encodeURIComponent(unicodeStr);
-                const encryptedValue = btoa(encodedStr).substring(0, 16);
-                setEncryptedLink(encryptedValue);
-              }
-            }
-          } catch (error) {
-            console.error('获取用户信息失败:', error);
-          }
-        };
-        
-        fetchUserInfo();
-      } else {
-        router.push('/');
-      }
-    };
+    const kValue = searchParams.get('k');
     
-    checkLoginStatus();
-  }, [router]);
+    // 检查用户是否登录且是否有k参数
+    const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
+    const storedSocialUid = localStorage.getItem('social_uid');
+    
+    if (!kValue) {
+      // 如果没有k参数，跳转到主页
+      router.push('/');
+      return;
+    }
+    
+    setShareId(kValue); // 设置分享ID
+    
+    if (storedIsLoggedIn === 'true' && storedSocialUid) {
+      setIsLoggedIn(true);
+      
+      // 获取用户数据
+      const fetchUserInfo = async () => {
+        try {
+          const loginType = localStorage.getItem('login_type') || 'wx';
+          const response = await fetch(`/api/user/detail?social_uid=${storedSocialUid}&social_type=${loginType}`);
+          const localData = await response.json();
+          
+          if (localData.success) {
+            setUserData({
+              nickname: localData.data.nickname,
+              avatar_url: localData.data.avatar_url,
+              social_uid: storedSocialUid
+            });
+          }
+        } catch (error) {
+          console.error('获取用户信息失败:', error);
+        }
+      };
+      
+      fetchUserInfo();
+    } else {
+      router.push('/');
+    }
+  }, [router, searchParams]);
 
   // 检查是否有测验结果，如果没有则跳转回主页
   useEffect(() => {
     if (isLoggedIn && !quizResults) {
       // 如果没有找到结果数据，跳转回主页
-      router.push('/quiz');
+      router.push('/');
     }
   }, [isLoggedIn, quizResults, router]);
 
@@ -94,10 +74,10 @@ export default function QuizResultPage() {
     router.push('/quiz/result/publish-success');
   };
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn || !shareId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-teal-100">
-        <p className="text-lg">正在检查登录状态...</p>
+        <p className="text-lg">正在检查访问权限...</p>
       </div>
     );
   }
@@ -107,8 +87,8 @@ export default function QuizResultPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-100 to-teal-100 p-4">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-lg shadow p-6">
-            <h1 className="text-2xl font-bold mb-4">测试结果</h1>
-            <p className="text-lg mb-6">正在加载测试结果...</p>
+            <h1 className="text-2xl font-bold mb-4">分享结果</h1>
+            <p className="text-lg mb-6">正在加载分享结果...</p>
           </div>
         </div>
       </div>
@@ -119,7 +99,7 @@ export default function QuizResultPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-teal-100 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-6">
-          <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">测试结果</h1>
+          <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">分享结果</h1>
           
           {/* 用户信息显示 */}
           {userData && (
@@ -140,12 +120,12 @@ export default function QuizResultPage() {
             </div>
           )}
           
-          {/* 加密链接显示 */}
-          {encryptedLink && (
+          {/* 分享ID显示 */}
+          {shareId && (
             <div className="bg-gray-50 p-4 rounded-xl mb-8">
-              <h3 className="font-bold text-gray-700 mb-2">专属题目ID:</h3>
-              <p className="text-sm font-mono bg-white p-3 rounded border break-all">{encryptedLink}</p>
-              <p className="text-xs text-gray-500 mt-2">这是您创建的题目的专属ID，可用于分享给好友</p>
+              <h3 className="font-bold text-gray-700 mb-2">分享链接ID:</h3>
+              <p className="text-sm font-mono bg-white p-3 rounded border break-all">{shareId}</p>
+              <p className="text-xs text-gray-500 mt-2">这是您分享题目的专属ID</p>
             </div>
           )}
           

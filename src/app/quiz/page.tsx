@@ -144,14 +144,8 @@ export default function QuizPage() {
           // 重置选中选项状态以便下一题使用
           setSelectedOption(null);
         } else {
-          // 选择完10题后，将答案信息存储在全局上下文中
-          const resultsData = {
-            selectedOptions: updatedOptions,
-            questions: selectedQuestions.slice(0, 10)
-          };
-          setQuizResults(resultsData);
-          router.push('/quiz/result');
-        }
+                // 选择完10题后，跳转到创建奖励题目页面
+                router.push('/quiz/create');        }
       }, 1000);
       
       return updatedOptions;

@@ -34,15 +34,111 @@ export default function ConfirmQuizClient() {
     if (storedIsLoggedIn === 'true' && storedSocialUid) {
       setIsLoggedIn(true);
       
-      // 从URL参数获取数据
-      const reward = searchParams.get('reward');
-      const minCorrect = searchParams.get('minCorrect');
-      const rewardCount = searchParams.get('rewardCount');
-      const userDataString = searchParams.get('user');
-      
-      if (userDataString) {
+      // 获取用户数据
+      const fetchUserInfo = async () => {
         try {
-          const userData = JSON.parse(decodeURIComponent(userDataString));
+          const loginType = localStorage.getItem('login_type') || 'wx';
+          const response = await fetch(`/api/user/detail?social_uid=${storedSocialUid}&social_type=${loginType}`);
+          const localData = await response.json();
+          
+          if (localData.success) {
+            const userData = {
+              nickname: localData.data.nickname,
+              avatar_url: localData.data.avatar_url,
+              social_uid: storedSocialUid
+            };
+            
+            // 调用API生成加密ID
+            const idResponse = await fetch(`/api/user/generate-encrypted-id?social_uid=${storedSocialUid}`);
+            const idResult = await idResponse.json();
+            
+            if (idResult.success) {
+              // 模拟题目数据
+              const mockQuestions = [
+                {
+                  id: 1,
+                  question_text: "你最喜欢的颜色是什么？",
+                  options: ["红色", "蓝色", "绿色", "黄色"],
+                  correct_answer: "蓝色"
+                },
+                {
+                  id: 2,
+                  question_text: "你最喜欢的食物是什么？",
+                  options: ["披萨", "寿司", "面条", "汉堡"],
+                  correct_answer: "面条"
+                },
+                {
+                  id: 3,
+                  question_text: "你最喜欢的季节是？",
+                  options: ["春季", "夏季", "秋季", "冬季"],
+                  correct_answer: "秋季"
+                },
+                {
+                  id: 4,
+                  question_text: "你最想去的地方是？",
+                  options: ["海滩", "山区", "城市", "乡村"],
+                  correct_answer: "山区"
+                },
+                {
+                  id: 5,
+                  question_text: "你最喜欢的休闲活动是？",
+                  options: ["读书", "运动", "看电影", "游戏"],
+                  correct_answer: "读书"
+                },
+                {
+                  id: 6,
+                  question_text: "你最擅长的技能是？",
+                  options: ["编程", "绘画", "音乐", "写作"],
+                  correct_answer: "编程"
+                },
+                {
+                  id: 7,
+                  question_text: "你最重视的品质是？",
+                  options: ["诚实", "善良", "智慧", "勇敢"],
+                  correct_answer: "善良"
+                },
+                {
+                  id: 8,
+                  question_text: "你的性格偏向是？",
+                  options: ["外向", "内向", "中间", "情境性"],
+                  correct_answer: "中间"
+                },
+                {
+                  id: 9,
+                  question_text: "你最看重友谊中的什么？",
+                  options: ["信任", "理解", "支持", "陪伴"],
+                  correct_answer: "理解"
+                },
+                {
+                  id: 10,
+                  question_text: "你的人生格言是？",
+                  options: ["努力", "坚持", "善良", "成长"],
+                  correct_answer: "成长"
+                }
+              ];
+              
+              setQuizData({
+                questions: mockQuestions,
+                user: userData,
+                selectedReward: 'coupon_1', // 默认奖励
+                minCorrect: 8, // 默认最少正确数
+                rewardCount: 1, // 默认奖励数量
+                encryptedLink: idResult.encryptedId
+              });
+            } else {
+              console.error('生成加密ID失败:', idResult.error);
+            }
+          }
+        } catch (error) {
+          console.error('获取用户数据失败:', error);
+        }
+      };
+      
+      fetchUserInfo();
+    } else {
+      router.push('/');
+    }
+  }, [router]);
           
           // 模拟题目数据（实际项目中应该从数据库获取）
           const mockQuestions = [

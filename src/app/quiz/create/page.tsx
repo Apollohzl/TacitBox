@@ -72,14 +72,28 @@ export default function CreateQuizPage() {
     }
   }, [router]);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!selectedReward) {
       alert('请选择奖励');
       return;
     }
     
-    // 跳转到出题确认页面，传递参数
-    router.push(`/quiz/create/confirm?reward=${selectedReward}&minCorrect=${minCorrect}&rewardCount=${rewardCount}&user=${encodeURIComponent(JSON.stringify(userData))}`);
+    try {
+      // 调用API生成加密ID
+      const response = await fetch(`/api/user/generate-encrypted-id?social_uid=${userData.social_uid}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        // 跳转到分享页面，传递ID参数
+        router.push(`/quiz/share?k=${result.encryptedId}`);
+      } else {
+        alert('生成分享ID失败');
+        console.error('生成加密ID失败:', result.error);
+      }
+    } catch (error) {
+      alert('生成分享ID失败');
+      console.error('调用API生成加密ID失败:', error);
+    }
   };
 
   if (!isLoggedIn) {

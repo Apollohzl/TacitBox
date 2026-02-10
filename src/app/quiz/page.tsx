@@ -394,13 +394,6 @@ export default function QuizPage() {
           </button>
           
           <button
-            className="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-medium"
-            onClick={() => router.push('/quiz/create')}
-          >
-            创建奖励题目
-          </button>
-          
-          <button
             className="bg-gray-200 hover:bg-gray-300 py-2 px-4 rounded-lg flex items-center"
             onClick={handleGetNewQuestion}
           >

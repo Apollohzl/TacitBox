@@ -35,24 +35,33 @@ export default function QuizResultPage() {
                 social_uid: storedSocialUid
               });
               
-              // 生成加密链接
-              const timestamp = Date.now();
-              const username = localData.data.nickname || 'user';
-              const unicodeStr = `${timestamp}${username}`;
-              const encodedStr = encodeURIComponent(unicodeStr);
-              
-              // 模拟加密过程（实际项目中应该使用环境变量中的Go_To_Key）
-              let encryptedValue = '';
+              // 调用API生成加密链接
               try {
-                // 这里使用一个简单的模拟加密，实际项目中应使用环境变量中的Go_To_Key
-                const go_to_key = process.env.GO_TO_KEY || 'default_key'; // 实际项目中将从环境变量获取
-                encryptedValue = btoa(encodedStr + go_to_key).substring(0, 16); // 简单模拟
-              } catch (e) {
-                // 如果环境变量不可用，使用默认加密
-                encryptedValue = btoa(encodedStr).substring(0, 16);
+                const response = await fetch(`/api/user/generate-encrypted-id?social_uid=${storedSocialUid}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                  setEncryptedLink(result.encryptedId);
+                } else {
+                  console.error('生成加密ID失败:', result.error);
+                  // 如果API失败，使用客户端生成的备用方案
+                  const timestamp = Date.now();
+                  const username = localData.data.nickname || 'user';
+                  const unicodeStr = `${timestamp}${username}`;
+                  const encodedStr = encodeURIComponent(unicodeStr);
+                  const encryptedValue = btoa(encodedStr).substring(0, 16);
+                  setEncryptedLink(encryptedValue);
+                }
+              } catch (error) {
+                console.error('调用API生成加密ID失败:', error);
+                // 使用客户端生成的备用方案
+                const timestamp = Date.now();
+                const username = localData.data.nickname || 'user';
+                const unicodeStr = `${timestamp}${username}`;
+                const encodedStr = encodeURIComponent(unicodeStr);
+                const encryptedValue = btoa(encodedStr).substring(0, 16);
+                setEncryptedLink(encryptedValue);
               }
-              
-              setEncryptedLink(encryptedValue);
             }
           } catch (error) {
             console.error('获取用户信息失败:', error);

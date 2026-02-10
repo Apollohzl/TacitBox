@@ -11,6 +11,22 @@ export default function ConfirmQuizClient() {
   const [quizData, setQuizData] = useState<any>(null);
   
   useEffect(() => {
+    // 检查来源页面
+    // 从document.referrer获取来源，但要注意这可能不可靠
+    const referrer = document.referrer;
+    
+    // 检查是否从有效的页面跳转过来
+    const isValidSource = referrer && (
+      referrer.includes(window.location.host) && // 确保是同一域名
+      (referrer.includes('/quiz') || referrer.includes('/quiz/create')) // 从quiz页面或自身页面跳转
+    );
+    
+    // 如果需要更严格限制，可以取消注释下面的代码
+    // if (!isValidSource) {
+    //   router.push('/quiz'); // 重定向到quiz页面
+    //   return;
+    // }
+    
     // 检查登录状态
     const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
     const storedSocialUid = localStorage.getItem('social_uid');

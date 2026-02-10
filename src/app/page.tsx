@@ -303,20 +303,6 @@ const HomePage = () => {
               >
                 【获得的奖励】
               </button>
-              <button 
-                className="text-lg font-bold rounded-lg py-2"
-                style={{ 
-                  backgroundColor: '#9B5DE5', // 紫粉色
-                  color: 'white',
-                  width: '170px',
-                  height: '60px',
-                  borderWidth: '5px',
-                  borderStyle: 'solid',
-                  borderColor: '#7B3DB4' // 深紫粉色边框
-                }}
-              >
-                【发出的奖励】
-              </button>
             </div>
           </motion.div>
         )}

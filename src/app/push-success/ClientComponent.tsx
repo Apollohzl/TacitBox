@@ -113,70 +113,61 @@ export default function PushSuccessClient() {
       canvas.height = 1200;
 
       try {
-        // 加载底片
-        const bgImg = new Image();
-        bgImg.crossOrigin = 'anonymous';
-        bgImg.src = '/shareimages/dipian.png';
-        
-        await new Promise((resolve, reject) => {
-          bgImg.onload = resolve;
-          bgImg.onerror = reject;
-        });
-
-        // 绘制底片
-        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-
-        // 加载用户头像
-        const avatarImg = new Image();
-        avatarImg.crossOrigin = 'anonymous';
-        avatarImg.src = userData.avatar_url;
-        
-        await new Promise((resolve, reject) => {
-          avatarImg.onload = resolve;
-          avatarImg.onerror = reject;
-        });
-
-        // 绘制用户头像 (假设位置和大小)
-        ctx.drawImage(avatarImg, 100, 100, 100, 100);
-
-        // 加载奖励图片
-        const rewardImgPath = rewardImages[rewardId];
-        if (rewardImgPath) {
-          const rewardImg = new Image();
-          rewardImg.crossOrigin = 'anonymous';
-          rewardImg.src = rewardImgPath;
-          
-          await new Promise((resolve, reject) => {
-            rewardImg.onload = resolve;
-            rewardImg.onerror = reject;
+        // 创建图片加载函数
+        const loadImage = (src: string): Promise<HTMLImageElement> => {
+          return new Promise((resolve, reject) => {
+            // 在浏览器中使用 Image 构造函数
+            const img = typeof window !== 'undefined' ? new (window as any).Image() : ({} as HTMLImageElement);
+            img.crossOrigin = 'anonymous';
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = src;
           });
+        };
 
-          // 绘制奖励图片 (假设位置和大小)
-          ctx.drawImage(rewardImg, 300, 300, 200, 200);
+        // 加载所有需要的图片
+        const promises = [
+          loadImage('/shareimages/dipian.png'),
+          loadImage(userData.avatar_url),
+          loadImage(qrCodeData!)
+        ];
+
+        // 如果有奖励图片，也加载它
+        if (rewardId && rewardImages[rewardId]) {
+          promises.push(loadImage(rewardImages[rewardId]));
         }
 
-        // 加载二维码
-        const qrImg = new Image();
-        qrImg.crossOrigin = 'anonymous';
-        qrImg.src = qrCodeData;
-        
-        await new Promise((resolve, reject) => {
-          qrImg.onload = resolve;
-          qrImg.onerror = reject;
-        });
+        const [bgImg, avatarImg, qrImg, rewardImg] = await Promise.all(promises);
 
-        // 绘制二维码 (假设位置和大小)
-        ctx.drawImage(qrImg, 550, 800, 200, 200);
+        // 设置画布尺寸为底片尺寸
+        canvas.width = 1080;
+        canvas.height = 1350;
 
-        // 添加用户名文本
-        ctx.font = '20px Arial';
+        // 绘制底片 (位置: x=0,y=0 大=1080,h=1350)
+        ctx.drawImage(bgImg, 0, 0, 1080, 1350);
+
+        // 绘制奖励券图片 (位置: x=430,y=680 大=472,h=265.5)
+        if (rewardImg && rewardImg instanceof HTMLImageElement) {
+          ctx.drawImage(rewardImg, 430, 680, 472, 265.5);
+        }
+
+        // 绘制二维码 (位置: x=776,y=1051 大=204,h=204)
+        ctx.drawImage(qrImg, 776, 1051, 204, 204);
+
+        // 绘制头像圆形图片 (位置: x=414,y=22 大=250x250)
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(414 + 125, 22 + 125, 125, 0, 2 * Math.PI); // 圆心x=539, 圆心y=147, 半径=125
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(avatarImg, 414, 22, 250, 250);
+        ctx.restore();
+
+        // 添加用户名文本 (在头像下方)
+        ctx.font = '24px Arial';
         ctx.fillStyle = 'black';
-        ctx.fillText(userData.nickname || '用户', 220, 130);
-
-        // 添加奖励名称文本
-        const rewardName = rewardNames[rewardId] || '未知奖励';
-        ctx.font = '18px Arial';
-        ctx.fillText(rewardName, 350, 520);
+        ctx.textAlign = 'center';
+        ctx.fillText(userData.nickname || '用户', 539, 300); // 头头顶像中心x=539, y=300
 
       } catch (err) {
         console.error('绘制合成图片失败:', err);

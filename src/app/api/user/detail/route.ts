@@ -2,6 +2,9 @@ import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import pool from '../../../../lib/db';
 
+// 指定此路由为动态渲染
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

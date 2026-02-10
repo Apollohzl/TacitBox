@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuiz } from '../../../context/QuizContext';
-import Image from 'next/image';
 
 export default function QuizShareClient() {
   const router = useRouter();

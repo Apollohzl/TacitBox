@@ -15,11 +15,11 @@ export default function CreateQuizPage() {
   
   // 模拟奖励券列表
   const rewardOptions = [
-    { id: 'coupon_1', name: '咖啡券', description: '凭咖啡券找我领取午后咖啡' },
-    { id: 'coupon_2', name: '电影票', description: '凭此电影票找我一起看电影' },
-    { id: 'coupon_3', name: '分享秘密券', description: '凭此券找我分享一个秘密给你' },
-    { id: 'coupon_4', name: '提问券', description: '凭次券可向我提问一个问题' },
-    { id: 'coupon_5', name: '红包券', description: '凭此券可向我索要一个随机红包' },
+    { id: 'cofep', name: '咖啡券', description: '凭咖啡券找我领取午后咖啡' },
+    { id: 'cinemap', name: '电影票', description: '凭此电影票找我一起看电影' },
+    { id: 'sharemimiq', name: '分享秘密券', description: '凭此券找我分享一个秘密给你' },
+    { id: 'askp', name: '提问券', description: '凭次券可向我提问一个问题' },
+    { id: 'redbagp', name: '红包券', description: '凭此券可向我索要一个随机红包' },
   ];
 
   useEffect(() => {
@@ -139,7 +139,7 @@ export default function CreateQuizPage() {
               correct_answer: "成长"
             }
           ],
-          reward_id: parseInt(selectedReward.split('_')[1]), // 从选择的奖励ID中提取数字部分
+          reward_id: selectedReward, // 使用奖励ID字符串而不是数字索引
           min_correct: minCorrect,
           max_reward_count: rewardCount
         }),
@@ -148,8 +148,8 @@ export default function CreateQuizPage() {
       const result = await response.json();
       
       if (result.success) {
-        // 跳转到push-success页面，传递生成的活动ID
-        router.push(`/push-success?k=${result.activityId}`);
+        // 跳转到push-success页面，传递生成的活动ID和奖励ID
+        router.push(`/push-success?k=${result.activityId}&rewardId=${selectedReward}`);
       } else {
         alert('发布题目失败: ' + result.error);
         console.error('发布题目失败:', result.error);

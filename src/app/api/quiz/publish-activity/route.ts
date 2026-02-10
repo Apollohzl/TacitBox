@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
           activityId,
           creator_user_id,
           JSON.stringify(questions),
-          reward_id,
+          String(reward_id), // 确保奖励ID以字符串形式存储
           min_correct,
           max_reward_count
         ]

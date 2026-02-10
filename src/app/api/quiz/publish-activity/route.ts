@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         hexString += encryptedValue.charCodeAt(i).toString(16).padStart(4, '0');
       }
       
-      const activityId = hexString; // 使用加密后的字符串作为活动ID
+      let activityId = hexString; // 使用let而不是const，这样可以重新分配
 
       // 检查活动是否已存在
       const [existingActivities] = await connection.execute(
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         let attempts = 0;
         
         while (idExists && attempts < 10) {
-          const checkQuery = await connection.execute(
+          const [checkQuery] = await connection.execute(
             'SELECT id FROM quiz_activities WHERE id = ?',
             [finalActivityId]
           ) as [any[], any];
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
           throw new Error('无法生成唯一活动ID');
         }
         
-        activityId = finalActivityId;
+        activityId = finalActivityId;  // 现在可以重新分配，因为activityId是let声明的
       }
 
       // 插入新活动

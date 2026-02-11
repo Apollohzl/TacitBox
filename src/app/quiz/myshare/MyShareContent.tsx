@@ -122,10 +122,6 @@ export default function MyShareContent() {
       ctx.textAlign = 'center';
       ctx.fillText(userData.nickname || '用户', canvas.width / 2, 320);
       
-      // 绘制副标题
-      ctx.font = '36px Arial';
-      ctx.fillText('的默契盒子测试卷', canvas.width / 2, 380);
-      
       // 绘制券图片
       if (activityInfo.reward_id) {
         const rewardImage = new Image();

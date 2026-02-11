@@ -34,7 +34,7 @@ const LoginPage = () => {
     try {
       const appKey = process.env.NEXT_PUBLIC_JUHE_Appkey;
       if (!appKey) {
-        throw new Error('应用配置错误：缺少AppKey');
+        throw new Error('应用配置错误：缺少AppKey，请联系管理员配置NEXT_PUBLIC_JUHE_Appkey环境变量');
       }
 
       // 通过代理API获取登录URL，避免CORS问题
@@ -43,10 +43,12 @@ const LoginPage = () => {
       
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('代理登录错误详情:', errorData);
         throw new Error(errorData.error || `请求失败: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('代理登录响应数据:', data); // 添加调试信息
       
       if (data.code === 0) {
         // 跳转到登录URL

@@ -40,11 +40,12 @@ export default function QuizShareContent() {
         
         if (userData.success && userData.data && userData.data.published_activities) {
           const publishedActivities = userData.data.published_activities;
-	  console.log("k参数值->"+kValue);
-          console.log("请求返回的[0]个数据->"+);
+          console.log("k参数值->"+kValue);
+          console.log("请求返回的[0]个数据->"+(Array.isArray(publishedActivities) ? publishedActivities[0] : 'N/A'));
           // 判断里面是否有相同的k值
           // 需要考虑k值可能在数据库中以编码或未编码形式存储
-          const kDecoded = decodeURIComponent(kValue); // 确保编码一致性
+          const kDecoded = decodeURIComponent(kValue);
+          const kEncoded = encodeURIComponent(kDecoded); // 确保编码一致性
           
           const isFound = Array.isArray(publishedActivities) && 
             (publishedActivities.includes(kValue) || 
@@ -60,12 +61,14 @@ export default function QuizShareContent() {
           }
         } else {
           // 如果没有published_activities数据，跳转到/doorshare
-          router.push(`/quiz/doorshare?k=${kDecoded}`);
+          const kEncoded = encodeURIComponent(kValue);
+          router.push(`/quiz/doorshare?k=${kEncoded}`);
         }
       } catch (error) {
         console.error('获取用户信息失败:', error);
         // 发生错误时跳转到/doorshare
-        router.push(`/quiz/doorshare?k=${kDecoded}`);
+        const kEncoded = encodeURIComponent(kValue);
+        router.push(`/quiz/doorshare?k=${kEncoded}`);
       }
     };
 

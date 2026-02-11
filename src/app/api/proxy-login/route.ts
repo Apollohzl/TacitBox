@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     console.log('代理登录成功响应:', data); // 添加调试信息
 
+    // 确保返回的数据格式符合API文档要求
     return NextResponse.json(data);
   } catch (error) {
     console.error('代理登录请求失败:', error);

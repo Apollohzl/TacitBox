@@ -52,39 +52,8 @@ export async function POST(request: NextRequest) {
       ) as [any[], any];
 
       if (existingActivities.length > 0) {
-        // 如果活动已存在，生成新的ID
-        const newTimestamp = Date.now() + Math.floor(Math.random() * 1000);
-        const newUnicodeStr = `${newTimestamp}${creator_user_id}`;
-        
-        // 使用AES加密
-        const newEncrypted = CryptoJS.AES.encrypt(newUnicodeStr, go_to_key).toString();
-        let finalActivityId = encodeURIComponent(newEncrypted);
-        let idExists = true;
-        let attempts = 0;
-        
-        while (idExists && attempts < 10) {
-          const [checkQuery] = await connection.execute(
-            'SELECT id FROM quiz_activities WHERE id = ?',
-            [finalActivityId]
-          ) as [any[], any];
-          
-          if (checkQuery.length === 0) {
-            idExists = false;
-          } else {
-            // 生成一个稍微不同的ID
-            const retryTimestamp = Date.now() + Math.floor(Math.random() * 1000) + attempts;
-            const retryUnicodeStr = `${retryTimestamp}${creator_user_id}`;
-            const retryEncrypted = CryptoJS.AES.encrypt(retryUnicodeStr, go_to_key).toString();
-            finalActivityId = encodeURIComponent(retryEncrypted);
-            attempts++;
-          }
-        }
-        
-        if (idExists) {
-          throw new Error('无法生成唯一活动ID');
-        }
-        
-        activityId = finalActivityId;  // 现在可以重新分配，因为activityId是let声明的
+        // 如果活动已存在，直接报错
+        throw new Error('生成的活动ID已存在，请重试');
       }
 
       // 插入新活动

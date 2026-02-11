@@ -180,7 +180,7 @@ export default function QuizPage() {
               id: selection.questionId,
               question_text: selection.questionText,
               correct_answer: selection.correctAnswer,
-              options: selection.options // 使用保存的完整选项列表
+              options: Array.isArray(selection.options) ? selection.options : [] // 确保选项是数组
             }))
           };
           setQuizResults(resultsData);

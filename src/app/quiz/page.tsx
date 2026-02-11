@@ -183,8 +183,11 @@ export default function QuizPage() {
               options: Array.isArray(selection.options) ? selection.options : [] // 确保选项是数组
             }))
           };
+          // 先设置数据，然后稍等一下确保数据被设置好后再跳转
           setQuizResults(resultsData);
-          router.push('/quiz/create');
+          setTimeout(() => {
+            router.push('/quiz/create');
+          }, 100); // 短暂延迟确保状态更新
         }
       }, 1000);
       

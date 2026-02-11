@@ -37,11 +37,28 @@ const LoginPage = () => {
         throw new Error('应用配置错误：缺少AppKey，请联系管理员配置NEXT_PUBLIC_JUHE_Appkey环境变量');
       }
 
-      // 直接构造登录URL并跳转，绕过代理请求（因为目标服务器有Cloudflare保护）
-      const loginUrl = `https://u.daib.cn/connect.php?act=login&appid=2423&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`;
+      // 通过代理API获取登录URL，处理Cloudflare安全验证
+      const proxyUrl = `/api/proxy-login?appid=2423&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`;
+      const response = await fetch(proxyUrl);
       
-      // 直接跳转到登录页面
-      window.location.href = loginUrl;
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('代理登录错误详情:', errorData);
+        throw new Error(errorData.error || `请求失败: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('代理登录响应数据:', data); // 添加调试信息
+      
+      // Cloudflare保护场景：直接跳转到url
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.code === 0) {
+        // 正常场景：跳转到登录URL
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.msg || '获取登录地址失败');
+      }
     } catch (err: any) {
       console.error('登录请求失败:', err);
       setError(err.message || '登录请求失败');

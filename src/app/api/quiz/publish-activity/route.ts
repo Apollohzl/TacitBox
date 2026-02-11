@@ -79,9 +79,32 @@ export async function POST(request: NextRequest) {
            WHERE social_uid = ?`,
           [activityId, creator_user_id]
         );
-      } catch (updateError) {
+      } catch (updateError: any) {
         console.error('更新用户发布的活动列表失败:', updateError);
-        // 这里可能是因为published_activities列不存在，可以忽略此错误或记录日志
+        // 检查是否是因为published_activities列不存在导致的错误
+        if (updateError.message && (updateError.message.includes('Unknown column') || updateError.message.includes('published_activities'))) {
+          console.log('警告: 数据库users表中不存在published_activities列，需要执行数据库更新脚本');
+          // 尝试创建该列（如果权限允许）
+          try {
+            await connection.execute(
+              `ALTER TABLE users 
+               ADD COLUMN published_activities JSON DEFAULT JSON_ARRAY() COMMENT '用户发布的所有测试的专属ID列表，存储为JSON数组格式'`
+            );
+            
+            // 重新尝试更新
+            await connection.execute(
+              `UPDATE users 
+               SET published_activities = JSON_ARRAY_APPEND(published_activities, '$', ?) 
+               WHERE social_uid = ?`,
+              [activityId, creator_user_id]
+            );
+          } catch (alterError: any) {
+            console.error('尝试添加published_activities列失败:', alterError);
+            // 即使列不存在或无法添加，也不应中断发布过程，因为主要功能是发布活动
+          }
+        } else {
+          console.error('更新published_activities时发生其他错误:', updateError);
+        }
       }
 
       connection.release();

@@ -102,6 +102,19 @@ export async function POST(request: NextRequest) {
         ]
       );
 
+      // 将活动ID添加到用户的published_activities列表中
+      try {
+        await connection.execute(
+          `UPDATE users 
+           SET published_activities = JSON_ARRAY_APPEND(published_activities, '$', ?) 
+           WHERE social_uid = ?`,
+          [activityId, creator_user_id]
+        );
+      } catch (updateError) {
+        console.error('更新用户发布的活动列表失败:', updateError);
+        // 这里可能是因为published_activities列不存在，可以忽略此错误或记录日志
+      }
+
       connection.release();
 
       return NextResponse.json({ 

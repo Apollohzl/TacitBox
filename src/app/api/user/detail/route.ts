@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
     
     const [users] = await connection.execute(
       `SELECT id, social_uid, social_type, nickname, avatar_url, gender, location, 
-              ip_address, created_at, last_login_at, updated_at, published_activities
+              ip_address, created_at, last_login_at, updated_at, published_activities, 
+              participated_activities
        FROM users 
        WHERE social_uid = ? AND social_type = ?`,
       [social_uid, social_type]
@@ -52,7 +53,8 @@ export async function GET(request: NextRequest) {
         ip: user.ip_address,
         created_at: formatDate(user.created_at),
         last_login_at: formatDate(user.last_login_at),
-        published_activities: user.published_activities || [] // 返回用户的已发布活动列表
+        published_activities: user.published_activities || [], // 返回用户的已发布活动列表
+        participated_activities: user.participated_activities || [] // 返回用户参与的活动列表
       }
     });
   } catch (error) {

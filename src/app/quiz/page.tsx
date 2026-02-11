@@ -18,7 +18,7 @@ export default function QuizPage() {
   const [categoryQuestions, setCategoryQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<{questionId: number, option: string, questionText: string, correctAnswer: string}[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<{questionId: number, option: string, questionText: string, correctAnswer: string, options: string[]}[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   // 检查用户是否登录
@@ -108,6 +108,8 @@ export default function QuizPage() {
     const correctAnswer = currentQ?.correct_answer || '';
     const questionText = currentQ?.question_text || '';
     const questionId = currentQ?.id || 0;
+    const questionOptions = currentQ?.options ? 
+      (typeof currentQ.options === 'string' ? JSON.parse(currentQ.options) : currentQ.options) : [];
     
     // 使用函数式更新来确保获取到最新的状态
     setSelectedOptions(prev => {
@@ -122,7 +124,8 @@ export default function QuizPage() {
         questionId,
         option,
         questionText,
-        correctAnswer
+        correctAnswer,
+        options: questionOptions // 保存完整选项列表
       };
       
       const updatedOptions = [...prev, newSelection];
@@ -173,7 +176,12 @@ export default function QuizPage() {
           // 选择完10题后，将答案信息存储在全局上下文中并跳转到创建页面
           const resultsData = {
             selectedOptions: updatedOptions,
-            questions: questionsHistory // 使用历史记录的题目
+            questions: updatedOptions.map(selection => ({ // 只使用用户选择的题目
+              id: selection.questionId,
+              question_text: selection.questionText,
+              correct_answer: selection.correctAnswer,
+              options: selection.options // 使用保存的完整选项列表
+            }))
           };
           setQuizResults(resultsData);
           router.push('/quiz/create');

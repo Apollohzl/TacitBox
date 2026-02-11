@@ -41,16 +41,26 @@ export default function QuizShareContent() {
         if (userData.success && userData.data && userData.data.published_activities) {
           const publishedActivities = userData.data.published_activities;
           // 判断里面是否有相同的k值
-          if (Array.isArray(publishedActivities) && publishedActivities.includes(kValue)) {
+          // 需要考虑k值可能在数据库中以编码或未编码形式存储
+          const kDecoded = decodeURIComponent(kValue);
+          const kEncoded = encodeURIComponent(kDecoded); // 确保编码一致性
+          
+          const isFound = Array.isArray(publishedActivities) && 
+            (publishedActivities.includes(kValue) || 
+             publishedActivities.includes(kDecoded) ||
+             publishedActivities.includes(kEncoded));
+             
+          if (isFound) {
             // 3-true: 跳转到/myshare
-            router.push(`/quiz/myshare?k=${encodeURIComponent(kValue)}`);
+            router.push(`/quiz/myshare?k=${kEncoded}`);
           } else {
             // 3-false: 跳转到/doorshare
-            router.push(`/quiz/doorshare?k=${encodeURIComponent(kValue)}`);
+            router.push(`/quiz/doorshare?k=${kEncoded}`);
           }
         } else {
           // 如果没有published_activities数据，跳转到/doorshare
-          router.push(`/quiz/doorshare?k=${encodeURIComponent(kValue)}`);
+          const kEncoded = encodeURIComponent(kValue);
+          router.push(`/quiz/doorshare?k=${kEncoded}`);
         }
       } catch (error) {
         console.error('获取用户信息失败:', error);

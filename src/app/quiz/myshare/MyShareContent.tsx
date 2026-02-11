@@ -304,7 +304,7 @@ export default function MyShareContent() {
               <div className="flex items-center justify-center mb-4">
                 <img 
                   src={generatedImage} 
-                  alt="邀请好友答题图片" 
+                  alt="请等待加载完成,邀请好友答题图片" 
                   className="max-w-full max-h-80 object-contain border border-gray-200"
                   style={{ width: 'auto', height: 'auto' }}
                 />

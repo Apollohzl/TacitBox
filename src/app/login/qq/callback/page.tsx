@@ -27,7 +27,7 @@ export default function QQLoginCallback() {
         }
 
         // 使用代理API避免CORS问题
-        const proxyUrl = `/api/proxy-callback?appid=2423&appkey=${appKey}&type=${type}&code=${code}`;
+        const proxyUrl = `/api/proxy-callback?appid=2428&appkey=${appKey}&type=${type}&code=${code}`;
         const response = await fetch(proxyUrl);
 
         if (!response.ok) {

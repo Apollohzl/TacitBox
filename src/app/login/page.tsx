@@ -38,7 +38,7 @@ const LoginPage = () => {
       }
 
       // 通过代理API获取登录URL（根据API文档，需要先获取跳转地址）
-      const proxyUrl = `/api/proxy-login?appid=2423&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`;
+      const proxyUrl = `/api/proxy-login?appid=2428&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`;
       const response = await fetch(proxyUrl);
       
       if (!response.ok) {

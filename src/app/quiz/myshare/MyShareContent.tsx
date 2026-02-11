@@ -116,12 +116,6 @@ export default function MyShareContent() {
         });
       }
       
-      // 绘制标题
-      ctx.fillStyle = '#000000';
-      ctx.font = 'bold 48px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(userData.nickname || '用户', canvas.width / 2, 320);
-      
       // 绘制券图片
       if (activityInfo.reward_id) {
         const rewardImage = new Image();

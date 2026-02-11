@@ -88,7 +88,7 @@ export default function QuizShareClient() {
   const handlePublishQuiz = () => {
     // 跳转到发布成功页面（如果用户已登录）
     if (isLoggedIn) {
-      router.push(`/push-success?k=${shareId}`);
+      router.push(`/quiz`);
     } else {
       // 如果用户未登录，跳转到首页
       router.push('/');
@@ -167,45 +167,11 @@ export default function QuizShareClient() {
                 </div>
               )}
               
-              <h2 className="text-2xl font-semibold text-center text-gray-700">题目详情：</h2>
+              <h2 className="text-2xl font-semibold text-center text-gray-700">题目列表：</h2>
               <div className="space-y-4 max-h-[500px] overflow-y-auto p-2">
-                {quizResults ? (
-                  // 如果有用户答题结果，显示答题详情
+                {activityInfo ? (
+                  // 显示题目
                   <>
-                    <h3 className="text-lg font-semibold text-center text-gray-700">答题详情：</h3>
-                    {quizResults.selectedOptions.map((selection: any, index: number) => {
-                      const isCorrect = selection.option === selection.correctAnswer;
-                      return (
-                        <div key={index} className={`p-4 rounded-lg border-2 ${isCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
-                          <div className="font-medium mb-2">题目 {index + 1}: {selection.questionText}</div>
-                          <div className="flex flex-wrap gap-4">
-                            <div>
-                              <span className="font-semibold">您的选择:</span> 
-                              <span className={`ml-2 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                                {selection.option}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="font-semibold">正确答案:</span> 
-                              <span className="ml-2 text-green-600">
-                                {selection.correct_answer || selection.correctAnswer}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="font-semibold">结果:</span> 
-                              <span className={`ml-2 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                                {isCorrect ? '✓ 正确' : '✗ 错误'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </>
-                ) : activityInfo ? (
-                  // 如果没有用户答题结果但有活动信息，显示题目
-                  <>
-                    <h3 className="text-lg font-semibold text-center text-gray-700">题目列表：</h3>
                     {activityInfo.questions && Array.isArray(activityInfo.questions) ? (
                       activityInfo.questions.map((question: any, index: number) => (
                         <div key={index} className="p-4 rounded-lg border-2 border-gray-200 bg-white">

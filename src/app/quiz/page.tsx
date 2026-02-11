@@ -130,64 +130,67 @@ export default function QuizPage() {
       
       const updatedOptions = [...prev, newSelection];
       
-      // 等待1秒后执行后续操作
+      // 如果已经选择了10道题，立即设置结果并跳转
+      if (updatedOptions.length === 10) {
+        const resultsData = {
+          selectedOptions: updatedOptions,
+          questions: updatedOptions.map(selection => ({ // 只使用用户选择的题目
+            id: selection.questionId,
+            question_text: selection.questionText,
+            correct_answer: selection.correctAnswer,
+            options: Array.isArray(selection.options) ? selection.options : [] // 确保选项是数组
+          }))
+        };
+        // 同步设置数据，确保在跳转前数据已设置
+        setQuizResults(resultsData);
+        // 使用 setTimeout 来将路由跳转移动到下一个事件循环，确保状态已更新
+        setTimeout(() => {
+          router.push('/quiz/create');
+        }, 0);
+        
+        // 不再继续执行后续操作
+        return updatedOptions;
+      }
+      
+      // 等待1秒后执行获取下一题的操作（如果不是第10题）
       setTimeout(async () => {
-        // 如果还没到第10题，则获取下一题随机题目
-        if (updatedOptions.length < 10) {
-          try {
-            // 确保selectedCategoryId存在
-            if (selectedCategoryId) {
-              const response = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
-              const result = await response.json();
+        try {
+          // 确保selectedCategoryId存在
+          if (selectedCategoryId) {
+            const response = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
+            const result = await response.json();
+            
+            if (result.success) {
+              // 检查是否已经出现过这个题目
+              const isRepeated = questionsHistory.some(q => q.id === result.data.id);
               
-              if (result.success) {
-                // 检查是否已经出现过这个题目
-                const isRepeated = questionsHistory.some(q => q.id === result.data.id);
+              if (!isRepeated) {
+                setCurrentQuestion(result.data);
+                setQuestionsHistory(prev => [...prev, result.data]);
+              } else {
+                // 如果题目重复，再获取一次
+                const retryResponse = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
+                const retryResult = await retryResponse.json();
                 
-                if (!isRepeated) {
+                if (retryResult.success) {
+                  setCurrentQuestion(retryResult.data);
+                  setQuestionsHistory(prev => [...prev, retryResult.data]);
+                } else {
+                  // 如果再次失败，使用当前题目
                   setCurrentQuestion(result.data);
                   setQuestionsHistory(prev => [...prev, result.data]);
-                } else {
-                  // 如果题目重复，再获取一次
-                  const retryResponse = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
-                  const retryResult = await retryResponse.json();
-                  
-                  if (retryResult.success) {
-                    setCurrentQuestion(retryResult.data);
-                    setQuestionsHistory(prev => [...prev, retryResult.data]);
-                  } else {
-                    // 如果再次失败，使用当前题目
-                    setCurrentQuestion(result.data);
-                    setQuestionsHistory(prev => [...prev, result.data]);
-                  }
                 }
-              } else {
-                setError('获取题目失败');
               }
+            } else {
+              setError('获取题目失败');
             }
-            
-            // 重置选中选项状态以便下一题使用
-            setSelectedOption(null);
-          } catch (err) {
-            console.error('获取新题目失败:', err);
-            setError('获取新题目失败');
           }
-        } else {
-          // 选择完10题后，将答案信息存储在全局上下文中并跳转到创建页面
-          const resultsData = {
-            selectedOptions: updatedOptions,
-            questions: updatedOptions.map(selection => ({ // 只使用用户选择的题目
-              id: selection.questionId,
-              question_text: selection.questionText,
-              correct_answer: selection.correctAnswer,
-              options: Array.isArray(selection.options) ? selection.options : [] // 确保选项是数组
-            }))
-          };
-          // 先设置数据，然后稍等一下确保数据被设置好后再跳转
-          setQuizResults(resultsData);
-          setTimeout(() => {
-            router.push('/quiz/create');
-          }, 100); // 短暂延迟确保状态更新
+          
+          // 重置选中选项状态以便下一题使用
+          setSelectedOption(null);
+        } catch (err) {
+          console.error('获取新题目失败:', err);
+          setError('获取新题目失败');
         }
       }, 1000);
       

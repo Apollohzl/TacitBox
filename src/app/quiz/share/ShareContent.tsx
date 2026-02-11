@@ -10,7 +10,7 @@ export default function QuizShareContent() {
 
   useEffect(() => {
     const handleShareLogic = async () => {
-      // 1. 检查是否有k值
+      // 1. 检查是否有k参数
       const kValue = searchParams.get('k');
       
       if (!kValue) {
@@ -21,18 +21,20 @@ export default function QuizShareContent() {
         return;
       }
 
-      // 2. 检查浏览器是否有用户登录数据
+      // 2. 检查是否有用户登录信息
       const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
       const socialUid = localStorage.getItem('social_uid');
       
       if (!isLoggedIn || !socialUid) {
-        // 3-false: 跳转到/othershare
-        router.push(`/quiz/othershare?k=${encodeURIComponent(kValue)}`);
+        // 2-false: 显示【未登录】2秒->跳转/login页面
+        setMessage('未登录');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        router.push('/login');
         return;
       }
 
       try {
-        // 请求SQLPub获取目前登录的用户信息的published_activities
+        // 3. 请求SQLPub获取目前登录的用户信息的published_activities，并判断里面是否有相同的k值
         const response = await fetch(`/api/user/detail?social_uid=${socialUid}&social_type=${localStorage.getItem('login_type') || 'wx'}`);
         const userData = await response.json();
         
@@ -40,20 +42,20 @@ export default function QuizShareContent() {
           const publishedActivities = userData.data.published_activities;
           // 判断里面是否有相同的k值
           if (Array.isArray(publishedActivities) && publishedActivities.includes(kValue)) {
-            // 2-true: 跳转到/myshare
+            // 3-true: 跳转到/myshare
             router.push(`/quiz/myshare?k=${encodeURIComponent(kValue)}`);
           } else {
-            // 3-false: 跳转到/othershare
-            router.push(`/quiz/othershare?k=${encodeURIComponent(kValue)}`);
+            // 3-false: 跳转到/doorshare
+            router.push(`/quiz/doorshare?k=${encodeURIComponent(kValue)}`);
           }
         } else {
-          // 如果没有published_activities数据，跳转到/othershare
-          router.push(`/quiz/othershare?k=${encodeURIComponent(kValue)}`);
+          // 如果没有published_activities数据，跳转到/doorshare
+          router.push(`/quiz/doorshare?k=${encodeURIComponent(kValue)}`);
         }
       } catch (error) {
         console.error('获取用户信息失败:', error);
-        // 发生错误时跳转到/othershare
-        router.push(`/quiz/othershare?k=${encodeURIComponent(kValue)}`);
+        // 发生错误时跳转到/doorshare
+        router.push(`/quiz/doorshare?k=${encodeURIComponent(kValue)}`);
       }
     };
 

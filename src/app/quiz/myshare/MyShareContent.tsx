@@ -132,16 +132,16 @@ export default function MyShareContent() {
               <span className="text-red-500 font-bold">
                 {activityInfo?.min_correct || 0}
               </span>
-              可获得我的奖励（先到先得）
+              题可获得我的奖励（先到先得）
             </div>
             
             {/* 奖励图片 */}
-            <div className="mb-4">
+            <div className="mb-4" style={{ marginTop: '15px', marginBottom: '15px' }}>
               {activityInfo?.reward_id && (
                 <img 
                   src={`/shareimages/${activityInfo.reward_id}.png`} 
                   alt="奖励图片" 
-                  className="w-24 h-24 object-contain mx-auto"
+                  className="w-32 h-32 object-contain mx-auto"
                 />
               )}
             </div>

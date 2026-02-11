@@ -104,8 +104,8 @@ export default function CreateQuizPage() {
       const result = await response.json();
       
       if (result.success) {
-        // 跳转到push-success页面，传递生成的活动ID和奖励ID
-        router.push(`/push-success?k=${result.activityId}&rewardId=${selectedReward}`);
+        // 跳转到push-success页面，传递生成的活动ID和奖励ID（对k值进行URL编码）
+        router.push(`/push-success?k=${encodeURIComponent(result.activityId)}&rewardId=${selectedReward}`);
       } else {
         alert('发布题目失败: ' + result.error);
         console.error('发布题目失败:', result.error);

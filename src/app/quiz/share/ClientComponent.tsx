@@ -59,7 +59,8 @@ export default function QuizShareClient() {
     // 获取活动信息（无论用户是否登录）
     const fetchActivityInfo = async () => {
       try {
-        const response = await fetch(`/api/quiz/activity-info?id=${kValue}`);
+        // 对id值进行URL编码以确保正确传输
+        const response = await fetch(`/api/quiz/activity-info?id=${encodeURIComponent(kValue)}`);
         const data = await response.json();
         
         if (data.success) {

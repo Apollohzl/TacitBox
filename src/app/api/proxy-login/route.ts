@@ -24,16 +24,39 @@ export async function GET(request: NextRequest) {
     
     console.log('代理登录请求URL:', targetUrl); // 添加调试信息
 
-    // 由于目标服务器 u.daib.cn 使用了 Cloudflare 的安全保护，
-    // 服务器端请求会被拦截并返回需要 JavaScript 验证的页面
-    // 因此返回一个错误信息，提示前端直接跳转到登录URL
-    const loginUrl = targetUrl;
-    
-    return NextResponse.json({ 
-      code: -1,
-      msg: '由于安全验证，需要直接跳转到登录页面',
-      url: loginUrl  // 返回登录URL，前端可以直接跳转
+    // 发起请求到目标服务器
+    const response = await fetch(targetUrl, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'Referer': 'https://tb.vicral.cn/' // 添加Referer头部
+      }
     });
+
+    console.log('代理登录响应状态:', response.status, response.statusText); // 添加调试信息
+    
+    if (!response.ok) {
+      // 尝试读取响应体以获取更多错误信息
+      let errorText = '';
+      try {
+        errorText = await response.text();
+        console.log('代理登录错误响应:', errorText);
+      } catch (e) {
+        console.log('无法读取错误响应体:', e);
+      }
+      
+      return NextResponse.json({ 
+        error: `请求失败: ${response.status} ${response.statusText}`, 
+        errorDetails: errorText 
+      }, { status: response.status });
+    }
+
+    const data = await response.json();
+    console.log('代理登录成功响应:', data); // 添加调试信息
+
+    return NextResponse.json(data);
   } catch (error) {
     console.error('代理登录请求失败:', error);
     return NextResponse.json({ 

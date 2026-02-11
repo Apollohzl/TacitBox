@@ -261,6 +261,7 @@ export default function MyShareContent() {
                   src={`/shareimages/${activityInfo.reward_id}.png`} 
                   alt="奖励图片" 
                   className="w-32 h-32 object-contain mx-auto"
+		  style={{width: '600px'}}
                 />
               )}
             </div>

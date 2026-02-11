@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { useQuiz } from '../../../context/QuizContext';
 
 export default function CreateQuizPage() {
   const router = useRouter();
+  const { quizResults } = useQuiz(); // 获取用户在quiz页面选择的题目
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<any>(null);
   const [selectedReward, setSelectedReward] = useState('');
@@ -79,6 +80,12 @@ export default function CreateQuizPage() {
     }
     
     try {
+      // 从quizResults中提取题目数据
+      if (!quizResults || !quizResults.questions || quizResults.questions.length === 0) {
+        alert('没有找到题目数据，请重新答题');
+        return;
+      }
+      
       // 调用API发布活动
       const response = await fetch('/api/quiz/publish-activity', {
         method: 'POST',
@@ -87,58 +94,7 @@ export default function CreateQuizPage() {
         },
         body: JSON.stringify({
           creator_user_id: userData.social_uid,
-          questions: [ // 使用模拟数据，实际项目中应使用真实题目数据
-            {
-              question_text: "你最喜欢的颜色是什么？",
-              options: ["红色", "蓝色", "绿色", "黄色"],
-              correct_answer: "蓝色"
-            },
-            {
-              question_text: "你最喜欢的食物是什么？",
-              options: ["披萨", "寿司", "面条", "汉堡"],
-              correct_answer: "面条"
-            },
-            {
-              question_text: "你最喜欢的季节是？",
-              options: ["春季", "夏季", "秋季", "冬季"],
-              correct_answer: "秋季"
-            },
-            {
-              question_text: "你最想去的地方是？",
-              options: ["海滩", "山区", "城市", "乡村"],
-              correct_answer: "山区"
-            },
-            {
-              question_text: "你最喜欢的休闲活动是？",
-              options: ["读书", "运动", "看电影", "游戏"],
-              correct_answer: "读书"
-            },
-            {
-              question_text: "你最擅长的技能是？",
-              options: ["编程", "绘画", "音乐", "写作"],
-              correct_answer: "编程"
-            },
-            {
-              question_text: "你最重视的品质是？",
-              options: ["诚实", "善良", "智慧", "勇敢"],
-              correct_answer: "善良"
-            },
-            {
-              question_text: "你的性格偏向是？",
-              options: ["外向", "内向", "中间", "情境性"],
-              correct_answer: "中间"
-            },
-            {
-              question_text: "你最看重友谊中的什么？",
-              options: ["信任", "理解", "支持", "陪伴"],
-              correct_answer: "理解"
-            },
-            {
-              question_text: "你的人生格言是？",
-              options: ["努力", "坚持", "善良", "成长"],
-              correct_answer: "成长"
-            }
-          ],
+          questions: quizResults.questions, // 使用用户在Quiz页面实际选择的题目
           reward_id: selectedReward, // 使用奖励ID字符串而不是数字索引
           min_correct: minCorrect,
           max_reward_count: rewardCount

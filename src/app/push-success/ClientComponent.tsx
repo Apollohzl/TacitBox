@@ -225,7 +225,7 @@ export default function PushSuccessClient() {
           <p className="text-lg text-gray-600 mb-8">您的题目已成功发布，好友们现在可以尝试回答您的问题了。</p>
           
           {/* 生成的合成图片 */}
-          <div className="mb-8">
+          <div className="mb-8 flex justify-center">
             <canvas 
               ref={canvasRef} 
               className="max-w-full h-auto border border-gray-300 rounded-lg"

@@ -1,15 +1,17 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import MyShareContent from './MyShareContent';
 
 export default function MySharePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-teal-100 p-4">
-      <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">我的测试</h1>
-        <p className="text-gray-600">这是您创建的测试</p>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-teal-100 p-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full text-center">
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">正在加载...</h1>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+        </div>
       </div>
-    </div>
+    }>
+      <MyShareContent />
+    </Suspense>
   );
 }

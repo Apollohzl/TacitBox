@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     // 获取活动信息
     const [activities] = await connection.execute(
       'SELECT id, creator_user_id, title, questions, reward_id, min_correct, max_reward_count, created_at FROM quiz_activities WHERE id = ?',
-      [id]
+      [encodeURIComponent(id)]
     ) as [any[], any];
     
     connection.release();

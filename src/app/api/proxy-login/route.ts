@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 构造目标URL
-    const targetUrl = `https://u.zibll1.com/connect.php?act=login&appid=${appid}&appkey=${appkey}&type=${type}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
+    const targetUrl = `https://u.daib.cn/connect.php?act=login&appid=${appid}&appkey=${appkey}&type=${type}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
 
     // 发起请求到目标服务器
     const response = await fetch(targetUrl);

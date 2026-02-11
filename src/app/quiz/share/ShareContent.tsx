@@ -40,8 +40,8 @@ export default function QuizShareContent() {
         
         if (userData.success && userData.data && userData.data.published_activities) {
           const publishedActivities = userData.data.published_activities;
-          console.log("k参数值->"+kValue);
-          console.log("请求返回的[0]个数据->"+(Array.isArray(publishedActivities) ? publishedActivities[0] : 'N/A'));
+          // console.log("k参数值->"+kValue);
+          // console.log("请求返回的[0]个数据->"+(Array.isArray(publishedActivities) ? publishedActivities[0] : 'N/A'));
           // 判断里面是否有相同的k值
           // URL中的k值会被自动解码，但数据库中可能以编码格式存储
           // 所以需要检查编码后的值和未编码的值

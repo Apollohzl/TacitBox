@@ -38,7 +38,7 @@ const LoginPage = () => {
       }
 
       // 通过代理API获取登录URL，避免CORS问题
-      const proxyUrl = `/api/proxy-login?appid=1018&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`;
+      const proxyUrl = `/api/proxy-login?appid=2423&appkey=${appKey}&type=wx&redirect_uri=${encodeURIComponent(window.location.origin + '/login/process')}`;
       const response = await fetch(proxyUrl);
       
       if (!response.ok) {

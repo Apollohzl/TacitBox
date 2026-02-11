@@ -40,7 +40,7 @@ export default function QQLoginPage() {
 
         try {
           // 通过代理API获取登录URL，避免CORS问题
-          const proxyUrl = `/api/proxy-login?appid=1018&appkey=${appKey}&type=qq&redirect_uri=${encodeURIComponent(window.location.origin + '/login/qq/callback')}`;
+          const proxyUrl = `/api/proxy-login?appid=2423&appkey=${appKey}&type=qq&redirect_uri=${encodeURIComponent(window.location.origin + '/login/qq/callback')}`;
           const response = await fetch(proxyUrl);
           
           if (!response.ok) {

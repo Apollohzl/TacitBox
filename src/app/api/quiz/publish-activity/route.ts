@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import pool from '../../../../lib/db';
+import * as CryptoJS from 'crypto-js';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,23 +39,11 @@ export async function POST(request: NextRequest) {
       const timestamp = Date.now();
       const go_to_key = process.env.GO_TO_KEY || 'default_key';
       const unicodeStr = `${timestamp}${creator_user_id}`;
-      const encodedStr = encodeURIComponent(unicodeStr);
       
-      // 简单的字符位移加密（实际项目中应使用crypto库进行AES等加密）
-      let encryptedValue = '';
-      for (let i = 0; i < unicodeStr.length; i++) {
-        const charCode = unicodeStr.charCodeAt(i);
-        const keyChar = go_to_key.charCodeAt(i % go_to_key.length);
-        encryptedValue += String.fromCharCode(charCode + keyChar);
-      }
-      
-      // 将加密后的字符串转换为十六进制表示
-      let hexString = '';
-      for (let i = 0; i < encryptedValue.length; i++) {
-        hexString += encryptedValue.charCodeAt(i).toString(16).padStart(4, '0');
-      }
-      
-      let activityId = hexString; // 使用let而不是const，这样可以重新分配
+      // 使用AES加密
+      const encrypted = CryptoJS.AES.encrypt(unicodeStr, go_to_key).toString();
+      // 将加密结果转换为十六进制表示
+      let activityId = encodeURIComponent(encrypted); // 使用let而不是const，这样可以重新分配
 
       // 检查活动是否已存在
       const [existingActivities] = await connection.execute(
@@ -66,20 +55,10 @@ export async function POST(request: NextRequest) {
         // 如果活动已存在，生成新的ID
         const newTimestamp = Date.now() + Math.floor(Math.random() * 1000);
         const newUnicodeStr = `${newTimestamp}${creator_user_id}`;
-        let newEncryptedValue = '';
-        for (let i = 0; i < newUnicodeStr.length; i++) {
-          const charCode = newUnicodeStr.charCodeAt(i);
-          const keyChar = go_to_key.charCodeAt(i % go_to_key.length);
-          newEncryptedValue += String.fromCharCode(charCode + keyChar);
-        }
         
-        let newHexString = '';
-        for (let i = 0; i < newEncryptedValue.length; i++) {
-          newHexString += newEncryptedValue.charCodeAt(i).toString(16).padStart(4, '0');
-        }
-        
-        // 确保ID唯一
-        let finalActivityId = newHexString;
+        // 使用AES加密
+        const newEncrypted = CryptoJS.AES.encrypt(newUnicodeStr, go_to_key).toString();
+        let finalActivityId = encodeURIComponent(newEncrypted);
         let idExists = true;
         let attempts = 0;
         
@@ -93,7 +72,10 @@ export async function POST(request: NextRequest) {
             idExists = false;
           } else {
             // 生成一个稍微不同的ID
-            finalActivityId = `${newHexString}${attempts}`;
+            const retryTimestamp = Date.now() + Math.floor(Math.random() * 1000) + attempts;
+            const retryUnicodeStr = `${retryTimestamp}${creator_user_id}`;
+            const retryEncrypted = CryptoJS.AES.encrypt(retryUnicodeStr, go_to_key).toString();
+            finalActivityId = encodeURIComponent(retryEncrypted);
             attempts++;
           }
         }

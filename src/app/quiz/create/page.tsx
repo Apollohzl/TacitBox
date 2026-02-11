@@ -82,7 +82,15 @@ export default function CreateQuizPage() {
     try {
       // 从quizResults中提取题目数据
       if (!quizResults || !quizResults.questions || quizResults.questions.length === 0) {
+        console.error('quizResults数据:', quizResults); // 添加调试信息
         alert('没有找到题目数据，请重新答题');
+        return;
+      }
+      
+      // 额外检查：确保题目数据格式正确
+      if (!Array.isArray(quizResults.questions) || quizResults.questions.length !== 10) {
+        console.error('题目数据格式不正确:', quizResults.questions); // 添加调试信息
+        alert('题目数据格式不正确，请重新答题');
         return;
       }
       

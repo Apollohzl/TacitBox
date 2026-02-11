@@ -62,9 +62,10 @@ export default function PushSuccessClient() {
 
         setUserData(userDataResult.data);
 
-        // 生成二维码
+        // 生成二维码 - 使用完整URL
         if (kValue) {
-          const qrResponse = await fetch(`https://uapis.cn/api/v1/image/qrcode?text=${kValue}&size=204&format=json`);
+          const fullUrl = `https://tb.vicral.cn/quiz/share?k=${kValue}`;
+          const qrResponse = await fetch(`https://uapis.cn/api/v1/image/qrcode?text=${encodeURIComponent(fullUrl)}&size=204&format=json`);
           const qrResult = await qrResponse.json();
           
           if (qrResult.qrcode_base64) {
@@ -163,11 +164,7 @@ export default function PushSuccessClient() {
         ctx.drawImage(avatarImg, 414, 22, 250, 250);
         ctx.restore();
 
-        // 添加用户名文本 (在头像下方)
-        ctx.font = '24px Arial';
-        ctx.fillStyle = 'black';
-        ctx.textAlign = 'center';
-        ctx.fillText(userData.nickname || '用户', 539, 300); // 头头顶像中心x=539, y=300
+
 
       } catch (err) {
         console.error('绘制合成图片失败:', err);

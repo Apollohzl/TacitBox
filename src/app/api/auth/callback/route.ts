@@ -50,8 +50,8 @@ export async function GET(request: NextRequest) {
       // 创建新用户
       await connection.execute(
         `INSERT INTO users 
-         (social_uid, social_type, nickname, avatar_url, gender, location, access_token, ip_address, last_login_at) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+         (social_uid, social_type, nickname, avatar_url, gender, location, access_token, ip_address, last_login_at,published_activities,participated_activities) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, "[]", "[]")`,
         [social_uid, type, nickname, faceimg, gender, location, access_token, ip]
       );
     }

@@ -2,7 +2,6 @@
 CREATE TABLE quiz_activities (
   id VARCHAR(255) PRIMARY KEY,  -- 使用生成的专属ID作为主键
   creator_user_id VARCHAR(255) NOT NULL,  -- 发布测试的用户ID
-  title VARCHAR(255) DEFAULT '默契测试',  -- 测试标题
   questions JSON NOT NULL,  -- 储存10道题目的数据 {question_text, options: [4个选项], correct_answer}
   reward_id INT DEFAULT 0,  -- 用户设置的奖励ID（数字索引）
   min_correct INT DEFAULT 8,  -- 用户设置的至少正确几题
@@ -17,7 +16,7 @@ CREATE TABLE quiz_participations (
   activity_id VARCHAR(255) NOT NULL,  -- 测试活动ID (关联quiz_activities表)
   participant_user_id VARCHAR(255),  -- 参与测试的用户ID (可选，未登录用户可为空)
   participant_unique_id VARCHAR(255) NOT NULL,  -- 参与后生成的对应用户专属ID
-  answers JSON,  -- 储存用户回答的10道题目的选项索引
+  answers JSON,  -- 储存用户回答的10道题目的选项
   correct_count INT DEFAULT 0,  -- 答对数量
   has_rewarded TINYINT(1) DEFAULT 0,  -- 是否获得奖励 (1=true/0=false)
   is_reward_delivered TINYINT(1) DEFAULT 0,  -- 出题者是否已经兑现奖励 (1=true/0=false)

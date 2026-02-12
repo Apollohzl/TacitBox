@@ -133,9 +133,19 @@ export default function TodoContent() {
 
     // 检查是否是最后一题
     if (currentQuestionIndex === questions.length - 1) {
-      // 如果是最后一题，直接提交结果
+      // 如果是最后一题，等待状态更新完成后再提交结果
       setTimeout(() => {
-        submitQuizResults();
+        // 确保提交的是最新的状态
+        const currentAnswers = [...selectedAnswers];
+        while (currentAnswers.length <= currentQuestionIndex) {
+          currentAnswers.push('');
+        }
+        currentAnswers[currentQuestionIndex] = option;
+        // 手交包含最新答案的数组
+        setSelectedAnswers(currentAnswers);
+        setTimeout(() => {
+          submitQuizResults();
+        }, 100); // 短暂延迟以确保状态更新
       }, 500);
     } else {
       // 不是最后一题，移动到下一题

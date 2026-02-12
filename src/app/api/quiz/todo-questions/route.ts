@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     
     // 获取活动信息，不包含 correct_answer
     const [activities] = await connection.execute(
-      'SELECT id, creator_user_id, questions, reward_id, min_correct FROM quiz_activities WHERE id = ?',
+      'SELECT id, creator_user_id,creator_user_type, questions, reward_id, min_correct FROM quiz_activities WHERE id = ?',
       [encodeURIComponent(id)]
     ) as [any[], any];
     

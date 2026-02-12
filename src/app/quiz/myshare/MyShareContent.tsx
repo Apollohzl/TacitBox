@@ -64,7 +64,7 @@ export default function MyShareContent() {
 
   // 计算统计数据
   const rewardTotal = activityInfo?.max_reward_count || 0;
-  const answeredCount = participationData.length;  // 这里需要从实际参与数据中获取
+  const answeredCount = activityInfo?.now_finish || 0;  // 使用now_finish字段获取已答题人数
   const rewardedCount = participationData.filter((p: any) => p.has_rewarded).length;  // 实际获奖人数
 
   // 生成邀请图片的函数

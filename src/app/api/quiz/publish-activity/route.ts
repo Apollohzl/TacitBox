@@ -59,15 +59,16 @@ export async function POST(request: NextRequest) {
       // 插入新活动
       await connection.execute(
         `INSERT INTO quiz_activities 
-         (id, creator_user_id, questions, reward_id, min_correct, max_reward_count) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
+         (id, creator_user_id, questions, reward_id, min_correct, max_reward_count, now_finish) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           activityId,
           creator_user_id,
           JSON.stringify(questions),
           String(reward_id), // 确保奖励ID以字符串形式存储
           min_correct,
-          max_reward_count
+          max_reward_count,
+          0  // 初始化now_finish为0
         ]
       );
 

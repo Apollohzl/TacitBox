@@ -140,18 +140,34 @@ export default function TodoContent() {
   const submitQuizResults = async () => {
     setIsSubmitting(true);
     
-    // TODO: Implement the actual API call to submit results
-    // This would be done in a future implementation
-    console.log('Submitting quiz results:', {
-      kValue: encodeURIComponent(kValue || ''),
-      userSocialUid: localStorage.getItem('social_uid'),
-      selectedAnswers
-    });
-
-    // For now, just redirect to a success page or back to the share page
-    setTimeout(() => {
-      router.push(`/quiz/othershare?k=${encodeURIComponent(kValue || '')}`);
-    }, 1000);
+    try {
+      const response = await fetch('/api/quiz/save-participation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          k: kValue, // k值已進行過URL編碼
+          participant_user_id: localStorage.getItem('social_uid'),
+          answers: JSON.stringify(selectedAnswers) // 將答案轉為JSON字符串
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // 成功後跳轉到othershare頁面
+        router.push(`/quiz/othershare?k=${encodeURIComponent(kValue || '')}`);
+      } else {
+        // API請求失敗，顯示錯誤並返回主頁
+        alert('提交失敗: ' + result.error);
+        router.push('/');
+      }
+    } catch (error) {
+      // API請求出錯，顯示錯誤並返回主頁
+      alert('提交過程中發生錯誤: ' + (error instanceof Error ? error.message : '未知錯誤'));
+      router.push('/');
+    }
   };
 
   if (loading) {

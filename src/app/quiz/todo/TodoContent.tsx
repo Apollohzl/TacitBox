@@ -150,7 +150,7 @@ export default function TodoContent() {
 
     // For now, just redirect to a success page or back to the share page
     setTimeout(() => {
-      router.push(`/quiz/doorshare?k=${encodeURIComponent(kValue || '')}`);
+      router.push(`/quiz/othershare?k=${encodeURIComponent(kValue || '')}`);
     }, 1000);
   };
 

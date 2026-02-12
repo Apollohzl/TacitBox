@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
         parsedQuestions = activity.questions; // 保持原始值
       }
     }
-
+    console.log("陈工");
     return NextResponse.json({ 
       success: true,
       data: {

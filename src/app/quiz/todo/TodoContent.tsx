@@ -149,6 +149,10 @@ export default function TodoContent() {
   const submitQuizResults = async () => {
     setIsSubmitting(true);
     
+    // 调试：检查实际的selectedAnswers数组
+    console.log('提交的selectedAnswers:', selectedAnswers);
+    console.log('selectedAnswers长度:', selectedAnswers.length);
+    
     try {
       const response = await fetch('/api/quiz/save-participation', {
         method: 'POST',

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     
     // 获取活动信息，同时获取奖励的详细信息和当前完成人数
     const [activities] = await connection.execute(
-      `SELECT a.id, a.creator_user_id, a.questions, a.reward_id, a.min_correct, a.max_reward_count, a.now_finish, a.created_at,
+      `SELECT a.id, a.creator_user_id, a.questions, a.reward_id, a.min_correct, a.max_reward_count, a.now_finish, a.created_at,a.now_get_reward,
               r.name as reward_name, r.reward_message as reward_description
        FROM quiz_activities a
        LEFT JOIN quiz_reward r ON a.reward_id = r.reward_id

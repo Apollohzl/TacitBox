@@ -61,8 +61,8 @@ export default function MyShareContent() {
 
     fetchData();
 
-    // 设置定时器，每5秒刷新一次活动信息
-    const intervalId = setInterval(fetchData, 5000);
+    // 设置定时器，每10秒刷新一次活动信息
+    const intervalId = setInterval(fetchData, 10000);
 
     // 组件卸载时清理定时器
     return () => {

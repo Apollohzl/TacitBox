@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import pool from '../../../../lib/db';
 
+export const dynamic = 'force-dynamic'; // 确保每次请求都动态生成，不使用缓存
+
 export async function GET(request: NextRequest) {
   try {
     const connection = await pool.getConnection();

@@ -247,14 +247,15 @@ export default function MyShareContent() {
             {/* 奖励图片和描述 */}
             <div className="flex items-center justify-center mb-4" style={{ marginTop: '15px', marginBottom: '15px' }}>
               {activityInfo?.reward_id && (
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 w-full">
                   <img 
                     src={`/shareimages/${activityInfo.reward_id}.png`} 
                     alt="奖励图片" 
-                    className="w-32 h-32 object-contain"
+                    className="h-full object-contain"
+                    style={{ width: 'auto', maxHeight: '128px' }}
                   />
                   {activityInfo.reward_description && (
-                    <div className="text-yellow-500 font-bold text-lg">
+                    <div className="text-yellow-500 font-bold text-lg flex-1 break-words">
                       {activityInfo.reward_description}
                     </div>
                   )}

@@ -105,7 +105,6 @@ export default function QuizPage() {
     
     // 将当前选择保存到数组中
     const currentQ = currentQuestion; // 使用当前题目而不是索引
-    const correctAnswer = currentQ?.correct_answer || '';
     const questionText = currentQ?.question_text || '';
     const questionId = currentQ?.id || 0;
     const questionOptions = currentQ?.options ? 
@@ -124,7 +123,7 @@ export default function QuizPage() {
         questionId,
         option,
         questionText,
-        correctAnswer,
+        correctAnswer: option, // 用户选择的选项即为正确答案
         options: questionOptions // 保存完整选项列表
       };
       

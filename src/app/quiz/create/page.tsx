@@ -14,14 +14,7 @@ export default function CreateQuizPage() {
   const [rewardCount, setRewardCount] = useState(1);
   const [hasValidSource, setHasValidSource] = useState(true); // 默认允许访问
   
-  // 模拟奖励券列表
-  const rewardOptions = [
-    { id: 'cofep', name: '咖啡券', description: '凭咖啡券找我领取午后咖啡' },
-    { id: 'cinemap', name: '电影票', description: '凭此电影票找我一起看电影' },
-    { id: 'sharemimiq', name: '分享秘密券', description: '凭此券找我分享一个秘密给你' },
-    { id: 'askp', name: '提问券', description: '凭次券可向我提问一个问题' },
-    { id: 'redbagp', name: '红包券', description: '凭此券可向我索要一个随机红包' },
-  ];
+  const [rewardOptions, setRewardOptions] = useState<any[]>([]);
 
   useEffect(() => {
     // 检查来源页面
@@ -67,7 +60,46 @@ export default function CreateQuizPage() {
         }
       };
       
+      // 获取奖励列表
+      const fetchRewardOptions = async () => {
+        try {
+          const response = await fetch('/api/quiz/rewards');
+          const data = await response.json();
+          
+          if (data.success) {
+            // 适配API返回的数据格式
+            const formattedRewards = data.rewards.map((reward: any) => ({
+              id: reward.reward_id,
+              name: reward.name,
+              description: reward.reward_message
+            }));
+            setRewardOptions(formattedRewards);
+          } else {
+            console.error('获取奖励列表失败:', data.error);
+            // 如果API失败，使用默认选项
+            setRewardOptions([
+              { id: 'cofep', name: '咖啡券', description: '凭咖啡券找我领取午后咖啡' },
+              { id: 'cinemap', name: '电影票', description: '凭此电影票找我一起看电影' },
+              { id: 'sharemimiq', name: '分享秘密券', description: '凭此券找我分享一个秘密给你' },
+              { id: 'askp', name: '提问券', description: '凭次券可向我提问一个问题' },
+              { id: 'redbagp', name: '红包券', description: '凭此券可向我索要一个随机红包' },
+            ]);
+          }
+        } catch (error) {
+          console.error('获取奖励列表失败:', error);
+          // 如果API失败，使用默认选项
+          setRewardOptions([
+            { id: 'cofep', name: '咖啡券', description: '凭咖啡券找我领取午后咖啡' },
+            { id: 'cinemap', name: '电影票', description: '凭此电影票找我一起看电影' },
+            { id: 'sharemimiq', name: '分享秘密券', description: '凭此券找我分享一个秘密给你' },
+            { id: 'askp', name: '提问券', description: '凭次券可向我提问一个问题' },
+            { id: 'redbagp', name: '红包券', description: '凭此券可向我索要一个随机红包' },
+          ]);
+        }
+      };
+      
       fetchUserInfo();
+      fetchRewardOptions();
     } else {
       router.push('/');
     }

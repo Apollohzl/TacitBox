@@ -18,9 +18,13 @@ export async function GET(request: NextRequest) {
 
     const connection = await pool.getConnection();
     
-    // 获取活动信息
+    // 获取活动信息，同时获取奖励的详细信息
     const [activities] = await connection.execute(
-      'SELECT id, creator_user_id, title, questions, reward_id, min_correct, max_reward_count, created_at FROM quiz_activities WHERE id = ?',
+      `SELECT a.id, a.creator_user_id, a.title, a.questions, a.reward_id, a.min_correct, a.max_reward_count, a.created_at,
+              r.name as reward_name, r.reward_message as reward_description
+       FROM quiz_activities a
+       LEFT JOIN quiz_reward r ON a.reward_id = r.reward_id
+       WHERE a.id = ?`,
       [encodeURIComponent(id)]
     ) as [any[], any];
     

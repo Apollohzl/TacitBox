@@ -14,6 +14,7 @@ export default function TodoContent() {
   const [minCorrect, setMinCorrect] = useState<number>(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
+  const selectedAnswersRef = useRef<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -121,6 +122,7 @@ export default function TodoContent() {
     // 记录当前题目的选择
     newSelectedAnswers[currentQuestionIndex] = option;
     setSelectedAnswers(newSelectedAnswers);
+    selectedAnswersRef.current = newSelectedAnswers;
 
     // Change background color temporarily
     const optionElement = document.getElementById(`option-${currentQuestionIndex}-${option}`);
@@ -159,9 +161,10 @@ export default function TodoContent() {
   const submitQuizResults = async () => {
     setIsSubmitting(true);
     
-    // 调试：检查实际的selectedAnswers数组
-    console.log('提交的selectedAnswers:', selectedAnswers);
-    console.log('selectedAnswers长度:', selectedAnswers.length);
+    // 使用ref获取最新的答案数组
+    const answersToSubmit = selectedAnswersRef.current;
+    console.log('提交的selectedAnswers:', answersToSubmit);
+    console.log('selectedAnswers长度:', answersToSubmit.length);
     
     try {
       const response = await fetch('/api/quiz/save-participation', {
@@ -172,7 +175,7 @@ export default function TodoContent() {
         body: JSON.stringify({
           k: kValue, // k值已進行過URL編碼
           participant_user_id: localStorage.getItem('social_uid'),
-          answers: JSON.stringify(selectedAnswers) // 將答案轉為JSON字符串
+          answers: JSON.stringify(answersToSubmit) // 使用ref中的最新答案
         })
       });
       

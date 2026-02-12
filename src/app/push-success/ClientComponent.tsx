@@ -234,12 +234,28 @@ export default function PushSuccessClient() {
           </div>
           
           {/* 下载按钮 */}
-          <div className="mb-6">
+          <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-center">
             <button
               className="bg-gradient-to-r from-green-500 to-teal-500 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:from-green-600 hover:to-teal-600 transition-all"
               onClick={handleDownload}
             >
               下载分享图片
+            </button>
+            <button
+              className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all"
+              onClick={() => {
+                if (kValue) {
+                  const shareUrl = `https://tb.vicral.cn/quiz/share?k=${encodeURIComponent(kValue)}`;
+                  navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('分享链接已复制到剪贴板！');
+                  }).catch(err => {
+                    console.error('复制链接失败:', err);
+                    alert('复制链接失败，请手动复制');
+                  });
+                }
+              }}
+            >
+              试试链接分享吧
             </button>
           </div>
           

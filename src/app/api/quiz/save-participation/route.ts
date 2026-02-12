@@ -132,6 +132,28 @@ export async function POST(request: NextRequest) {
         [activity_id]
       );
 
+      // 將加密後的數據添加到用戶的participated_activities列表中
+      try {
+        await connection.execute(
+          `UPDATE users 
+           SET participated_activities = JSON_ARRAY_APPEND(COALESCE(participated_activities, JSON_ARRAY()), '$', ?) 
+           WHERE social_uid = ?`,
+          [participant_unique_id, participant_user_id]
+        );
+      } catch (updateError: any) {
+        console.error('更新用戶參與活動列表失敗:', updateError);
+        // 檢查是否是因為participated_activities列不存在導致的錯誤
+        if (updateError.message && (updateError.message.includes('Unknown column') || updateError.message.includes('participated_activities'))) {
+          console.log('警告: 數據庫users表中不存在participated_activities列，需要手動執行數據庫更新腳本');
+          // 注意：由於權限限制，我們無法在此處自動創建列
+          // 需要管理員手動運行SQL腳本來添加該列
+          console.log('請運行以下SQL命令添加列:');
+          console.log('ALTER TABLE users ADD COLUMN participated_activities JSON DEFAULT JSON_ARRAY() COMMENT \'用戶參與的所有活動的獨特ID列表，存儲為JSON數組格式\';');
+        } else {
+          console.error('更新participated_activities時發生其他錯誤:', updateError);
+        }
+      }
+
       connection.release();
 
       return NextResponse.json({

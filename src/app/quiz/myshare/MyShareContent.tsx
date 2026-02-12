@@ -244,15 +244,21 @@ export default function MyShareContent() {
               题可获得我的奖励（先到先得）
             </div>
             
-            {/* 奖励图片 */}
-            <div className="mb-4" style={{ marginTop: '15px', marginBottom: '15px' }}>
+            {/* 奖励图片和描述 */}
+            <div className="flex items-center justify-center mb-4" style={{ marginTop: '15px', marginBottom: '15px' }}>
               {activityInfo?.reward_id && (
-                <img 
-                  src={`/shareimages/${activityInfo.reward_id}.png`} 
-                  alt="奖励图片" 
-                  className="w-32 h-32 object-contain mx-auto"
-		  style={{width: '600px'}}
-                />
+                <div className="flex items-center space-x-4">
+                  <img 
+                    src={`/shareimages/${activityInfo.reward_id}.png`} 
+                    alt="奖励图片" 
+                    className="w-32 h-32 object-contain"
+                  />
+                  {activityInfo.reward_description && (
+                    <div className="text-yellow-500 font-bold text-lg">
+                      {activityInfo.reward_description}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
             
@@ -286,9 +292,9 @@ export default function MyShareContent() {
           </div>
         </div>
 
-        {/* 下半部分：好友参与信息 */}
+        {/* 下半部分：好友默契排行榜 */}
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">参与答题的好友信息</h3>
+          <h3 className="text-lg font-bold text-gray-800 mb-4">好友默契排行榜</h3>
           <div className="text-center text-gray-500 py-8">
             暂无好友参与数据
           </div>

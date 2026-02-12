@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     
     // 查询指定活动的参与情况
     const [participations] = await connection.execute(
-      'SELECT activity_id, user_id, answers, score, has_rewarded, created_at FROM quiz_participations WHERE activity_id = ?',
+      'SELECT activity_id, participant_user_id, answers,correct_count, has_rewarded,participation_time FROM quiz_participations WHERE activity_id = ?',
       [encodeURIComponent(activityId)]
     ) as [any[], any];
     

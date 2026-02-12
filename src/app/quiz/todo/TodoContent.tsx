@@ -172,7 +172,7 @@ export default function TodoContent() {
           {/* Red envelope design */}
           <div className="relative mx-auto w-64 h-80">
             {/* Bottom red rectangle */}
-            <div className="absolute inset-0 bg-red-600 rounded-t-lg rounded-b-lg"></div>
+            <div className="absolute inset-0 bg-red-600 rounded-t-lg rounded-b-lg" style={{ height: '360px' }}></div>
             
             {/* Top red rectangle - now full width with no top margin */}
             <div className="absolute inset-0 bg-red-500 rounded-t-lg rounded-b-3xl pt-4">

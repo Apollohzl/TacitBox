@@ -174,8 +174,38 @@ export default function TodoContent() {
             {/* Bottom red rectangle */}
             <div className="absolute inset-0 bg-red-600 rounded-t-lg rounded-b-lg"></div>
             
-            {/* Top red rectangle */}
-            <div className="absolute top-8 left-4 right-4 h-5/6 bg-red-500 rounded-t-lg rounded-b-3xl">
+            {/* Top red rectangle - now full width with no top margin */}
+            <div className="absolute inset-0 bg-red-500 rounded-t-lg rounded-b-3xl pt-4">
+              {/* Content inside the envelope */}
+              <div className="px-4 h-full flex flex-col items-center justify-between pb-16">
+                <div className="text-center">
+                  <p className="text-yellow-400 text-sm">答对 {minCorrect} 题就可以获得奖励</p>
+                  <p className="text-black text-sm mt-1">(数量有限，先到先得)</p>
+                </div>
+                
+                {/* Creator's avatar */}
+                <div className="flex justify-center">
+                  <img 
+                    src={creatorInfo?.avatar_url || '/images/logo-192x192.png'} 
+                    alt="头像" 
+                    className="w-16 h-16 rounded-full border-2 border-white"
+                  />
+                </div>
+                
+                {/* Creator's nickname */}
+                <p className="text-white">{creatorInfo?.nickname}</p>
+                <p className="text-yellow-400 text-sm mt-1">发出的答题奖励</p>
+                
+                {/* Reward image */}
+                <div className="mt-2 flex-grow flex items-center justify-center">
+                  <img 
+                    src={`/shareimages/${rewardId}.png`} 
+                    alt="奖励" 
+                    className="max-h-20 object-contain"
+                  />
+                </div>
+              </div>
+              
               {/* Golden circle with animation */}
               <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
                 <div className="animate-pulse w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center">
@@ -189,34 +219,6 @@ export default function TodoContent() {
               className="absolute inset-0 rounded-t-lg rounded-b-3xl cursor-pointer"
               onClick={() => setCurrentView('quiz')}
             ></div>
-          </div>
-          
-          {/* Text elements */}
-          <div className="text-center mt-24">
-            <p className="text-yellow-400 text-sm">答对 {minCorrect} 题就可以获得奖励</p>
-            <p className="text-black text-sm mt-1">(数量有限，先到先得)</p>
-            
-            {/* Creator's avatar */}
-            <div className="mt-4 flex justify-center">
-              <img 
-                src={creatorInfo?.avatar_url || '/images/logo-192x192.png'} 
-                alt="头像" 
-                className="w-16 h-16 rounded-full border-2 border-white"
-              />
-            </div>
-            
-            {/* Creator's nickname */}
-            <p className="text-white mt-2">{creatorInfo?.nickname}</p>
-            <p className="text-yellow-400 text-sm mt-1">发出的答题奖励</p>
-            
-            {/* Reward image */}
-            <div className="mt-4">
-              <img 
-                src={`/shareimages/${rewardId}.png`} 
-                alt="奖励" 
-                className="w-full max-w-xs mx-auto object-contain"
-              />
-            </div>
           </div>
         </div>
       </div>

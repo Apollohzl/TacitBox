@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
       // 插入新活动
       await connection.execute(
         `INSERT INTO quiz_activities 
-         (id, creator_user_id, creator_user_type, questions, reward_id, min_correct, max_reward_count, now_finish) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, creator_user_id, creator_user_type, questions, reward_id, min_correct, max_reward_count, now_finish, now_get_reward) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
         [
           activityId,
           creator_user_id,

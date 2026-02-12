@@ -112,11 +112,12 @@ export default function TodoContent() {
       return; // Prevent multiple selections for the same question
     }
 
+    // 先记录当前题目的选择
     const newSelectedAnswers = [...selectedAnswers];
     newSelectedAnswers[currentQuestionIndex] = option;
     setSelectedAnswers(newSelectedAnswers);
 
-    // Change background color temporarily and move to next question
+    // Change background color temporarily
     const optionElement = document.getElementById(`option-${currentQuestionIndex}-${option}`);
     if (optionElement) {
       optionElement.classList.add('bg-green-500', 'text-white');
@@ -125,15 +126,18 @@ export default function TodoContent() {
       }, 500);
     }
 
-    // Move to next question or finish quiz
-    setTimeout(() => {
-      if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-      } else {
-        // All questions answered, submit results
+    // 检查是否是最后一题
+    if (currentQuestionIndex === questions.length - 1) {
+      // 如果是最后一题，直接提交结果
+      setTimeout(() => {
         submitQuizResults();
-      }
-    }, 500);
+      }, 500);
+    } else {
+      // 不是最后一题，移动到下一题
+      setTimeout(() => {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      }, 500);
+    }
   };
 
   // Submit quiz results

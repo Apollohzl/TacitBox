@@ -40,21 +40,31 @@ export default function MyShareContent() {
         const userResponse = await fetch(`/api/user/detail?social_uid=${storedSocialUid}&social_type=${storedLoginType}`);
         const userResult = await userResponse.json();
 
-        if (userResult.success) {
-          setUserData(userResult.data);
+        if (!userResult.success) {
+          // 如果获取用户信息失败，跳转到主页
+          router.push('/');
+          return;
         }
+
+        setUserData(userResult.data);
 
         // 获取活动信息
         const activityResponse = await fetch(`/api/quiz/activity-info?id=${encodeURIComponent(k)}`);
         const activityResult = await activityResponse.json();
 
-        if (activityResult.success) {
-          setActivityInfo(activityResult.activity);
+        if (!activityResult.success) {
+          // 如果获取活动信息失败，跳转到主页
+          router.push('/');
+          return;
         }
+
+        setActivityInfo(activityResult.activity);
 
         setLoading(false);
       } catch (error) {
         console.error('获取数据失败:', error);
+        // 发生错误时跳转到主页
+        router.push('/');
         setLoading(false);
       }
     };

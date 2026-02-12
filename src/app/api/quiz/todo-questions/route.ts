@@ -57,7 +57,8 @@ export async function GET(request: NextRequest) {
         questions: parsedQuestions,
         creator_user_id: activity.creator_user_id,
         reward_id: activity.reward_id,
-        min_correct: activity.min_correct
+        min_correct: activity.min_correct,
+	creator_user_type:activity.creator_user_type
       }
     });
   } catch (error) {

@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       creator_user_id,
+      creator_user_type,
       questions,
       reward_id,
       min_correct,
@@ -59,11 +60,12 @@ export async function POST(request: NextRequest) {
       // 插入新活动
       await connection.execute(
         `INSERT INTO quiz_activities 
-         (id, creator_user_id, questions, reward_id, min_correct, max_reward_count, now_finish) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         (id, creator_user_id, creator_user_type, questions, reward_id, min_correct, max_reward_count, now_finish) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           activityId,
           creator_user_id,
+          creator_user_type, // 添加用户类型
           JSON.stringify(questions),
           String(reward_id), // 确保奖励ID以字符串形式存储
           min_correct,

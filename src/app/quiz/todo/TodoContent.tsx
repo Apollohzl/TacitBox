@@ -52,7 +52,7 @@ export default function TodoContent() {
         setMinCorrect(result.data.min_correct);
 
         // Fetch creator info
-        const creatorResponse = await fetch(`/api/user/detail?social_uid=${result.data.creator_user_id}&social_type=${localStorage.getItem('login_type') || 'wx'}`);
+        const creatorResponse = await fetch(`/api/user/detail?social_uid=${result.data.creator_user_id}&social_type=${result.data.creator_user_type}`);
         const creatorResult = await creatorResponse.json();
 
         if (!creatorResult.success) {

@@ -134,6 +134,7 @@ export default function CreateQuizPage() {
         },
         body: JSON.stringify({
           creator_user_id: userData.social_uid,
+          creator_user_type: localStorage.getItem('login_type') || 'wx', // 添加用户登录类型
           questions: quizResults.questions, // 使用用户在Quiz页面实际选择的题目
           reward_id: selectedReward, // 使用奖励ID字符串而不是数字索引
           min_correct: minCorrect,

@@ -60,6 +60,16 @@ export default function MyShareContent() {
 
         setActivityInfo(activityResult.activity);
 
+        // 获取参与数据
+        const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(k)}`);
+        const participationResult = await participationResponse.json();
+
+        if (participationResult.success) {
+          setParticipationData(participationResult.data.participations || []);
+        } else {
+          setParticipationData([]);
+        }
+
         setLoading(false);
       } catch (error) {
         console.error('获取数据失败:', error);
@@ -83,7 +93,7 @@ export default function MyShareContent() {
   // 计算统计数据
   const rewardTotal = activityInfo?.max_reward_count || 0;
   const answeredCount = activityInfo?.now_finish || 0;  // 使用now_finish字段获取已答题人数
-  const rewardedCount = participationData.filter((p: any) => p.has_rewarded).length;  // 实际获奖人数
+  const rewardedCount = participationData.filter((p: any) => p.has_rewarded === 1 || p.has_rewarded === '1' || p.has_rewarded === true).length;  // 实际获奖人数
 
   // 生成邀请图片的函数
   const generateInviteImage = async () => {

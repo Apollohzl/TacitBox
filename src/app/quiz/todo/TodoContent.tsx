@@ -112,8 +112,13 @@ export default function TodoContent() {
       return; // Prevent multiple selections for the same question
     }
 
-    // 先记录当前题目的选择
+    // 确保数组长度足够，如果不够则扩展
     const newSelectedAnswers = [...selectedAnswers];
+    // 扩展数组到至少当前问题索引+1的长度
+    while (newSelectedAnswers.length <= currentQuestionIndex) {
+      newSelectedAnswers.push('');
+    }
+    // 记录当前题目的选择
     newSelectedAnswers[currentQuestionIndex] = option;
     setSelectedAnswers(newSelectedAnswers);
 

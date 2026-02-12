@@ -56,18 +56,18 @@ export default function QuizShareContent() {
             // 3-true: 跳转到/myshare
             router.push(`/quiz/myshare?k=${encodeURIComponent(kValue)}`);
           } else {
-            // 3-false: 跳转到/doorshare
-            router.push(`/quiz/doorshare?k=${encodeURIComponent(kValue)}`);
+            // 3-false: 跳转到/othershare
+            router.push(`/quiz/othershare?k=${encodeURIComponent(kValue)}`);
           }
         } else {
-          // 如果没有published_activities数据，跳转到/doorshare
-          router.push(`/quiz/doorshare?k=${encodeURIComponent(kValue)}`);
+          // 如果没有published_activities数据，跳转到/othershare
+          router.push(`/quiz/othershare?k=${encodeURIComponent(kValue)}`);
         }
       } catch (error) {
         console.error('获取用户信息失败:', error);
-        // 发生错误时跳转到/doorshare
+        // 发生错误时跳转到/othershare
         const kEncoded = encodeURIComponent(kValue);
-        router.push(`/quiz/doorshare?k=${kEncoded}`);
+        router.push(`/quiz/othershare?k=${kEncoded}`);
       }
     };
 

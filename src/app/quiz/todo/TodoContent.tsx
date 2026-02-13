@@ -149,6 +149,12 @@ export default function TodoContent() {
 
   // Submit quiz results
   const submitQuizResults = async () => {
+    // 在提交前先清除循环请求，防止在提交过程中继续请求活动信息
+    if (checkIntervalRef.current) {
+      clearInterval(checkIntervalRef.current);
+      checkIntervalRef.current = null;
+    }
+    
     setIsSubmitting(true);
     
     // 使用ref获取最新的答案数组

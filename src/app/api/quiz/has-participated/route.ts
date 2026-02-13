@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     const user = userRows[0];
     let participatedActivities = [];
-    if (user.participated_activities) {
+    if (user) {
       try {
         participatedActivities = JSON.parse(user).participated_activities;
         // 确保解析结果是数组

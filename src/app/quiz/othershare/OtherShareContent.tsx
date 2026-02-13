@@ -8,24 +8,50 @@ export default function OtherShareContent() {
   const searchParams = useSearchParams();
   
   useEffect(() => {
-    const k = searchParams.get('k');
-    
-    // 检查浏览器中是否有登录信息
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const hasSocialUid = localStorage.getItem('social_uid') !== null;
-    
-    if (isLoggedIn && hasSocialUid) {
-      // 有登录信息，跳转到 /quiz/todo 页面并传递编码后的k值
-      if (k) {
-        router.push(`/quiz/todo?k=${encodeURIComponent(k)}`);
-      } else {
+    const checkParticipation = async () => {
+      const k = searchParams.get('k');
+      
+      // 检查浏览器中是否有登录信息
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const socialUid = localStorage.getItem('social_uid');
+      
+      if (!isLoggedIn || !socialUid) {
+        // 没有登录信息，跳转到登录页面
+        router.push('/login');
+        return;
+      }
+      
+      if (!k) {
         // 如果没有k值，跳转到首页
         router.push('/');
+        return;
       }
-    } else {
-      // 没有登录信息，跳转到登录页面
-      router.push('/login');
-    }
+      
+      try {
+        // 请求API检查用户是否已参与活动
+        const response = await fetch(`/api/quiz/has-participated?k=${encodeURIComponent(k)}&userId=${encodeURIComponent(socialUid)}`);
+        const result = await response.json();
+        
+        if (result.success) {
+          if (result.hasParticipated) {
+            // 如果用户已参与，跳转到结果页面
+            router.push(`/quiz/result?k=${encodeURIComponent(k)}`);
+          } else {
+            // 如果用户未参与，跳转到答题页面
+            router.push(`/quiz/todo?k=${encodeURIComponent(k)}`);
+          }
+        } else {
+          // API请求失败，也跳转到答题页面
+          router.push(`/quiz/todo?k=${encodeURIComponent(k)}`);
+        }
+      } catch (error) {
+        console.error('检查参与状态失败:', error);
+        // 发生错误时，跳转到答题页面
+        router.push(`/quiz/todo?k=${encodeURIComponent(k)}`);
+      }
+    };
+    
+    checkParticipation();
   }, [router, searchParams]);
 
   return (

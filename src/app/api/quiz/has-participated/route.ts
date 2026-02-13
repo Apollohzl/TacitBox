@@ -14,9 +14,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 对k值进行URL编码，以确保与数据库中的值匹配
-    const encodedK = k;
-
     // 获取用户参与的活动列表
     const [rows]: any = await db.execute(
       'SELECT participated_activities FROM users WHERE social_uid = ?',
@@ -45,8 +42,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 检查编码后的k值是否在参与列表中
-    const hasParticipated = participatedActivities.includes(encodedK);
+    // 检查k值（原始和编码后）是否在参与列表中
+    const hasParticipated = participatedActivities.includes(k) || 
+                            participatedActivities.includes(encodeURIComponent(k));
 	
    	 return new Response(
    	   JSON.stringify({ success: true, hasParticipated: hasParticipated }),

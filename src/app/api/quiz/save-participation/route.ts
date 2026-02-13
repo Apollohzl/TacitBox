@@ -142,13 +142,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // 將加密後的數據添加到用戶的participated_activities列表中
+      // 將活動ID（k值）添加到用戶的participated_activities列表中，以便後續檢查是否已參與
       try {
         await connection.execute(
           `UPDATE users 
            SET participated_activities = JSON_ARRAY_APPEND(COALESCE(participated_activities, JSON_ARRAY()), '$', ?) 
            WHERE social_uid = ?`,
-          [encodeURIComponent(participant_unique_id), participant_user_id]
+          [encodeURIComponent(k), participant_user_id]  // 这里存储的是活动ID，即k值
         );
       } catch (updateError: any) {
         console.error('更新用戶參與活動列表失敗:', updateError);

@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
                             participatedActivities.includes(encodeURIComponent(k));
 	
    	 return new Response(
-   	   JSON.stringify({ success: true, hasParticipated: hasParticipated }),
+   	   JSON.stringify({ success: true, hasParticipated: hasParticipated ,first:participatedActivities}),
    	   { status: 200, headers: { 'Content-Type': 'application/json' } }
   	  );
   } catch (error) {

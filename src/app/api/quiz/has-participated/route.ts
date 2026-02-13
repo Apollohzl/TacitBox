@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     const hasParticipated = participatedActivities.includes(participant_unique_id);
     
     return new Response(
-      JSON.stringify({ success: true, hasParticipated: hasParticipated, participant_unique_id:participant_unique_id, user: user , participatedActivities:participatedActivities}),
+      JSON.stringify({ success: true, hasParticipated: hasParticipated}),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {

@@ -49,28 +49,21 @@ export async function GET(request: NextRequest) {
 
     const user = userRows[0];
     let participatedActivities = [];
-    let a = 0;
-    if (user) {
-      a =  a+1;
-      try {
+    if (user.participated_activities) {
+      
         participatedActivities = user.participated_activities;
         // 确保解析结果是数组
         if (!Array.isArray(participatedActivities)) {
-          a = 45;
+          
           participatedActivities = [];
-        }
-      } catch (parseError) {
-        console.error('解析participated_activities失败:', parseError);
-        a = 32202
-        participatedActivities = [];
-      }
+	}
     }
 
     // 检查编码后的participant_unique_id是否在参与列表中
-    const hasParticipated = participatedActivities.includes(encodeURIComponent(participant_unique_id));
+    const hasParticipated = participatedActivities.includes(participant_unique_id);
     
     return new Response(
-      JSON.stringify({ success: true, hasParticipated: hasParticipated, participant_unique_id:participant_unique_id, user: user , participatedActivities:participatedActivities,a:a}),
+      JSON.stringify({ success: true, hasParticipated: hasParticipated, participant_unique_id:participant_unique_id, user: user , participatedActivities:participatedActivities}),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {

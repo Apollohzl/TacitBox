@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     // 获取活动信息，不包含 correct_answer
     const [activities] = await connection.execute(
       'SELECT id, creator_user_id,creator_user_type, questions, reward_id, min_correct FROM quiz_activities WHERE id = ?',
-      [encodeURIComponent(id)]
+      [id]
     ) as [any[], any];
     
     connection.release();
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
         parsedQuestions = activity.questions; // 保持原始值
       }
     }
-    console.log("陈工");
+    console.log("成功");
     return NextResponse.json({ 
       success: true,
       data: {

@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
         [
           activity_id,
           participant_user_id,
-          participant_unique_id,
+          encodeURIComponent(participant_unique_id),
           JSON.stringify(answers_list),
           correct_count,
           has_rewarded,
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
           `UPDATE users 
            SET participated_activities = JSON_ARRAY_APPEND(COALESCE(participated_activities, JSON_ARRAY()), '$', ?) 
            WHERE social_uid = ?`,
-          [participant_unique_id, participant_user_id]
+          [encodeURIComponent(participant_unique_id), participant_user_id]
         );
       } catch (updateError: any) {
         console.error('更新用戶參與活動列表失敗:', updateError);

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 对k值进行URL编码，以确保与数据库中的值匹配
-    const encodedK = encodeURIComponent(k);
+    const encodedK = k);
 
     // 获取用户参与的活动列表
     const [rows]: any = await db.execute(
@@ -35,15 +35,19 @@ export async function GET(request: NextRequest) {
 
     // 检查编码后的k值是否在参与列表中
     const hasParticipated = participatedActivities.includes(encodedK);
-
-    return new Response(
-      JSON.stringify({ success: true, hasParticipated }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+	if (hasParticipated){
+   	 return new Response(
+   	   JSON.stringify({ success: true, hasParticipated }),
+   	   { status: 200, headers: { 'Content-Type': 'application/json' } }
+  	  );}else{
+	return new Response(
+   	   JSON.stringify({ success: false, hasParticipated }),
+   	   { status: 200, headers: { 'Content-Type': 'application/json' } }
+  	  );}
   } catch (error) {
     console.error('Error checking participation:', error);
     return new Response(
-      JSON.stringify({ success: false, error: 'Internal server error' }),
+      JSON.stringify({ success: false, error: 'Internal server error'+error }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }

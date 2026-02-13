@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       const activityResult = await activityResponse.json();
       
       if (!activityResult.success) {
-        throw new Error('無法獲取活動信息/activity-info: ' + activityResult.error);
+        throw new Error('無法獲取活動信息/activity-info: '+ activity_id + activityResult.error);
       }
       
       const { max_reward_count, min_correct, questions } = activityResult.activity;

@@ -276,14 +276,14 @@ export default function TodoContent() {
           <div className="text-green-600 font-medium">
             {currentQuestionIndex + 1}/10
           </div>
-                          <div className="flex items-center">
-                            <img 
-                              src={localStorage.getItem('avatar_url') || '/images/logo-192x192.png'} 
-                              alt="头像" 
-                              className="w-8 h-8 rounded-full mr-2"
-                            />
-                            <span>{localStorage.getItem('nickname') || '用户'}</span>
-                          </div>        </div>
+                                  <div className="flex items-center">
+                                    <img 
+                                      src={creatorInfo?.avatar_url || '/images/logo-192x192.png'} 
+                                      alt="头像" 
+                                      className="w-8 h-8 rounded-full mr-2"
+                                    />
+                                    <span>{creatorInfo?.nickname || '用户'}</span>
+                                  </div>        </div>
 
         {/* Question section */}
         <div className="bg-white rounded-lg shadow p-4 mb-4">

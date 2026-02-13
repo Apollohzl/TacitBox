@@ -50,14 +50,13 @@ export async function POST(request: NextRequest) {
     
     try {
       // 1. 提取k值並進行URL編碼儲存為activity_id
-      const activity_id = encodeURIComponent(k); // k值已進行過URL編碼
-      
+      const activity_id = encodeURIComponent(k);       
       // 4. 請求活動信息
-      const activityResponse = await fetch(`https://tb.vicral.cn/api/quiz/activity-info?id=${activity_id}`);
+      const activityResponse = await fetch(`https://tb.vicral.cn/api/quiz/activity-info?id=`+activity_id);
       const activityResult = await activityResponse.json();
       
       if (!activityResult.success) {
-        throw new Error('無法獲取活動信息: ' + activityResult.error);
+        throw new Error('無法獲取活動信息/activity-info: ' + activityResult.error);
       }
       
       const { max_reward_count, min_correct, questions } = activityResult.activity;

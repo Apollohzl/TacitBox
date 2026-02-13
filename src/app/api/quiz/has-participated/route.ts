@@ -49,15 +49,19 @@ export async function GET(request: NextRequest) {
 
     const user = userRows[0];
     let participatedActivities = [];
+    let a = 0;
     if (user) {
+      a =  a+1;
       try {
         participatedActivities = JSON.parse(user).participated_activities;
         // 确保解析结果是数组
         if (!Array.isArray(participatedActivities)) {
+          a = 45;
           participatedActivities = [];
         }
       } catch (parseError) {
         console.error('解析participated_activities失败:', parseError);
+        a = 32202
         participatedActivities = [];
       }
     }

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     if (rows.length === 0) {
       return new Response(
         JSON.stringify({ success: false, error: 'User not found', hasParticipated: false }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
                             participatedActivities.includes(encodeURIComponent(k));
 	
    	 return new Response(
-   	   JSON.stringify({ success: true, hasParticipated: hasParticipated ,first:participatedActivities}),
+   	   JSON.stringify({ success: true, hasParticipated: hasParticipated ,first:user}),
    	   { status: 200, headers: { 'Content-Type': 'application/json' } }
   	  );
   } catch (error) {

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     let participatedActivities = [];
     if (user.participated_activities) {
       try {
-        participatedActivities = JSON.parse(user);
+        participatedActivities = JSON.parse(user.participated_activities);
         // 确保解析结果是数组
         //if (!Array.isArray(participatedActivities)) {
           //participatedActivities = [];
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
                             participatedActivities.includes(encodeURIComponent(k));
 	
    	 return new Response(
-   	   JSON.stringify({ success: true, hasParticipated: hasParticipated ,first:user}),
+   	   JSON.stringify({ success: true, hasParticipated: hasParticipated ,first:participatedActivities}),
    	   { status: 200, headers: { 'Content-Type': 'application/json' } }
   	  );
   } catch (error) {

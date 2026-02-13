@@ -37,17 +37,17 @@ export async function GET(request: NextRequest) {
     const hasParticipated = participatedActivities.includes(encodedK);
 	if (hasParticipated){
    	 return new Response(
-   	   JSON.stringify({ success: true, hasParticipated }),
+   	   JSON.stringify({ success: true, hasParticipated: hasParticipated }),
    	   { status: 200, headers: { 'Content-Type': 'application/json' } }
   	  );}else{
 	return new Response(
-   	   JSON.stringify({ success: false, hasParticipated }),
+   	   JSON.stringify({ success: false,hasParticipated: hasParticipated }),
    	   { status: 200, headers: { 'Content-Type': 'application/json' } }
   	  );}
   } catch (error) {
     console.error('Error checking participation:', error);
     return new Response(
-      JSON.stringify({ success: false, error: 'Internal server error'+error }),
+      JSON.stringify({ success: false, error: 'Internal server error: '+error }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }

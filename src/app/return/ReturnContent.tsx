@@ -10,7 +10,7 @@ export default function ReturnContent() {
 
   useEffect(() => {
     const handleReturn = async () => {
-      // a. 检查是否同时拥有type和code参数及数据，没有则跳转/login?error="回调数据失败"
+      // 检查是否同时拥有type和code参数及数据
       const type = searchParams.get('type');
       const code = searchParams.get('code');
 
@@ -20,48 +20,20 @@ export default function ReturnContent() {
       }
 
       try {
-        // b. 获取vercel的2个环境变量的值（JUHE_Appkey和JUHE_Appid），内容异常（空/无变量）直接报错，跳转error为"环境变量异常"
-        const juheAppkey = process.env.NEXT_PUBLIC_JUHE_Appkey;
-        const juheAppid = process.env.NEXT_PUBLIC_JUHE_Appid;
+        // 调用服务器端API处理回调逻辑
+        const response = await fetch(`/api/handle-callback?type=${type}&code=${code}`);
+        const result = await response.json();
 
-        if (!juheAppkey || !juheAppid) {
-          router.push('/login?error=环境变量异常');
-          return;
-        }
-
-        // c. 发送请求：https://u.daib.cn/connect.php?act=callback&appid={JUHE_Appid}&appkey={JUHE_Appkey}&type={type}&code={code}
-        const targetUrl = `https://u.daib.cn/connect.php?act=callback&appid=${juheAppid}&appkey=${juheAppkey}&type=${type}&code=${code}`;
-        
-        const response = await fetch(targetUrl, {
-          method: 'GET',
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
-          }
-        });
-
-        // d. 如果请求报错，直接原报错内容返回/login?error=
-        if (!response.ok) {
-          const errorText = await response.text();
-          router.push(`/login?error=${encodeURIComponent(errorText)}`);
-          return;
-        }
-
-        const userData = await response.json();
-
-        // e. 如果没有报错，获取返回内容的数据（type，access_token，social_uid，faceimg，nickname，location，ip）
-        if (!userData.type || !userData.access_token || !userData.social_uid) {
-          router.push('/login?error=返回数据不完整');
+        if (!result.success) {
+          router.push(`/login?error=${encodeURIComponent(result.error)}`);
           return;
         }
 
         // 获取用户信息
-        const { type: userType, access_token, social_uid, faceimg, nickname, location, ip } = userData;
+        const { type: userType, access_token, social_uid, faceimg, nickname, location, ip, gender } = result.userData;
 
         setMessage('正在保存用户信息...');
 
-        // f. 剩下的什么数据库传输数据，浏览器数据保存啥啥啥的，你就按照原来的程序逻辑补上去就行
         // 将用户信息保存到数据库
         try {
           const saveResponse = await fetch('/api/user/save', {
@@ -74,7 +46,7 @@ export default function ReturnContent() {
               social_type: userType,  // 登录类型
               nickname: nickname,
               avatar_url: faceimg,
-              gender: userData.gender || '',  // 如果有性别信息
+              gender: gender || '',  // 如果有性别信息
               location: location || '',
               access_token: access_token,
               ip_address: ip

@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
     }
 
     // b. 获取vercel的2个环境变量的值（JUHE_Appkey和JUHE_Appid），内容异常（空/无变量）直接报错，传回error为"环境变量异常"
-    const juheAppkey = process.env.NEXT_PUBLIC_JUHE_Appkey;
-    const juheAppid = process.env.NEXT_PUBLIC_JUHE_Appid;
+    const juheAppkey = process.env.JUHE_Appkey;
+    const juheAppid = process.env.JUHE_Appid;
 
     if (!juheAppkey || !juheAppid) {
       return NextResponse.json({ 

@@ -163,7 +163,7 @@ export default function TodoContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          k: kValue, // k值已進行過URL編碼
+          k: encodeURIComponent(kValue), // k值已進行過URL編碼
           participant_user_id: localStorage.getItem('social_uid'),
           answers: JSON.stringify(answersToSubmit) // 使用ref中的最新答案
         })

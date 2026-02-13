@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
           `UPDATE users 
            SET participated_activities = JSON_ARRAY_APPEND(COALESCE(participated_activities, JSON_ARRAY()), '$', ?) 
            WHERE social_uid = ?`,
-          [encodeURIComponent(k), participant_user_id]  // 这里存储的是活动ID，即k值
+          [encodeURIComponent(participant_unique_id), participant_user_id]  // 这里存储的是参与者的唯一标识，用于has-participated API检查
         );
       } catch (updateError: any) {
         console.error('更新用戶參與活動列表失敗:', updateError);

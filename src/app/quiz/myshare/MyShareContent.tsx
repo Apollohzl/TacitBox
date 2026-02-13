@@ -58,6 +58,13 @@ export default function MyShareContent() {
           return;
         }
 
+        // 验证创建者ID是否与当前用户ID匹配
+        if (!activityResult.activity || activityResult.activity.creator_user_id !== storedSocialUid) {
+          // 如果不匹配，跳转到/share页面并传递k参数
+          router.push(`/quiz/share?k=${encodeURIComponent(k)}`);
+          return;
+        }
+
         setActivityInfo(activityResult.activity);
 
         // 获取参与数据
@@ -82,7 +89,57 @@ export default function MyShareContent() {
     fetchData();
 
     // 设置定时器，每10秒刷新一次活动信息
-    const intervalId = setInterval(fetchData, 10000);
+    const intervalId = setInterval(async () => {
+      const k = searchParams.get('k');
+      if (!k) {
+        router.push('/');
+        return;
+      }
+
+      try {
+        // 获取当前登录用户数据
+        const storedSocialUid = localStorage.getItem('social_uid');
+        const storedLoginType = localStorage.getItem('login_type') || 'wx';
+
+        if (!storedSocialUid) {
+          router.push('/login');
+          return;
+        }
+
+        // 获取活动信息
+        const activityResponse = await fetch(`/api/quiz/activity-info?id=${encodeURIComponent(k)}`);
+        const activityResult = await activityResponse.json();
+
+        if (!activityResult.success) {
+          // 如果获取活动信息失败，跳转到主页
+          router.push('/');
+          return;
+        }
+
+        // 验证创建者ID是否与当前用户ID匹配
+        if (!activityResult.activity || activityResult.activity.creator_user_id !== storedSocialUid) {
+          // 如果不匹配，跳转到/share页面并传递k参数
+          router.push(`/quiz/share?k=${encodeURIComponent(k)}`);
+          return;
+        }
+
+        setActivityInfo(activityResult.activity);
+
+        // 获取参与数据
+        const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(k)}`);
+        const participationResult = await participationResponse.json();
+
+        if (participationResult.success) {
+          setParticipationData(participationResult.data.participations || []);
+        } else {
+          setParticipationData([]);
+        }
+      } catch (error) {
+        console.error('获取数据失败:', error);
+        // 发生错误时跳转到主页
+        router.push('/');
+      }
+    }, 10000);
 
     // 组件卸载时清理定时器
     return () => {

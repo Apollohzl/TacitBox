@@ -216,7 +216,7 @@ export default function MyShareContent() {
       }
       
       // 生成二维码
-      const response = await fetch(`https://uapis.cn/api/v1/image/qrcode?text=https://tb.vicral.cn/quiz/share?k=${encodeURIComponent(kValue)}&size=204&format=json`);
+      const response = await fetch(`https://uapis.cn/api/v1/image/qrcode?text=https://tb.vicral.cn/quiz/share?k=${encodeURIComponent(encodeURIComponent(kValue))}&size=204&format=json`);
       const qrcodeData = await response.json();
       
       if (qrcodeData.qrcode_base64) {

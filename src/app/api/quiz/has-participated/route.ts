@@ -33,9 +33,9 @@ export async function GET(request: NextRequest) {
       try {
         participatedActivities = JSON.parse(user.participated_activities);
         // 确保解析结果是数组
-        if (!Array.isArray(participatedActivities)) {
-          participatedActivities = [];
-        }
+        //if (!Array.isArray(participatedActivities)) {
+          //participatedActivities = [];
+        //}
       } catch (parseError) {
         console.error('解析participated_activities失败:', parseError);
         participatedActivities = [];

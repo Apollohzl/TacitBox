@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
           is_reward_delivered = 0;
         } else {
           // 沒有獎勵（獎勵已發完）
-          has_rewarded = 0;
+          has_rewarded = 1;
           is_reward_delivered = 0;
         }
       } else {
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       // 9. 從vercel環境變量獲取SHARE_TODO_KEY的值
       const shareTodoKey = process.env.SHARE_TODO_KEY;
       if (!shareTodoKey) {
-        throw new Error('缺少SHARE_TODO_KEY環境變量');
+        throw new Error('缺少KEY環境變量');
       }
       
       // 10. 拼接現在的時間戳+participant_user_id+activity_id+max_reward_count（轉字符串）+has_rewarded（轉字符串）+現在的時間戳
@@ -131,6 +131,16 @@ export async function POST(request: NextRequest) {
          WHERE id = ?`,
         [activity_id]
       );
+
+      // 如果用戶獲得獎勵，則更新now_get_reward字段
+      if (has_rewarded === 1) {
+        await connection.execute(
+          `UPDATE quiz_activities 
+           SET now_get_reward = IFNULL(now_get_reward, 0) + 1 
+           WHERE id = ?`,
+          [activity_id]
+        );
+      }
 
       // 將加密後的數據添加到用戶的participated_activities列表中
       try {

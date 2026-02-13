@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     if (participationRows.length === 0) {
       // 如果在participations表中没有找到记录，说明用户未参与该活动
       return new Response(
-        JSON.stringify({ success: true, hasParticipated: false }),
+        JSON.stringify({ success: true, hasParticipated: false, message: '列表为空' }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     if (userRows.length === 0) {
       return new Response(
         JSON.stringify({ success: false, error: 'User not found', hasParticipated: false }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     const hasParticipated = participatedActivities.includes(encodeURIComponent(participant_unique_id));
     
     return new Response(
-      JSON.stringify({ success: true, hasParticipated: hasParticipated }),
+      JSON.stringify({ success: true, hasParticipated: hasParticipated, participant_unique_id:participant_unique_id, user: user , participatedActivities:participatedActivities}),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {

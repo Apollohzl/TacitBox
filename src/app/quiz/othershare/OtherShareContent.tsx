@@ -29,7 +29,7 @@ export default function OtherShareContent() {
       
       try {
         // 请求API检查用户是否已参与活动
-        const response = await fetch(`/api/quiz/has-participated?k=${encodeURIComponent(k)}&userId=${encodeURIComponent(socialUid)}`);
+        const response = await fetch(`/api/quiz/has-participated?k=${encodeURIComponent(k)}&userId=${socialUid}`);
         const result = await response.json();
         
         if (result.success) {
@@ -42,12 +42,12 @@ export default function OtherShareContent() {
           }
         } else {
           // API请求失败，也跳转到答题页面
-          router.push(`/quiz/todo?k=${encodeURIComponent(k)}`);
+          router.push(`/`);
         }
       } catch (error) {
         console.error('检查参与状态失败:', error);
         // 发生错误时，跳转到答题页面
-        router.push(`/quiz/todo?k=${encodeURIComponent(k)}`);
+        router.push(`/`);
       }
     };
     

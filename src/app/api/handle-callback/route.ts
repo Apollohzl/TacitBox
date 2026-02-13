@@ -59,10 +59,35 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
+    // 检查位置信息是否为空，如果为空则获取位置
+    let finalLocation = userData.location;
+    if (!finalLocation || finalLocation === "" || finalLocation === null) {
+      try {
+        const ipResponse = await fetch(`https://uapis.cn/api/v1/network/myip?source=commercial&ip=${userData.ip || ''}`);
+        const ipData = await ipResponse.json();
+        
+        if (ipData && ipData.region && ipData.district) {
+          finalLocation = `${ipData.region} ${ipData.district}`;
+        } else if (ipData && ipData.location) {
+          finalLocation = ipData.location;
+        }
+      } catch (locationError) {
+        console.error('获取位置信息失败:', locationError);
+        // 如果获取位置失败，使用默认值或者保持原始值
+        finalLocation = userData.location || '未知位置';
+      }
+    }
+
+    // 将更新的位置信息合并到用户数据中
+    const userDataWithLocation = {
+      ...userData,
+      location: finalLocation
+    };
+
     // 返回用户数据
     return NextResponse.json({ 
       success: true,
-      userData: userData
+      userData: userDataWithLocation
     });
   } catch (error) {
     console.error('处理回调时发生错误:', error);

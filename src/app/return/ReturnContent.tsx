@@ -47,7 +47,7 @@ export default function ReturnContent() {
               nickname: nickname,
               avatar_url: faceimg,
               gender: gender || '',  // 如果有性别信息
-              location: location || '',
+              location: location || '未知位置', // 使用从API获取的位置信息
               access_token: access_token,
               ip_address: ip
             }),

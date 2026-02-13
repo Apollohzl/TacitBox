@@ -37,6 +37,21 @@ export default function TodoContent() {
         return;
       }
 
+      // 先检查用户是否已经参与了该活动
+      try {
+        const participationResponse = await fetch(`/api/quiz/has-participated?k=${encodeURIComponent(kValue)}&userId=${encodeURIComponent(storedSocialUid)}`);
+        const participationResult = await participationResponse.json();
+
+        if (participationResult.success && participationResult.hasParticipated) {
+          // 如果用户已经参与了该活动，直接跳转到结果页面
+          router.push(`/quiz/result?k=${encodeURIComponent(kValue)}`);
+          return;
+        }
+      } catch (error) {
+        console.error('检查参与状态失败:', error);
+        // 如果检查失败，继续加载题目数据
+      }
+
       try {
         // Fetch activity data
         const response = await fetch(`/api/quiz/todo-questions?id=${encodeURIComponent(kValue)}`);
@@ -77,15 +92,25 @@ export default function TodoContent() {
         // Start checking activity exists every 10 seconds
         checkIntervalRef.current = setInterval(async () => {
           try {
+            // 同时检查活动状态和参与状态
             const activityResponse = await fetch(`/api/quiz/todo-questions?id=${encodeURIComponent(kValue)}`);
             const activityResult = await activityResponse.json();
             if (!activityResult.success) {
               alert(activityResult.error || '活动不存在或已失效');
               router.push('/');
+              return;
+            }
+            
+            // 检查用户是否已参与活动
+            const participationResponse = await fetch(`/api/quiz/has-participated?k=${encodeURIComponent(kValue)}&userId=${encodeURIComponent(storedSocialUid)}`);
+            const participationResult = await participationResponse.json();
+            
+            if (participationResult.success && participationResult.hasParticipated) {
+              // 如果用户已参与活动，跳转到share页面（会根据逻辑自动跳转到结果页）
+              router.push(`/quiz/share?k=${encodeURIComponent(kValue)}`);
             }
           } catch (error) {
-            alert('检查活动状态时出错');
-            router.push('/');
+            console.error('检查活动状态或参与状态时出错:', error);
           }
         }, 10000);
       } catch (error) {

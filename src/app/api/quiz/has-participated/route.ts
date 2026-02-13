@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     if (user) {
       a =  a+1;
       try {
-        participatedActivities = JSON.parse(user).participated_activities;
+        participatedActivities = user.participated_activities;
         // 确保解析结果是数组
         if (!Array.isArray(participatedActivities)) {
           a = 45;

@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { k, participant_user_id, answers } = body;
+    k = encodeURIComponent(k);
 
     // 验證必要參數
     if (!k || !participant_user_id || !answers) {
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
       const activity_id = k; // k值已進行過URL編碼
       
       // 4. 請求活動信息
-      const activityResponse = await fetch(`${process.env.BASE_URL || 'https://tb.vicral.cn'}/api/quiz/activity-info?id=${activity_id}`);
+      const activityResponse = await fetch(`https://tb.vicral.cn/api/quiz/activity-info?id=${activity_id}`);
       const activityResult = await activityResponse.json();
       
       if (!activityResult.success) {

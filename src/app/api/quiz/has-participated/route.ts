@@ -31,7 +31,19 @@ export async function GET(request: NextRequest) {
     }
 
     const user = rows[0];
-    const participatedActivities = user.participated_activities ? JSON.parse(user.participated_activities) : [];
+    let participatedActivities = [];
+    if (user.participated_activities) {
+      try {
+        participatedActivities = JSON.parse(user.participated_activities);
+        // 确保解析结果是数组
+        if (!Array.isArray(participatedActivities)) {
+          participatedActivities = [];
+        }
+      } catch (parseError) {
+        console.error('解析participated_activities失败:', parseError);
+        participatedActivities = [];
+      }
+    }
 
     // 检查编码后的k值是否在参与列表中
     const hasParticipated = participatedActivities.includes(encodedK);

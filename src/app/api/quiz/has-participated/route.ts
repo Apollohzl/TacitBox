@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     let participatedActivities = [];
     if (user.participated_activities) {
       try {
-        participatedActivities = JSON.parse(user.participated_activities);
+        participatedActivities = JSON.parse(user);
         // 确保解析结果是数组
         //if (!Array.isArray(participatedActivities)) {
           //participatedActivities = [];

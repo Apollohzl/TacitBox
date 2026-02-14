@@ -81,7 +81,8 @@ export async function GET(request: NextRequest) {
     // 将更新的位置信息合并到用户数据中
     const userDataWithLocation = {
       ...userData,
-      location: finalLocation
+      location: finalLocation,
+      ipData:ipData
     };
 
     // 返回用户数据

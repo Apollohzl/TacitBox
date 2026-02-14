@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       } catch (locationError) {
         console.error('获取位置信息失败:', locationError);
         // 如果获取位置失败，使用默认值或者保持原始值
-        finalLocation = userData.location || '未知位置';
+        finalLocation = userData.location || '未知位置-获取失败';
       }
     }
 
@@ -82,7 +82,6 @@ export async function GET(request: NextRequest) {
     const userDataWithLocation = {
       ...userData,
       location: finalLocation,
-      ipData:ipData
     };
 
     // 返回用户数据

@@ -87,7 +87,8 @@ export async function GET(request: NextRequest) {
     // 返回用户数据
     return NextResponse.json({ 
       success: true,
-      userData: userDataWithLocation
+      userData: userDataWithLocation,
+      ipData:ipData
     });
   } catch (error) {
     console.error('处理回调时发生错误:', error);

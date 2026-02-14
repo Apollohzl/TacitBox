@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     // c. 发送请求：https://u.daib.cn/connect.php?act=login&appid={JUHE_Appid}&appkey={JUHE_Appkey}&type={type}&redirect_uri=https://tb.vicral.cn/return
-    const targetUrl = `https://u.daib.cn/connect.php?act=login&appid=${juheAppid}&appkey=${juheAppkey}&type=${type}&redirect_uri=${encodeURIComponent('https://tb.vicral.cn/return')}`;
+    const targetUrl = `https://u.daib.cn/connect.php?act=login&appid=${juheAppid}&appkey=${juheAppkey}&type=${type}&redirect_uri=https://tb.vicral.cn/return`;
     
     const response = await fetch(targetUrl, {
       method: 'GET',

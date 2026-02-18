@@ -203,6 +203,7 @@ export default function TodoContent() {
         body: JSON.stringify({
           k: encodeURIComponent(kValue), // k值已進行過URL編碼
           participant_user_id: localStorage.getItem('social_uid'),
+          participant_user_type: localStorage.getItem('login_type'),
           answers: JSON.stringify(answersToSubmit) // 使用ref中的最新答案
         })
       });

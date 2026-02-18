@@ -106,11 +106,7 @@ export async function POST(request: NextRequest) {
       const dataToEncrypt = `${timestamp}${participant_user_id}${activity_id}${max_reward_count.toString()}${has_rewarded.toString()}${timestamp}`;
       
       // 11. 將拼接好的結果用SHARE_TODO_KEY進行對稱加密，儲存為participant_unique_id
-      const encryptedData = CryptoJS.AES.encrypt(dataToEncrypt, shareTodoKey).toString();
-      
-      // 11.5 为避免数据过长，生成一个固定长度的哈希值并截取前60个字符作为participant_unique_id
-      const hashValue = CryptoJS.SHA256(encryptedData).toString();
-      const participant_unique_id = hashValue.substring(0, 60); // 截取前60个字符以确保长度可控
+      const participant_unique_id = CryptoJS.AES.encrypt(dataToEncrypt, shareTodoKey).toString();
 
       // 12. 整合結果并向SQLPub數據庫的quiz_participations表添加新數據
       await connection.execute(
@@ -120,7 +116,7 @@ export async function POST(request: NextRequest) {
         [
           activity_id,
           participant_user_id,
-          participant_unique_id,  // 不再进行URL编码，因为已截取到可控长度
+          encodeURIComponent(participant_unique_id),  // 使用URL编码缩短长度
           JSON.stringify(answers_list),
           correct_count,
           has_rewarded,

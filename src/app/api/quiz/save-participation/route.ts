@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       
       // 11. 將拼接好的結果用SHARE_TODO_KEY進行對稱加密，儲存為participant_unique_id
       const participant_unique_id = CryptoJS.AES.encrypt(dataToEncrypt, shareTodoKey).toString();
-
+      console.log(encodeURIComponent(participant_unique_id));
       // 12. 整合結果并向SQLPub數據庫的quiz_participations表添加新數據
       await connection.execute(
         `INSERT INTO quiz_participations 

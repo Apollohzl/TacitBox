@@ -58,9 +58,9 @@ export default function MyShareContent() {
           return;
         }
 
-        // 验证创建者ID是否与当前用户ID匹配
+        // 驗證創建者ID是否與當前用戶ID匹配
         if (!activityResult.activity || activityResult.activity.creator_user_id !== storedSocialUid) {
-          // 如果不匹配，跳转到/share页面并传递k参数
+          // 如果不匹配，跳轉到/share頁面並傳遞k參數
           router.push(`/quiz/share?k=${encodeURIComponent(k)}`);
           return;
         }
@@ -72,7 +72,32 @@ export default function MyShareContent() {
         const participationResult = await participationResponse.json();
 
         if (participationResult.success) {
-          setParticipationData(participationResult.data.participations || []);
+          const participationList = participationResult.data.participations || [];
+          
+          // 为每个参与者获取用户详细信息
+          const participantsWithDetails = await Promise.all(
+            participationList.map(async (participation: any) => {
+              try {
+                const userDetailResponse = await fetch(
+                  `/api/user/detail?social_uid=${participation.participant_user_id}&social_type=unknown`
+                );
+                const userDetailResult = await userDetailResponse.json();
+                
+                return {
+                  ...participation,
+                  userDetail: userDetailResult.success ? userDetailResult.data : null
+                };
+              } catch (error) {
+                console.error('获取用户详情失败:', error);
+                return {
+                  ...participation,
+                  userDetail: null
+                };
+              }
+            })
+          );
+          
+          setParticipationData(participantsWithDetails);
         } else {
           setParticipationData([]);
         }
@@ -116,9 +141,9 @@ export default function MyShareContent() {
           return;
         }
 
-        // 验证创建者ID是否与当前用户ID匹配
+        // 驗證創建者ID是否與當前用戶ID匹配
         if (!activityResult.activity || activityResult.activity.creator_user_id !== storedSocialUid) {
-          // 如果不匹配，跳转到/share页面并传递k参数
+          // 如果不匹配，跳轉到/share頁面並傳遞k參數
           router.push(`/quiz/share?k=${encodeURIComponent(k)}`);
           return;
         }
@@ -130,7 +155,32 @@ export default function MyShareContent() {
         const participationResult = await participationResponse.json();
 
         if (participationResult.success) {
-          setParticipationData(participationResult.data.participations || []);
+          const participationList = participationResult.data.participations || [];
+          
+          // 为每个参与者获取用户详细信息
+          const participantsWithDetails = await Promise.all(
+            participationList.map(async (participation: any) => {
+              try {
+                const userDetailResponse = await fetch(
+                  `/api/user/detail?social_uid=${participation.participant_user_id}&social_type=unknown`
+                );
+                const userDetailResult = await userDetailResponse.json();
+                
+                return {
+                  ...participation,
+                  userDetail: userDetailResult.success ? userDetailResult.data : null
+                };
+              } catch (error) {
+                console.error('获取用户详情失败:', error);
+                return {
+                  ...participation,
+                  userDetail: null
+                };
+              }
+            })
+          );
+          
+          setParticipationData(participantsWithDetails);
         } else {
           setParticipationData([]);
         }
@@ -459,21 +509,9 @@ export default function MyShareContent() {
                       }
                   }
                   
-                  // 获取用户详情
-                  const getUserDetail = async (userId: string, userType: string) => {
-                    try {
-                      const response = await fetch(`/api/user/detail?social_uid=${userId}&social_type=${userType || 'wx'}`);
-                      const result = await response.json();
-                      return result.success ? result.data : null;
-                    } catch (error) {
-                      console.error('获取用户详情失败:', error);
-                      return null;
-                    }
-                  };
-                  
-                  // 获取用户头像和昵称（此处简化处理，实际可能需要异步获取）
-                  const userAvatar = '/images/logo-192x192.png'; // 默认头像
-                  const userNickname = participation.participant_user_id; // 临时显示ID，实际应获取昵称
+                  // 获取用户头像和昵称
+                  const userAvatar = participation.userDetail?.avatar_url || '/images/logo-192x192.png'; // 用户头像
+                  const userNickname = participation.userDetail?.nickname || participation.participant_user_id; // 用户昵称，如果获取不到则显示ID
                   
                   return (
                     <div key={participation.participant_user_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
@@ -512,7 +550,7 @@ export default function MyShareContent() {
                         {/* c. 用户信息 */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-gray-800 truncate">看看TA是谁</span>
+                            <span className="font-bold text-gray-800 truncate">{userNickname}</span>
                             {/* "查看答案"按钮，添加动画效果 */}
                             <button 
                               className="text-xs bg-green-500 text-white py-1 px-2 rounded-full border border-green-500 hover:bg-green-600 animate-pulse"

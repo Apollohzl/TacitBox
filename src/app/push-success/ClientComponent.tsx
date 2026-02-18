@@ -245,7 +245,7 @@ export default function PushSuccessClient() {
               className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all"
               onClick={() => {
                 if (kValue) {
-                  const shareUrl = `https://tb.vicral.cn/quiz/share?k=${encodeURIComponent(kValue)}`;
+                  const shareUrl = `https://tb.vicral.cn/quiz/share?k=${kValue}`;
                   navigator.clipboard.writeText(shareUrl).then(() => {
                     alert('分享链接已复制到剪贴板！');
                   }).catch(err => {

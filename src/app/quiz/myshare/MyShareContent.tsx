@@ -162,7 +162,7 @@ export default function MyShareContent() {
             participationList.map(async (participation: any) => {
               try {
                 const userDetailResponse = await fetch(
-                  `/api/user/detail?social_uid=${participation.participant_user_id}&social_type=unknown`
+                  `/api/user/detail?social_uid=${participation.participant_user_id}&social_type=${participation.participant_user_type}`
                 );
                 const userDetailResult = await userDetailResponse.json();
                 
@@ -510,9 +510,9 @@ export default function MyShareContent() {
                   }
                   
                   // 获取用户头像和昵称
-                  const userAvatar = participation.userDetail?.avatar_url || '/images/logo-192x192.png'; // 用户头像
+                  const userAvatar = participation.userDetail.avatar_url ; // 用户头像
                   console.log(participation);
-                  const userNickname = participation.participant_user_type; // 用户昵称，如果获取不到则显示ID
+                  const userNickname = participation.userDetail.nickname; // 用户昵称，如果获取不到则显示ID
                   
                   return (
                     <div key={participation.participant_user_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">

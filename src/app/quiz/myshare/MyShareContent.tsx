@@ -30,7 +30,7 @@ export default function MyShareContent() {
       try {
         // 获取当前登录用户数据
         const storedSocialUid = localStorage.getItem('social_uid');
-        const storedLoginType = localStorage.getItem('login_type') || 'wx';
+        const storedLoginType = localStorage.getItem('login_type') ;
 
         if (!storedSocialUid) {
           router.push('/login');
@@ -79,7 +79,7 @@ export default function MyShareContent() {
             participationList.map(async (participation: any) => {
               try {
                 const userDetailResponse = await fetch(
-                  `/api/user/detail?social_uid=${participation.participant_user_id}&social_type=unknown`
+                  `/api/user/detail?social_uid=${participation.participant_user_id}&social_type=${participation.participant_user_type}`
                 );
                 const userDetailResult = await userDetailResponse.json();
                 
@@ -511,6 +511,7 @@ export default function MyShareContent() {
                   
                   // 获取用户头像和昵称
                   const userAvatar = participation.userDetail?.avatar_url || '/images/logo-192x192.png'; // 用户头像
+                  console.log(participation);
                   const userNickname = participation.participant_user_type; // 用户昵称，如果获取不到则显示ID
                   
                   return (

@@ -511,7 +511,7 @@ export default function MyShareContent() {
                   
                   // 获取用户头像和昵称
                   const userAvatar = participation.userDetail?.avatar_url || '/images/logo-192x192.png'; // 用户头像
-                  const userNickname = participation.userDetail?.nickname || participation.participant_user_id; // 用户昵称，如果获取不到则显示ID
+                  const userNickname = participation.participant_user_type; // 用户昵称，如果获取不到则显示ID
                   
                   return (
                     <div key={participation.participant_user_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">

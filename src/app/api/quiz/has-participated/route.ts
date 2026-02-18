@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
 
     // 对k值进行URL编码，以确保与数据库中的值匹配
     const encodedK = encodeURIComponent(k);
+    console.log(encodedK);
 
     // 从quiz_participations表获取对应的participant_unique_id
     const [participationRows]: any = await db.execute(

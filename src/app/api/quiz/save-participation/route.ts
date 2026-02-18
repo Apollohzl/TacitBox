@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       
       // 10. 拼接現在的時間戳+participant_user_id+activity_id+max_reward_count（轉字符串）+has_rewarded（轉字符串）+現在的時間戳
       const timestamp = Date.now().toString();
-      const dataToEncrypt = `${timestamp}${participant_user_id}${activity_id}${max_reward_count.toString()}${has_rewarded.toString()}${timestamp}`;
+      const dataToEncrypt = `${timestamp}${activity_id}${max_reward_count.toString()}${has_rewarded.toString()}${timestamp}`;
       
       // 11. 將拼接好的結果用SHARE_TODO_KEY進行對稱加密，儲存為participant_unique_id
       const participant_unique_id = CryptoJS.AES.encrypt(dataToEncrypt, shareTodoKey).toString();

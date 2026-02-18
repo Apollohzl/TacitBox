@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
       try {
         const ipResponse = await fetch(`https://uapis.cn/api/v1/network/myip?source=commercial`);
         const ipData = await ipResponse.json();
-        console.log("用户请求的用户地址："+ipData);
+        console.log("用户请求的用户地址："+ipData.region + " " +ipData.district );
         
         if (ipData && ipData.region && ipData.district) {
           finalLocation = `${ipData.region} ${ipData.district}`;

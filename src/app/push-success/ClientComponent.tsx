@@ -246,9 +246,7 @@ export default function PushSuccessClient() {
               onClick={() => {
                 if (kValue) {
                   const shareUrl = `https://tb.vicral.cn/quiz/share?k=${kValue}`;
-                  navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert('分享链接已复制到剪贴板！');
-                  }).catch(err => {
+                  navigator.clipboard.writeText(shareUrl).then().catch(err => {
                     console.error('复制链接失败:', err);
                     alert('复制链接失败，请手动复制');
                   });

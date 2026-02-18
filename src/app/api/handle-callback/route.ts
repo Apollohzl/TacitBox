@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     // 获取环境变量
     const juheAppkey = process.env.JUHE_Appkey;
     const juheAppid = process.env.JUHE_Appid;
-
+    let a=0
     if (!juheAppkey || !juheAppid) {
       return NextResponse.json({ 
         success: false,
@@ -65,6 +65,7 @@ export async function GET(request: NextRequest) {
       try {
         const ipResponse = await fetch(`https://uapis.cn/api/v1/network/myip?source=commercial`);
         const ipData = await ipResponse.json();
+        console.log("用户请求的用户地址："+ipData);
         
         if (ipData && ipData.region && ipData.district) {
           finalLocation = `${ipData.region} ${ipData.district}`;
@@ -83,12 +84,11 @@ export async function GET(request: NextRequest) {
       ...userData,
       location: finalLocation,
     };
-
+    console.log("userDataWithLocation："+userDataWithLocation);
     // 返回用户数据
     return NextResponse.json({ 
       success: true,
       userData: userDataWithLocation,
-      
     });
   } catch (error) {
     console.error('处理回调时发生错误:', error);

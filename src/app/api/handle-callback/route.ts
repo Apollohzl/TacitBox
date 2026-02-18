@@ -59,36 +59,10 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 检查位置信息是否为空，如果为空则获取位置
-    let finalLocation = userData.location;
-    if (!finalLocation || finalLocation === "" || finalLocation === null) {
-      try {
-        const ipResponse = await fetch(`https://uapis.cn/api/v1/network/myip?source=commercial`);
-        const ipData = await ipResponse.json();
-        console.log("用户请求的用户地址："+ipData.region + " " +ipData.district );
-        
-        if (ipData && ipData.region && ipData.district) {
-          finalLocation = `${ipData.region} ${ipData.district}`;
-        } else if (ipData && ipData.location) {
-          finalLocation = ipData.location;
-        }
-      } catch (locationError) {
-        console.error('获取位置信息失败:', locationError);
-        // 如果获取位置失败，使用默认值或者保持原始值
-        finalLocation = userData.location || '未知位置';
-      }
-    }
-
-    // 将更新的位置信息合并到用户数据中
-    const userDataWithLocation = {
-      ...userData,
-      location: finalLocation,
-    };
-    console.log("userDataWithLocation："+userDataWithLocation);
-    // 返回用户数据
+    // 直接返回原始用户数据，不处理位置信息
     return NextResponse.json({ 
       success: true,
-      userData: userDataWithLocation,
+      userData: userData
     });
   } catch (error) {
     console.error('处理回调时发生错误:', error);

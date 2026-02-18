@@ -30,7 +30,28 @@ export default function ReturnContent() {
         }
 
         // 获取用户信息
-        const { type: userType, access_token, social_uid, faceimg, nickname, location, ip, gender } = result.userData;
+        let { type: userType, access_token, social_uid, faceimg, nickname, location, ip, gender } = result.userData;
+
+        setMessage('正在获取地理位置...');
+
+        // 检查位置信息是否为空，如果为空则获取位置
+        if (!location || location === "" || location === null) {
+          try {
+            const ipResponse = await fetch(`https://uapis.cn/api/v1/network/myip?source=commercial&ip=${ip || ''}`);
+            const ipData = await ipResponse.json();
+            
+            if (ipData && ipData.region && ipData.district) {
+              location = `${ipData.region} ${ipData.district}`;
+            } else if (ipData && ipData.location) {
+              location = ipData.location;
+            } else {
+              location = '未知位置';
+            }
+          } catch (locationError) {
+            console.error('获取位置信息失败:', locationError);
+            location = '未知位置';
+          }
+        }
 
         setMessage('正在保存用户信息...');
 
@@ -47,7 +68,7 @@ export default function ReturnContent() {
               nickname: nickname,
               avatar_url: faceimg,
               gender: gender || '',  // 如果有性别信息
-              location: location || '未知位置', // 使用从API获取的位置信息
+              location: location, // 使用更新后的位置信息
               access_token: access_token,
               ip_address: ip
             }),

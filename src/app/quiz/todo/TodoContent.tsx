@@ -63,6 +63,13 @@ export default function TodoContent() {
           return;
         }
 
+        // 检查创建者ID是否与当前用户ID相同
+        if (result.data.creator_user_id === storedSocialUid) {
+          // 如果是创建者自己访问，直接跳转到主页
+          router.push('/');
+          return;
+        }
+
         setQuestions(result.data.questions);
         setRewardId(result.data.reward_id);
         setMinCorrect(result.data.min_correct);

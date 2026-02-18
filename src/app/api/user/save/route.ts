@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
          SET nickname = ?, avatar_url = ?, gender = ?, location = ?, access_token = ?, 
              ip_address = ?, last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
          WHERE social_uid = ? AND social_type = ?`,
-        [nickname, avatar_url, gender, location, access_token, ip, social_uid, social_type]
+        [nickname, avatar_url, gender, location, access_token, ip_address, social_uid, social_type]
       );
     } else {
       // 创建新用户
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         `INSERT INTO users 
          (social_uid, social_type, nickname, avatar_url, gender, location, access_token, ip_address, last_login_at,published_activities,participated_activities) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP,"[]","[]")`,
-        [social_uid, social_type, nickname, avatar_url, gender, location, access_token, ip]
+        [social_uid, social_type, nickname, avatar_url, gender, location, access_token, ip_address]
       );
     }
     

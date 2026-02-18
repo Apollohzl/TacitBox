@@ -5,7 +5,7 @@ import pool from '../../../../lib/db';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { social_uid, social_type, nickname, avatar_url, gender, location, access_token, ip } = body;
+    const { social_uid, social_type, nickname, avatar_url, gender, location, access_token, ip_address } = body;
 
     // 检查用户是否已存在
     const connection = await pool.getConnection();

@@ -271,25 +271,6 @@ export default function MyShareContent() {
     );
   }
 
-  // 添加CSS动画样式
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes pulse-scale {
-        0% { transform: scale(1); }
-        100% { transform: scale(1.1); }
-      }
-      .animate-pulse-scale {
-        animation: pulse-scale 0.5s ease-in-out infinite alternate;
-      }
-    `;
-    document.head.appendChild(style);
-    
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-teal-100 p-4">
       <div className="max-w-2xl mx-auto">
@@ -534,9 +515,9 @@ export default function MyShareContent() {
                             <span className="font-bold text-gray-800 truncate">看看TA是谁</span>
                             {/* "查看答案"按钮，添加动画效果 */}
                             <button 
-                              className="text-xs bg-green-500 text-white py-1 px-2 rounded-full border border-green-500 hover:bg-green-600 animate-pulse-scale"
+                              className="text-xs bg-green-500 text-white py-1 px-2 rounded-full border border-green-500 hover:bg-green-600 animate-pulse"
                               style={{
-                                animation: 'pulse-scale 0.5s ease-in-out infinite alternate'
+                                animationDuration: '0.5s'
                               }}
                             >
                               查看答案

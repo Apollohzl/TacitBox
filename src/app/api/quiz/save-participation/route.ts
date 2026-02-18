@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { k, participant_user_id, answers } = body;
+    const { k, participant_user_id, participant_user_type, answers } = body;
     
 
     // 验證必要參數
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
           is_reward_delivered = 0;
         } else {
           // 沒有獎勵（獎勵已發完）
-          has_rewarded = 1;
+          has_rewarded = 0;
           is_reward_delivered = 0;
         }
       } else {
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       // 12. 整合結果并向SQLPub數據庫的quiz_participations表添加新數據
       await connection.execute(
         `INSERT INTO quiz_participations 
-         (activity_id, participant_user_id, participant_unique_id, answers, correct_count, has_rewarded, is_reward_delivered) 
+         (activity_id, participant_user_id, participant_unique_id, answers, correct_count, has_rewarded, is_reward_delivered, participant_user_type) 
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           activity_id,
@@ -120,7 +120,8 @@ export async function POST(request: NextRequest) {
           JSON.stringify(answers_list),
           correct_count,
           has_rewarded,
-          is_reward_delivered
+          is_reward_delivered,
+          participant_user_type
         ]
       );
 
@@ -148,8 +149,7 @@ export async function POST(request: NextRequest) {
           `UPDATE users 
            SET participated_activities = JSON_ARRAY_APPEND(COALESCE(participated_activities, JSON_ARRAY()), '$', ?) 
            WHERE social_uid = ?`,
-          [encodeURIComponent(participant_unique_id), participant_user_id]  // 不再进行URL编码，因为已截取到可控长度
-        );
+          [encodeURIComponent(participant_unique_id), participant_user_id]          );
       } catch (updateError: any) {
         console.error('更新用戶參與活動列表失敗:', updateError);
         // 檢查是否是因為participated_activities列不存在導致的錯誤

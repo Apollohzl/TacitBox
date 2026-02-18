@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     let finalLocation = userData.location;
     if (!finalLocation || finalLocation === "" || finalLocation === null) {
       try {
-        const ipResponse = await fetch(`https://uapis.cn/api/v1/network/myip?source=commercial&ip=${userData.ip || ''}`);
+        const ipResponse = await fetch(`https://uapis.cn/api/v1/network/myip?source=commercial`);
         const ipData = await ipResponse.json();
         
         if (ipData && ipData.region && ipData.district) {

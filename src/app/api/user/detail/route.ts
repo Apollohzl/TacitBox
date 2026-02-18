@@ -59,6 +59,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('获取用户详情时发生错误:', error);
-    return NextResponse.json({ success: false, error: '服务器内部错误' }, { status: 500 });
+    return NextResponse.json({ success: false, error: '服务器内部错误' + error }, { status: 500 });
   }
 }

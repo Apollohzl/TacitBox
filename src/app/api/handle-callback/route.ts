@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     let finalLocation = userData.location;
     if (!finalLocation || finalLocation === "" || finalLocation === null) {
       try {
-        const ipResponse = await fetch(`https://uapis.cn/api/v1/network/myip?source=commercial`);
+        const ipResponse = await fetch(`https://uapis.cn/api/v1/network/myip?source=commercial&ip=${userData.ip || ''}`);
         const ipData = await ipResponse.json();
         
         if (ipData && ipData.region && ipData.district) {
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       } catch (locationError) {
         console.error('获取位置信息失败:', locationError);
         // 如果获取位置失败，使用默认值或者保持原始值
-        finalLocation = userData.location || '未知位置-获取失败';
+        finalLocation = userData.location || '未知位置';
       }
     }
 

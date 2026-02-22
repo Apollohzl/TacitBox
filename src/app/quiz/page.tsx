@@ -12,6 +12,7 @@ export default function QuizPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
+  const [isCategoryManuallySelected, setIsCategoryManuallySelected] = useState(false);
   const [questionsHistory, setQuestionsHistory] = useState<any[]>([]); // 记录已经获取过的题目，避免重复
   const [showCategorySelection, setShowCategorySelection] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
@@ -42,18 +43,11 @@ export default function QuizPage() {
     if (isLoggedIn) {
       const fetchCategories = async () => {
         try {
-          setLoading(true);
           const response = await fetch('/api/quiz/categories');
           const result = await response.json();
           
           if (result.success) {
             setCategories(result.data);
-            if (result.data.length > 0 && !selectedCategory) {
-              // 默认选择第一个分类
-              const firstCategory = result.data[0];
-              setSelectedCategory(firstCategory.name);
-              setSelectedCategoryId(firstCategory.id);
-            }
           } else {
             setError('获取题库分类失败');
           }
@@ -67,19 +61,23 @@ export default function QuizPage() {
       
       fetchCategories();
     }
-  }, [isLoggedIn, selectedCategory]);
+  }, [isLoggedIn]);
 
-  // 初始化第一个随机题目
+  // 初始化第一个随机题目（从随机分类）
   useEffect(() => {
-    if (selectedCategoryId && isLoggedIn && !currentQuestion) {
+    if (isLoggedIn && !currentQuestion) {
       const fetchRandomQuestion = async () => {
         try {
-          const response = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
+          const response = await fetch('/api/quiz/random-question-any');
           const result = await response.json();
           
           if (result.success) {
-            setCurrentQuestion(result.data);
-            setQuestionsHistory([result.data]); // 初始化历史记录
+            const question = result.data;
+            setCurrentQuestion(question);
+            setQuestionsHistory([question]);
+            // 设置当前题目所属的分类
+            setSelectedCategory(question.category_name);
+            setSelectedCategoryId(question.category_id);
           } else {
             setError('获取题目失败');
           }
@@ -91,7 +89,7 @@ export default function QuizPage() {
       
       fetchRandomQuestion();
     }
-  }, [selectedCategoryId, isLoggedIn, currentQuestion]);
+  }, [isLoggedIn, currentQuestion]);
 
   // 处理选项选择
   const handleOptionSelect = (option: string) => {
@@ -199,11 +197,18 @@ export default function QuizPage() {
 
   // 换一题功能
   const handleGetNewQuestion = async () => {
-    if (!selectedCategoryId) return;
-    
     try {
-      const response = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
-      const result = await response.json();
+      let response, result;
+      
+      // 如果用户手动选择了分类，则从固定分类获取题目
+      if (isCategoryManuallySelected && selectedCategoryId) {
+        response = await fetch(`/api/quiz/random-question?categoryId=${selectedCategoryId}`);
+      } else {
+        // 否则从随机分类获取题目
+        response = await fetch('/api/quiz/random-question-any');
+      }
+      
+      result = await response.json();
       
       if (result.success) {
         const newQuestion = result.data;
@@ -216,6 +221,11 @@ export default function QuizPage() {
           }
           return prev;
         });
+        // 如果是从随机分类获取的，更新当前分类信息
+        if (!isCategoryManuallySelected) {
+          setSelectedCategory(newQuestion.category_name);
+          setSelectedCategoryId(newQuestion.category_id);
+        }
       } else {
         console.error('获取新题目失败:', result.error);
         // 使用模拟数据
@@ -330,6 +340,7 @@ export default function QuizPage() {
                     onClick={async () => {
                       setSelectedCategory(category.name);
                       setSelectedCategoryId(category.id);
+                      setIsCategoryManuallySelected(true); // 标记为手动选择分类
                       
                       // 获取新分类的题目
                       try {
@@ -361,6 +372,7 @@ export default function QuizPage() {
                                   onClick={() => {
                                     // 设置当前题目
                                     setCurrentQuestion(question);
+                                    setIsCategoryManuallySelected(true); // 标记为手动选择分类
                                     // 更新历史记录，如果当前题目不在历史中
                                     setQuestionsHistory(prev => {
                                       const exists = prev.some(q => q.id === question.id);

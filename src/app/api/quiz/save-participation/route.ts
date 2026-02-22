@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     
 
     // 验證必要參數
-    if (!k || !participant_user_id || !answers) {
+    if (!k || !participant_user_id || !answers || !participant_user_type) {
       return NextResponse.json({
         success: false,
         error: '缺少必要參數'
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       await connection.execute(
         `INSERT INTO quiz_participations 
          (activity_id, participant_user_id, participant_unique_id, answers, correct_count, has_rewarded, is_reward_delivered, participant_user_type) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           activity_id,
           participant_user_id,

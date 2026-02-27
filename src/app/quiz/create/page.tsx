@@ -266,14 +266,34 @@ export default function CreateQuizPage() {
             
             <div className="bg-yellow-50 p-4 rounded-xl">
               <label className="block text-gray-700 font-medium mb-2">奖励份数：</label>
-              <input
-                type="number"
-                min="1"
-                max="100"
-                value={rewardCount}
-                onChange={(e) => setRewardCount(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
-              />
+              <div className="flex items-center">
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={rewardCount}
+                  onChange={(e) => setRewardCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-300"
+                />
+                <div className="ml-4 flex flex-col space-y-1">
+                  <button
+                    type="button"
+                    className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-md"
+                    onClick={() => setRewardCount(prev => Math.min(100, prev + 1))}
+                    aria-label="增加"
+                  >
+                    <span className="text-lg">▲</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-md"
+                    onClick={() => setRewardCount(prev => Math.max(1, prev - 1))}
+                    aria-label="减少"
+                  >
+                    <span className="text-lg">▼</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           

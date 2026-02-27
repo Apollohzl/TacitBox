@@ -247,7 +247,7 @@ export default function CreateQuizPage() {
                   <button
                     type="button"
                     className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-md"
-                    onClick={() => setMinCorrect(prev => Math.min(10, prev + 1))}
+                    onClick={() => setMinCorrect(prev => Math.min(70, prev + 1))}
                     aria-label="增加"
                   >
                     <span className="text-lg">▲</span>

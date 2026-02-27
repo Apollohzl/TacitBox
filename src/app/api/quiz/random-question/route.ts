@@ -6,6 +6,8 @@ import pool from '../../../../lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  let connection;
+  
   try {
     const searchParams = request.nextUrl.searchParams;
     const categoryId = searchParams.get('categoryId');
@@ -28,15 +30,13 @@ export async function GET(request: NextRequest) {
     // 确保参数是数字类型，以避免MySQL参数类型错误
     const categoryIdForQuery = Number(categoryIdNum);
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     
     // 获取指定分类下的随机题目
     const [rows] = await connection.execute(
       'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? AND is_active = TRUE ORDER BY RAND() LIMIT 1', 
       [categoryIdForQuery+ ""]
     ) as [any[], any];
-    
-    connection.release();
     
     if (rows.length === 0) {
       return NextResponse.json({ 
@@ -72,5 +72,14 @@ export async function GET(request: NextRequest) {
       success: false, 
       error: '服务器内部错误random-question:' +error
     }, { status: 500 });
+  } finally {
+    // 确保连接被释放，无论是否发生错误
+    if (connection) {
+      try {
+        connection.release();
+      } catch (releaseError) {
+        console.error('释放数据库连接时出错:', releaseError);
+      }
+    }
   }
 }

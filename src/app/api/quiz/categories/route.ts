@@ -6,15 +6,15 @@ import pool from '../../../../lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  let connection;
+  
   try {
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     
     // 获取所有题库分类
     const [categories] = await connection.execute(
       'SELECT id, name, created_at FROM quiz_categories ORDER BY id'
     ) as [any[], any];
-    
-    connection.release();
     
     return NextResponse.json({ 
       success: true, 
@@ -26,5 +26,14 @@ export async function GET(request: NextRequest) {
       success: false, 
       error: '服务器内部错误，\categories获取题库分类失败:'+error 
     }, { status: 500 });
+  } finally {
+    // 确保连接被释放，无论是否发生错误
+    if (connection) {
+      try {
+        connection.release();
+      } catch (releaseError) {
+        console.error('释放数据库连接时出错:', releaseError);
+      }
+    }
   }
 }

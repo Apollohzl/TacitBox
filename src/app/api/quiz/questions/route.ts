@@ -6,6 +6,8 @@ import pool from '../../../../lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  let connection;
+  
   try {
     const searchParams = request.nextUrl.searchParams;
     const categoryId = searchParams.get('categoryId');
@@ -32,15 +34,13 @@ export async function GET(request: NextRequest) {
     const categoryIdForQuery = Number(categoryIdNum);
     const limitForQuery = Number(limitNum);
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     
     // 获取指定分类下的题目
     const [rows] = await connection.execute(
       'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? AND is_active = TRUE ORDER BY id LIMIT ?', 
-      [categoryIdForQuery+ "", limitForQuery+ ""]
+      [categoryIdForQuery, limitForQuery]
     ) as [any[], any];
-    
-    connection.release();
     
     // 处理JSON字段
     const questions = rows.map((row: any) => {
@@ -71,5 +71,14 @@ export async function GET(request: NextRequest) {
       success: false, 
       error: '服务器内部错误\questions:' +error
     }, { status: 500 });
+  } finally {
+    // 确保连接被释放，无论是否发生错误
+    if (connection) {
+      try {
+        connection.release();
+      } catch (releaseError) {
+        console.error('释放数据库连接时出错:', releaseError);
+      }
+    }
   }
 }

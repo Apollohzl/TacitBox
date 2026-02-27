@@ -5,6 +5,8 @@ import pool from '../../../../lib/db';
 // 指定此路由为动态渲染
 export const dynamic = 'force-dynamic';
 
+let connection;
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -30,7 +32,7 @@ export async function GET(request: NextRequest) {
     const { social_uid, access_token, faceimg, nickname, location, gender, ip } = userData;
 
     // 检查用户是否已存在
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     
     const [existingUsers] = await connection.execute(
       'SELECT id FROM users WHERE social_uid = ? AND social_type = ?',
@@ -56,8 +58,6 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    connection.release();
-
     // 重定向到成功页面，并传递用户信息
     const userInfo = {
       social_uid,
@@ -76,5 +76,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('处理登录回调时发生错误:', error);
     return NextResponse.json({ error: '服务器内部错误' }, { status: 500 });
+  } finally {
+    // 确保连接被释放，无论是否发生错误
+    if (connection) {
+      try {
+        connection.release();
+      } catch (releaseError) {
+        console.error('释放数据库连接时出错:', releaseError);
+      }
+    }
   }
 }

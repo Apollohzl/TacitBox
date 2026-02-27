@@ -6,6 +6,8 @@ import pool from '../../../../lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  let connection;
+  
   try {
     const { searchParams } = new URL(request.url);
     const social_uid = searchParams.get('social_uid');
@@ -15,7 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: '缺少必要参数 social_uid' }, { status: 400 });
     }
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     
     const [users] = await connection.execute(
       `SELECT id, social_uid, social_type, nickname, avatar_url, gender, location, 
@@ -25,8 +27,6 @@ export async function GET(request: NextRequest) {
        WHERE social_uid = ? AND social_type = ?`,
       [social_uid, social_type]
     ) as [any[], any];
-    
-    connection.release();
 
     if (users.length === 0) {
       return NextResponse.json({ success: false, error: '用户不存在' }, { status: 404 });
@@ -60,5 +60,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('获取用户详情时发生错误:', error);
     return NextResponse.json({ success: false, error: '服务器内部错误' + error }, { status: 500 });
+  } finally {
+    // 确保连接被释放，无论是否发生错误
+    if (connection) {
+      try {
+        connection.release();
+      } catch (releaseError) {
+        console.error('释放数据库连接时出错:', releaseError);
+      }
+    }
   }
 }

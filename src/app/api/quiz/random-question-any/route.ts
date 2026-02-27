@@ -6,11 +6,13 @@ import pool from '../../../../lib/db';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  let connection;
+  
   try {
     const searchParams = request.nextUrl.searchParams;
     const excludeCategoryId = searchParams.get('excludeCategoryId'); // 可选：排除的分类ID
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     
     // 构建查询：从所有分类中随机选择一个分类，然后从中获取随机题目
     let query = `
@@ -35,8 +37,6 @@ export async function GET(request: NextRequest) {
       query,
       params
     ) as [any[], any];
-    
-    connection.release();
     
     if (rows.length === 0) {
       return NextResponse.json({ 
@@ -72,5 +72,14 @@ export async function GET(request: NextRequest) {
       success: false, 
       error: '服务器内部错误random-question-any:' +error
     }, { status: 500 });
+  } finally {
+    // 确保连接被释放，无论是否发生错误
+    if (connection) {
+      try {
+        connection.release();
+      } catch (releaseError) {
+        console.error('释放数据库连接时出错:', releaseError);
+      }
+    }
   }
 }

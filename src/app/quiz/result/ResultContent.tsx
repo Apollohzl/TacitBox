@@ -221,13 +221,17 @@ export default function ResultContent() {
               
               {/* 连接线和爱心 */}
               <div className="flex items-center">
-                <div className="w-24 h-1 bg-gray-400"></div>
-                <div className="mx-2 flex items-center justify-center">
-                  <div className="w-8 h-8 text-red-500 flex items-center justify-center animate-pulse">
-                    ❤️
+                <div className="w-16 h-1 bg-gray-400"></div>
+                <div className="mx-1 flex items-center justify-center">
+                  <svg className="w-14 h-14 text-red-500 animate-pulse" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                  <div className="absolute flex flex-col items-center justify-center text-white text-xs font-bold">
+                    <span>85%</span>
+                    <span>默契度</span>
                   </div>
                 </div>
-                <div className="w-24 h-1 bg-gray-400"></div>
+                <div className="w-16 h-1 bg-gray-400"></div>
               </div>
               
               {/* 右侧头像区域 */}
@@ -241,28 +245,6 @@ export default function ResultContent() {
                 </div>
               </div>
             </div>
-            
-            {/* 默契度百分比 */}
-            <div className="text-center mb-4">
-              <div className="text-2xl font-bold text-gray-800 mb-1">85%</div>
-              <div className="text-sm text-gray-600">默契度</div>
-            </div>
-            
-            {/* 统计数据 */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-gray-100 p-2 rounded-lg">
-                <div className="text-lg font-bold text-gray-800">{rewardTotal}</div>
-                <div className="text-xs text-gray-600">奖励总份数</div>
-              </div>
-              <div className="bg-gray-100 p-2 rounded-lg">
-                <div className="text-lg font-bold text-gray-800">{answeredCount}</div>
-                <div className="text-xs text-gray-600">已答题人数</div>
-              </div>
-              <div className="bg-gray-100 p-2 rounded-lg">
-                <div className="text-lg font-bold text-gray-800">{rewardedCount}</div>
-                <div className="text-xs text-gray-600">已获奖人数</div>
-              </div>
-            </div>
           </div>
           
           {/* 分割虚线和半圆凹口 */}
@@ -274,15 +256,6 @@ export default function ResultContent() {
           
           {/* 下半部分：奖励信息和按钮 */}
           <div className="text-center">
-            {/* 答题要求 */}
-            <div className="text-gray-600 mb-3">
-              答对
-              <span className="text-red-500 font-bold">
-                {activityInfo?.min_correct || 0}
-              </span>
-              题可获得我的奖励（先到先得）
-            </div>
-            
             {/* 奖励图片和描述 */}
             <div className="flex items-center justify-center mb-4" style={{ marginTop: '15px', marginBottom: '15px' }}>
               {activityInfo?.reward_id ? (

@@ -227,20 +227,40 @@ export default function CreateQuizPage() {
             
             <div className="bg-blue-50 p-4 rounded-xl">
               <label className="block text-gray-700 font-medium mb-2">至少答对：</label>
-              <div className="grid grid-cols-5 gap-2">
-                {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+              <div className="flex items-center">
+                <div className="grid grid-cols-5 gap-2 flex-1">
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                    <button
+                      key={num}
+                      className={`py-2 rounded-lg ${
+                        minCorrect === num 
+                          ? 'bg-blue-500 text-white' 
+                          : 'bg-white text-gray-700 hover:bg-blue-100'
+                      }`}
+                      onClick={() => setMinCorrect(num)}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+                <div className="ml-4 flex flex-col space-y-1">
                   <button
-                    key={num}
-                    className={`py-2 rounded-lg ${
-                      minCorrect === num 
-                        ? 'bg-blue-500 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-blue-100'
-                    }`}
-                    onClick={() => setMinCorrect(num)}
+                    type="button"
+                    className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-md"
+                    onClick={() => setMinCorrect(prev => Math.min(10, prev + 1))}
+                    aria-label="增加"
                   >
-                    {num}
+                    <span className="text-lg">▲</span>
                   </button>
-                ))}
+                  <button
+                    type="button"
+                    className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-md"
+                    onClick={() => setMinCorrect(prev => Math.max(1, prev - 1))}
+                    aria-label="减少"
+                  >
+                    <span className="text-lg">▼</span>
+                  </button>
+                </div>
               </div>
             </div>
             

@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
               ip_address, created_at, last_login_at, updated_at, published_activities, 
               participated_activities
        FROM users 
-       WHERE social_uid = ? AND social_type = ?`,
-      [social_uid, social_type]
+       WHERE social_uid = ? `,
+      [social_uid]
     ) as [any[], any];
 
     if (users.length === 0) {

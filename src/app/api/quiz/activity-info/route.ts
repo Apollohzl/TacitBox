@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     connection = await pool.getConnection();
     
     const [activities] = await connection.execute(
-      `SELECT id, creator_user_id, creator_user_type, questions, reward_id, reward_name, reward_description, 
+      `SELECT id, creator_user_id, creator_user_type, questions, reward_id,
               min_correct, max_reward_count, now_finish, now_get_reward, created_at, updated_at
        FROM quiz_activities 
        WHERE id = ?`,

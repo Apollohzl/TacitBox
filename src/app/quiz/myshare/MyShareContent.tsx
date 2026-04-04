@@ -112,6 +112,7 @@ export default function MyShareContent() {
     };
 
     fetchData();
+  }, [searchParams, router]);  // 添加依赖数组
 
   // 计算统计数据
   const rewardTotal = activityInfo?.max_reward_count || 0;

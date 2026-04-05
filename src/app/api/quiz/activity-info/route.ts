@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
               min_correct, max_reward_count, now_finish, now_get_reward, created_at, updated_at
        FROM quiz_activities 
        WHERE id = ?`,
-      [id]
+      [encodeURIComponent(id)]
     ) as [any[], any];
 
     if (activities.length === 0) {

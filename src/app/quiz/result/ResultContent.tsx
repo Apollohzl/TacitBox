@@ -9,6 +9,7 @@ export default function ResultContent() {
   const [kValue, setKValue] = useState<string | null>(null);
   const [userData, setUserData] = useState<any>(null);
   const [activityInfo, setActivityInfo] = useState<any>(null);
+  const [creatorUserData, setCreatorUserData] = useState<any>(null);
   const [participationData, setParticipationData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,6 +57,22 @@ export default function ResultContent() {
 
         setActivityInfo(activityResult.activity);
 
+        // 获取创建者详细信息
+        if (activityResult.activity?.creator_user_id) {
+          try {
+            const creatorUserResponse = await fetch(
+              `/api/user/detail?social_uid=${activityResult.activity.creator_user_id}&social_type=${activityResult.activity.creator_user_type || 'wx'}`
+            );
+            const creatorUserResult = await creatorUserResponse.json();
+            
+            if (creatorUserResult.success) {
+              setCreatorUserData(creatorUserResult.data);
+            }
+          } catch (error) {
+            console.error('获取创建者详情失败:', error);
+          }
+        }
+
         // 获取参与数据
         const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(encodeURIComponent(k))}`);
         const participationResult = await participationResponse.json();
@@ -101,82 +118,6 @@ export default function ResultContent() {
     };
 
     fetchData();
-
-    // 设置定时器，每10秒刷新一次活动信息
-    const intervalId = setInterval(async () => {
-      const k = searchParams.get('k');
-      if (!k) {
-        router.push('/');
-        return;
-      }
-
-      try {
-        // 获取当前登录用户数据
-        const storedSocialUid = localStorage.getItem('social_uid');
-        const storedLoginType = localStorage.getItem('login_type') || 'wx';
-
-        if (!storedSocialUid) {
-          router.push('/login');
-          return;
-        }
-
-        // 获取活动信息
-        const activityResponse = await fetch(`/api/quiz/activity-info?id=${encodeURIComponent(encodeURIComponent(k))}`);
-        const activityResult = await activityResponse.json();
-
-        if (!activityResult.success) {
-          // 如果获取活动信息失败，跳转到主页
-          router.push('/');
-          return;
-        }
-
-        setActivityInfo(activityResult.activity);
-
-        // 获取参与数据
-        const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(encodeURIComponent(k))}`);
-        const participationResult = await participationResponse.json();
-
-        if (participationResult.success) {
-          const participationList = participationResult.data.participations || [];
-          
-          // 为每个参与者获取用户详细信息
-          const participantsWithDetails = await Promise.all(
-            participationList.map(async (participation: any) => {
-              try {
-                const userDetailResponse = await fetch(
-                  `/api/user/detail?social_uid=${participation.participant_user_id}&social_type=${participation.participant_user_type}`
-                );
-                const userDetailResult = await userDetailResponse.json();
-                
-                return {
-                  ...participation,
-                  userDetail: userDetailResult.success ? userDetailResult.data : null
-                };
-              } catch (error) {
-                console.error('获取用户详情失败:', error);
-                return {
-                  ...participation,
-                  userDetail: null
-                };
-              }
-            })
-          );
-          
-          setParticipationData(participantsWithDetails);
-        } else {
-          setParticipationData([]);
-        }
-      } catch (error) {
-        console.error('获取数据失败:', error);
-        // 发生错误时跳转到主页
-        router.push('/');
-      }
-    }, 10000);
-
-    // 组件卸载时清理定时器
-    return () => {
-      clearInterval(intervalId);
-    };
   }, [searchParams, router]);
 
   // 计算统计数据
@@ -239,7 +180,7 @@ export default function ResultContent() {
               <div className="flex flex-col items-center ml-4">
                 <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
                   <img 
-                    src={activityInfo?.creator_avatar_url || '/images/logo-192x192.png'} 
+                    src={creatorUserData?.avatar_url || '/images/logo-192x192.png'} 
                     alt="对方头像" 
                     className="w-14 h-14 rounded-full object-cover"
                   />

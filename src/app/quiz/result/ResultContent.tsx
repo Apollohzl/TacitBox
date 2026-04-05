@@ -44,6 +44,7 @@ export default function ResultContent() {
         setUserData(userResult.data);
 
         // 获取活动信息
+	console.log("活动信息k=");
         const activityResponse = await fetch(`/api/quiz/activity-info?id=${encodeURIComponent(encodeURIComponent(k))}`);
         const activityResult = await activityResponse.json();
 
@@ -120,7 +121,7 @@ export default function ResultContent() {
         }
 
         // 获取活动信息
-        const activityResponse = await fetch(`/api/quiz/activity-info?id=${encodeURIComponent(k)}`);
+        const activityResponse = await fetch(`/api/quiz/activity-info?id=${encodeURIComponent(encodeURIComponent(k))}`);
         const activityResult = await activityResponse.json();
 
         if (!activityResult.success) {
@@ -377,8 +378,8 @@ export default function ResultContent() {
                   }
                   
                   // 获取用户头像和昵称
-                  const userAvatar = participation.userDetail?.avatar_url || '/images/logo-192x192.png'; // 用户头像
-                  const userNickname = participation.userDetail?.nickname || participation.participant_user_id; // 用户昵称，如果获取不到则显示ID
+                  const userAvatar = participation.userDetail?.avatar_url || ''; // 用户头像
+                  const userNickname = participation.userDetail?.nickname || "未知用户昵称"; // 用户昵称
                   
                   return (
                     <div key={participation.participant_user_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">

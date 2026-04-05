@@ -44,7 +44,7 @@ export default function ResultContent() {
         setUserData(userResult.data);
 
         // 获取活动信息
-        const activityResponse = await fetch(`/api/quiz/activity-info?id=${encodeURIComponent(k)}`);
+        const activityResponse = await fetch(`/api/quiz/activity-info?id=${encodeURIComponent(encodeURIComponent(k))}`);
         const activityResult = await activityResponse.json();
 
         if (!activityResult.success) {

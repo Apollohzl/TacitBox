@@ -19,9 +19,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
-      <body>
+      <body className="pb-12">
         <QuizProvider>
           {children}
+          <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 text-center z-50">
+            <a 
+              href="https://www.beianx.cn/search/vicral.cn" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-xs text-gray-500 hover:text-blue-500 transition-colors"
+            >
+              赣ICP备2025077459号-9
+            </a>
+          </footer>
         </QuizProvider>
       </body>
     </html>

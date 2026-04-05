@@ -126,7 +126,7 @@ export default function ResultContent() {
 
     try {
       // 获取参与数据
-      const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(encodeURIComponent(kValue))}`);
+      const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(kValue)}`);
       const participationResult = await participationResponse.json();
 
       if (participationResult.success) {
@@ -264,18 +264,12 @@ export default function ResultContent() {
             </div>
             
             {/* 按钮组 */}
-            <div className="flex justify-center space-x-4 mb-4">
+            <div className="flex justify-center mb-4">
               <button
                 className="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-6 rounded-full text-sm"
                 onClick={() => router.push('/quiz')}
               >
                 我也去出题
-              </button>
-              <button
-                className="bg-gradient-to-r from-green-500 to-teal-500 text-white py-2 px-6 rounded-full text-sm"
-                onClick={() => {}}
-              >
-                再答一次
               </button>
             </div>
           </div>

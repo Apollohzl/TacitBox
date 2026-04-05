@@ -224,14 +224,6 @@ export default function AccountPage() {
           </div>
         </div>
 
-        {/* 今日天气模块 */}
-        <div className="mt-6 sm:mt-8 bg-white p-4 sm:p-6 rounded-2xl shadow-lg">
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">今日天气</h3>
-          <div className="flex items-center justify-center">
-            <WeatherDisplay />
-          </div>
-        </div>
-
         {/* 注销账户按钮 */}
         <div className="mt-6 sm:mt-8 text-center">
           <button 
@@ -273,71 +265,6 @@ export default function AccountPage() {
           </Link>
         </div>
       </div>
-    </div>
-  );
-}
-
-// 天气组件
-function WeatherDisplay() {
-  const [weatherImage, setWeatherImage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        // 首先获取用户位置
-        const ipResponse = await fetch('https://uapis.cn/api/v1/network/myip?source=commercial');
-        const ipData = await ipResponse.json();
-        
-        if (ipData && ipData.district) {
-          // 使用获取到的district值获取天气信息
-          const weatherResponse = await fetch(`https://api.lolimi.cn/API/weather/weather?query=${encodeURIComponent(ipData.district)}&days=8`);
-          
-          if (weatherResponse.ok) {
-            const imageUrl = weatherResponse.url; // 直接使用响应的URL
-            setWeatherImage(imageUrl);
-          } else {
-            throw new Error('获取天气数据失败');
-          }
-        } else {
-          throw new Error('获取位置信息失败');
-        }
-      } catch (err) {
-        console.error('获取天气信息失败:', err);
-        setError('获取天气信息失败');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWeather();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="py-8 text-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        <p className="mt-2 text-gray-600">正在获取天气信息...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="text-center text-red-500 py-4">{error}</div>;
-  }
-
-  return (
-    <div className="w-full">
-      {weatherImage ? (
-        <img 
-          src={weatherImage} 
-          alt="今日天气" 
-          className="max-w-full h-auto rounded-lg"
-        />
-      ) : (
-        <div className="text-center text-gray-500 py-4">暂无天气信息</div>
-      )}
     </div>
   );
 }

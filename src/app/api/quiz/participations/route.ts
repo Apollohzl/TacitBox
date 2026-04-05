@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       `SELECT activity_id, participant_user_id, answers, correct_count, has_rewarded, is_reward_delivered, participation_time
        FROM quiz_participations 
        WHERE activity_id = ?`,
-      [activityId]
+      [encodeURIComponent(activityId)]
     ) as [any[], any];
 
     return NextResponse.json({

@@ -57,7 +57,7 @@ export default function ResultContent() {
         setActivityInfo(activityResult.activity);
 
         // 获取参与数据
-        const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(k)}`);
+        const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(encodeURIComponent(k))}`);
         const participationResult = await participationResponse.json();
 
         if (participationResult.success) {
@@ -133,7 +133,7 @@ export default function ResultContent() {
         setActivityInfo(activityResult.activity);
 
         // 获取参与数据
-        const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(k)}`);
+        const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(encodeURIComponent(k))}`);
         const participationResult = await participationResponse.json();
 
         if (participationResult.success) {

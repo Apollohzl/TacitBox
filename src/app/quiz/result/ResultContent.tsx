@@ -120,6 +120,50 @@ export default function ResultContent() {
     fetchData();
   }, [searchParams, router]);
 
+  // 刷新参与数据的函数
+  const refreshParticipationData = async () => {
+    if (!kValue) return;
+
+    try {
+      // 获取参与数据
+      const participationResponse = await fetch(`/api/quiz/participations?activityId=${encodeURIComponent(encodeURIComponent(kValue))}`);
+      const participationResult = await participationResponse.json();
+
+      if (participationResult.success) {
+        const participationList = participationResult.data.participations || [];
+        
+        // 为每个参与者获取用户详细信息
+        const participantsWithDetails = await Promise.all(
+          participationList.map(async (participation: any) => {
+            try {
+              const userDetailResponse = await fetch(
+                `/api/user/detail?social_uid=${participation.participant_user_id}&social_type=${participation.participant_user_type}`
+              );
+              const userDetailResult = await userDetailResponse.json();
+              
+              return {
+                ...participation,
+                userDetail: userDetailResult.success ? userDetailResult.data : null
+              };
+            } catch (error) {
+              console.error('获取用户详情失败:', error);
+              return {
+                ...participation,
+                userDetail: null
+              };
+            }
+          })
+        );
+        
+        setParticipationData(participantsWithDetails);
+      } else {
+        setParticipationData([]);
+      }
+    } catch (error) {
+      console.error('刷新参与数据失败:', error);
+    }
+  };
+
   // 计算统计数据
   const rewardTotal = activityInfo?.max_reward_count || 0;
   const answeredCount = activityInfo?.now_finish || 0;  // 使用now_finish字段获取已答题人数
@@ -239,7 +283,19 @@ export default function ResultContent() {
 
         {/* 下半部分：好友默契排行榜 */}
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-4">好友默契排行榜</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-800">好友默契排行榜</h3>
+            <button
+              className="flex items-center text-blue-500 hover:text-blue-700 transition-colors"
+              onClick={refreshParticipationData}
+              title="刷新排行榜"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span className="ml-1 text-sm">刷新</span>
+            </button>
+          </div>
           {participationData.length > 0 ? (
             <div className="space-y-3">
               {participationData

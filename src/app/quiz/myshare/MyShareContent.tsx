@@ -14,6 +14,8 @@ export default function MyShareContent() {
   const [participationData, setParticipationData] = useState<any[]>([]);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showQuestionsModal, setShowQuestionsModal] = useState(false);
+  const [showAnswersModal, setShowAnswersModal] = useState(false);
+  const [selectedParticipantAnswers, setSelectedParticipantAnswers] = useState<any>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -271,6 +273,27 @@ export default function MyShareContent() {
     }
   };
 
+  // 获取指定参与者的答题记录
+  const fetchParticipantAnswers = async (participant: any) => {
+    if (!kValue) return;
+
+    try {
+      // 调用API获取该参与者的答题详情
+      const response = await fetch(`/api/quiz/my-answers?activityId=${encodeURIComponent(kValue)}&participantUserId=${encodeURIComponent(participant.participant_user_id)}&participantUserType=${encodeURIComponent(participant.participant_user_type)}`);
+      const result = await response.json();
+
+      if (result.success) {
+        setSelectedParticipantAnswers(result.data);
+        setShowAnswersModal(true);
+      } else {
+        alert(`获取答题记录失败: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('获取参与者答题记录失败:', error);
+      alert('获取答题记录失败，请稍后重试');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-teal-100 p-4">
@@ -525,12 +548,13 @@ export default function MyShareContent() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-bold text-gray-800 truncate">{userNickname}</span>
-                            {/* "查看答案"按钮，添加动画效果 */}
+                            {/* "查看答案"按钮，添加动画效果和点击事件 */}
                             <button 
-                              className="text-xs bg-green-500 text-white py-1 px-2 rounded-full border border-green-500 hover:bg-green-600 animate-pulse"
+                              className="text-xs bg-green-500 text-white py-1 px-2 rounded-full border border-green-500 hover:bg-green-600 animate-pulse transition-colors"
                               style={{
                                 animationDuration: '0.5s'
                               }}
+                              onClick={() => fetchParticipantAnswers(participation)}
                             >
                               查看答案
                             </button>
@@ -658,6 +682,91 @@ export default function MyShareContent() {
               >
                 关闭
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 查看参与者答案模态框 */}
+      {showAnswersModal && selectedParticipantAnswers && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[80vh] flex flex-col">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {selectedParticipantAnswers.userNickname || '用户'}的答题详情
+            </h3>
+            <div className="overflow-y-auto flex-grow">
+              {selectedParticipantAnswers.questions && selectedParticipantAnswers.questions.length > 0 ? (
+                selectedParticipantAnswers.questions.map((question: any, index: number) => (
+                  <div key={index} className="mb-4 p-4 border rounded-lg">
+                    <div className="font-medium mb-3 text-gray-800">
+                      题目 {question.questionNumber}: {question.questionText}
+                    </div>
+                    <div className="space-y-2">
+                      {question.options && Array.isArray(question.options) ? (
+                        question.options.map((option: string, optIndex: number) => {
+                          const optionLetter = String.fromCharCode(65 + optIndex);
+                          const isUserChoice = option === question.userAnswer;
+                          const isCorrect = question.isCorrect;
+                          const isCorrectAnswer = option === question.correctAnswer;
+                          
+                          return (
+                            <div 
+                              key={optIndex}
+                              className={`p-3 rounded border-2 transition-all ${
+                                isUserChoice 
+                                  ? isCorrect 
+                                    ? 'bg-green-100 border-green-500' 
+                                    : 'bg-red-100 border-red-500'
+                                  : isCorrectAnswer
+                                    ? 'bg-green-50 border-green-300'
+                                    : 'bg-white border-gray-200'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">
+                                  {optionLetter}. {option}
+                                </span>
+                                {isUserChoice && (
+                                  <span className={`font-bold ${
+                                    isCorrect ? 'text-green-600' : 'text-red-600'
+                                  }`}>
+                                    {isCorrect ? '✓ 正确' : '✗ 错误'}
+                                  </span>
+                                )}
+                                {isCorrectAnswer && !isUserChoice && (
+                                  <span className="text-xs text-green-600 font-medium">
+                                    正确答案
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p className="text-gray-500">选项加载失败</p>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-gray-500 py-8">暂无答题数据</p>
+              )}
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex justify-between items-center mb-4">
+                <div className="text-gray-600">
+                  共 <span className="font-bold">{selectedParticipantAnswers.totalQuestions || 0}</span> 题，
+                  答对 <span className="font-bold text-green-600">{selectedParticipantAnswers.correctCount || 0}</span> 题
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <button
+                  className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-6 rounded-lg transition-colors"
+                  onClick={() => setShowAnswersModal(false)}
+                >
+                  关闭
+                </button>
+              </div>
             </div>
           </div>
         </div>

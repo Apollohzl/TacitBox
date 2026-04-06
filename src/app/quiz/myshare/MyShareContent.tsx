@@ -273,65 +273,39 @@ export default function MyShareContent() {
     }
   };
 
-  // 直接使用参与者数据显示答案
-  const showParticipantAnswers = (participant: any) => {
-    if (!activityInfo?.questions) {
-      alert('题目数据加载失败');
-      return;
-    }
+  // 获取指定参与者的答题记录（使用新的API端点）
+  const fetchParticipantAnswers = async (participant: any) => {
+    if (!kValue) return;
 
-    // 安全地解析题目
-    let questions;
-    try {
-      if (typeof activityInfo.questions === 'string') {
-        questions = JSON.parse(activityInfo.questions || '[]');
-      } else if (typeof activityInfo.questions === 'object') {
-        questions = activityInfo.questions || [];
-      } else {
-        questions = [];
-      }
-    } catch (parseError) {
-      console.error('解析题目失败:', parseError);
-      questions = [];
-    }
+    // 获取activity_id（从activityInfo中）
+    const activityId = activityInfo?.id || kValue;
+    const participantUserId = participant.participant_user_id;
+    const userNickname = participant.userDetail?.nickname || '用户';
 
-    // 安全地解析用户答案
-    let userAnswers;
-    try {
-      if (typeof participant.answers === 'string') {
-        userAnswers = JSON.parse(participant.answers || '[]');
-      } else if (typeof participant.answers === 'object') {
-        userAnswers = participant.answers || [];
-      } else {
-        userAnswers = [];
-      }
-    } catch (parseError) {
-      console.error('解析用户答案失败:', parseError);
-      userAnswers = [];
-    }
-
-    // 比对答案并生成结果
-    const results = questions.map((question: any, index: number) => {
-      const userAnswer = userAnswers[index] || '';
-      const isCorrect = userAnswer === question.correct_answer;
-
-      return {
-        questionNumber: index + 1,
-        questionText: question.question_text,
-        options: question.options || [],
-        userAnswer: userAnswer,
-        correctAnswer: question.correct_answer,
-        isCorrect: isCorrect
-      };
+    console.log('获取参与者答题记录:', {
+      participant_user_id: participantUserId,
+      activity_id: activityId,
+      user_nickname: userNickname
     });
 
-    setSelectedParticipantAnswers({
-      userNickname: participant.userDetail?.nickname || '用户',
-      questions: results,
-      totalQuestions: questions.length,
-      correctCount: participant.correct_count
-    });
-    setShowAnswersModal(true);
+    try {
+      // 调用新的API端点
+      const response = await fetch(`/api/quiz/user-answers?u=${encodeURIComponent(participantUserId)}&id=${encodeURIComponent(activityId)}`);
+      const result = await response.json();
+
+      if (result.success) {
+        setSelectedParticipantAnswers({
+          ...result.data,
+          userNickname: userNickname  // 添加用户昵称
+        });
+        setShowAnswersModal(true);
+      } else {
+        alert(`获取答题记录失败: ${result.error}`);
+      }
+    } catch (error: any) {
+      console.error('获取参与者答题记录失败:', error);
+      alert(`获取答题记录失败: ${error.message || '请稍后重试'}`);
+    }
   };
 
   if (loading) {
@@ -588,7 +562,7 @@ export default function MyShareContent() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-bold text-gray-800 truncate">{userNickname}</span>
-                            {/* "查看答案"按钮，直接使用本地数据，添加动画效果和点击事件 */}
+                            {/* "查看答案"按钮，调用新的API端点，添加动画效果和点击事件 */}
                             <button 
                               className="text-xs bg-green-500 text-white py-1 px-2 rounded-full border border-green-500 hover:bg-green-600 animate-pulse transition-colors"
                               style={{
@@ -597,7 +571,7 @@ export default function MyShareContent() {
                               data-participant-user-id={participation.participant_user_id}
                               data-participant-user-type={participation.participant_user_type}
                               data-user-nickname={userNickname}
-                              onClick={() => showParticipantAnswers(participation)}
+                              onClick={() => fetchParticipantAnswers(participation)}
                             >
                               查看答案
                             </button>
@@ -749,8 +723,7 @@ export default function MyShareContent() {
                         question.options.map((option: string, optIndex: number) => {
                           const optionLetter = String.fromCharCode(65 + optIndex);
                           const isUserChoice = option === question.userAnswer;
-                          const isCorrect = question.isCorrect;
-                          const isCorrectAnswer = option === question.correctAnswer;
+                          const isCorrect = option === question.correctAnswer;
                           
                           return (
                             <div 
@@ -760,8 +733,8 @@ export default function MyShareContent() {
                                   ? isCorrect 
                                     ? 'bg-green-100 border-green-500' 
                                     : 'bg-red-100 border-red-500'
-                                  : isCorrectAnswer
-                                    ? 'bg-green-50 border-green-300'
+                                  : isCorrect
+                                    ? 'bg-green-100 border-green-500'
                                     : 'bg-white border-gray-200'
                               }`}
                             >
@@ -774,11 +747,6 @@ export default function MyShareContent() {
                                     isCorrect ? 'text-green-600' : 'text-red-600'
                                   }`}>
                                     {isCorrect ? '✓ 正确' : '✗ 错误'}
-                                  </span>
-                                )}
-                                {isCorrectAnswer && !isUserChoice && (
-                                  <span className="text-xs text-green-600 font-medium">
-                                    正确答案
                                   </span>
                                 )}
                               </div>

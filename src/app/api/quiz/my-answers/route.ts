@@ -68,17 +68,6 @@ export async function GET(request: NextRequest) {
 
     const participation = participations[0];
     
-    // 获取参与者的个人信息
-    const [users] = await connection.execute(
-      `SELECT nickname, avatar_url 
-       FROM users 
-       WHERE social_uid = ? AND social_type = ?`,
-      [participantUserId, participantUserType]
-    ) as [any[], any];
-
-    const userNickname = users && users.length > 0 ? users[0].nickname : '未知用户';
-    const userAvatar = users && users.length > 0 ? users[0].avatar_url : '';
-    
     // 安全地解析 answers - 可能是字符串或已经是对象
     let userAnswers;
     try {
@@ -104,7 +93,6 @@ export async function GET(request: NextRequest) {
         questionText: question.question_text,
         options: question.options || [],
         userAnswer: userAnswer,
-        correctAnswer: question.correct_answer,
         isCorrect: isCorrect
       };
     });
@@ -112,8 +100,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        userNickname: userNickname,
-        userAvatar: userAvatar,
         questions: results,
         totalQuestions: questions.length,
         correctCount: participation.correct_count,

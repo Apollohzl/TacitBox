@@ -277,6 +277,13 @@ export default function MyShareContent() {
   const fetchParticipantAnswers = async (participant: any) => {
     if (!kValue) return;
 
+    // 确认用户信息
+    console.log('获取参与者答题记录:', {
+      participant_user_id: participant.participant_user_id,
+      participant_user_type: participant.participant_user_type,
+      user_nickname: participant.userDetail?.nickname
+    });
+
     try {
       // 调用API获取该参与者的答题详情
       const response = await fetch(`/api/quiz/my-answers?activityId=${encodeURIComponent(kValue)}&participantUserId=${encodeURIComponent(participant.participant_user_id)}&participantUserType=${encodeURIComponent(participant.participant_user_type)}`);
@@ -548,12 +555,15 @@ export default function MyShareContent() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-bold text-gray-800 truncate">{userNickname}</span>
-                            {/* "查看答案"按钮，添加动画效果和点击事件 */}
+                            {/* "查看答案"按钮，存储用户信息并添加动画效果和点击事件 */}
                             <button 
                               className="text-xs bg-green-500 text-white py-1 px-2 rounded-full border border-green-500 hover:bg-green-600 animate-pulse transition-colors"
                               style={{
                                 animationDuration: '0.5s'
                               }}
+                              data-participant-user-id={participation.participant_user_id}
+                              data-participant-user-type={participation.participant_user_type}
+                              data-user-nickname={userNickname}
                               onClick={() => fetchParticipantAnswers(participation)}
                             >
                               查看答案

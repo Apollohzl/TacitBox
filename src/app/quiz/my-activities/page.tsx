@@ -63,7 +63,7 @@ export default function MyActivitiesPage() {
   };
 
   const handleViewDetail = (activityId: string) => {
-    const shareUrl = `https://tb.vicral.cn/quiz/share?k=${encodeURIComponent(activityId)}`;
+    const shareUrl = `https://tb.vicral.cn/quiz/share?k=${activityId}`;
     window.open(shareUrl, '_blank');
   };
 

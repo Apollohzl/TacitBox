@@ -36,7 +36,21 @@ export async function GET(request: NextRequest) {
     }
 
     const activity = activities[0];
-    const questions = JSON.parse(activity.questions || '[]');
+    
+    // 安全地解析 questions - 可能是字符串或已经是对象
+    let questions;
+    try {
+      if (typeof activity.questions === 'string') {
+        questions = JSON.parse(activity.questions || '[]');
+      } else if (typeof activity.questions === 'object') {
+        questions = activity.questions || [];
+      } else {
+        questions = [];
+      }
+    } catch (parseError) {
+      console.error('解析题目失败:', parseError);
+      questions = [];
+    }
 
     // 获取用户的参与记录
     const [participations] = await connection.execute(
@@ -53,7 +67,21 @@ export async function GET(request: NextRequest) {
     }
 
     const participation = participations[0];
-    const userAnswers = JSON.parse(participation.answers || '[]');
+    
+    // 安全地解析 answers - 可能是字符串或已经是对象
+    let userAnswers;
+    try {
+      if (typeof participation.answers === 'string') {
+        userAnswers = JSON.parse(participation.answers || '[]');
+      } else if (typeof participation.answers === 'object') {
+        userAnswers = participation.answers || [];
+      } else {
+        userAnswers = [];
+      }
+    } catch (parseError) {
+      console.error('解析用户答案失败:', parseError);
+      userAnswers = [];
+    }
 
     // 比对答案并生成结果
     const results = questions.map((question: any, index: number) => {

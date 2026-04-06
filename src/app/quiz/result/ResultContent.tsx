@@ -64,9 +64,9 @@ export default function ResultContent() {
             const rewardResponse = await fetch(`/api/quiz/rewards`);
             const rewardResult = await rewardResponse.json();
             
-            if (rewardResult.success && rewardResult.data) {
+            if (rewardResult.success && rewardResult.rewards) {
               // 根据 reward_id 查找对应的奖励
-              const reward = rewardResult.data.find((r: any) => r.reward_id === activityResult.activity.reward_id);
+              const reward = rewardResult.rewards.find((r: any) => r.reward_id === activityResult.activity.reward_id);
               if (reward) {
                 setRewardDetail(reward);
               }

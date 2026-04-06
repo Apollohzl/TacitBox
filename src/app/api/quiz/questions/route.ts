@@ -57,8 +57,8 @@ export async function GET(request: NextRequest) {
     
     // 获取指定分类下的题目
     const [rows] = await connection.execute(
-      'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? ORDER BY id LIMIT ?', 
-      [categoryIdForQuery, limitForQuery]
+      `SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? ORDER BY id LIMIT ${limitForQuery}`, 
+      [categoryIdForQuery]
     ) as [any[], any];
     
     // 处理JSON字段

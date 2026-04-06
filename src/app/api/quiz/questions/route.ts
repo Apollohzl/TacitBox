@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
     const categoryId = searchParams.get('categoryId');
     const limit = searchParams.get('limit') || '10';
     
-    if (!categoryId) {
+    // 检查categoryId是否存在且不是空字符串
+    if (!categoryId || categoryId.trim() === '') {
       return NextResponse.json({ 
         success: false, 
         error: '缺少分类ID参数' 
@@ -34,12 +35,22 @@ export async function GET(request: NextRequest) {
     const categoryIdForQuery = Number(categoryIdNum);
     const limitForQuery = Number(limitNum);
 
+    console.log('查询参数:', {
+      categoryId: categoryId,
+      categoryIdNum: categoryIdNum,
+      categoryIdForQuery: categoryIdForQuery,
+      limit: limit,
+      limitNum: limitNum,
+      limitForQuery: limitForQuery,
+      params: [categoryIdForQuery, 1, limitForQuery]
+    });
+
     connection = await pool.getConnection();
     
     // 获取指定分类下的题目
     const [rows] = await connection.execute(
-      'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? AND is_active = ? ORDER BY id LIMIT ?', 
-      [categoryIdForQuery, 1, limitForQuery]
+      'SELECT id, question_text, options, difficulty, is_active, created_at FROM quiz_questions WHERE category_id = ? ORDER BY id LIMIT ?', 
+      [categoryIdForQuery, limitForQuery]
     ) as [any[], any];
     
     // 处理JSON字段

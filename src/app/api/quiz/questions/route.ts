@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import pool from '../../../../lib/db';
+import mysql from 'mysql2/promise';
 
 // 指定此路由为动态渲染
 export const dynamic = 'force-dynamic';
@@ -42,10 +42,18 @@ export async function GET(request: NextRequest) {
       limit: limit,
       limitNum: limitNum,
       limitForQuery: limitForQuery,
-      params: [categoryIdForQuery, 1, limitForQuery]
+      params: [categoryIdForQuery, limitForQuery]
     });
 
-    connection = await pool.getConnection();
+    // 直接创建数据库连接
+    connection = await mysql.createConnection({
+      host: 'mysql6.sqlpub.com',
+      port: 3311,
+      user: 'apollo198',
+      password: process.env.SQLPub_password,
+      database: 'tacitbox',
+      charset: 'utf8mb4'
+    });
     
     // 获取指定分类下的题目
     const [rows] = await connection.execute(
@@ -83,12 +91,12 @@ export async function GET(request: NextRequest) {
       error: '服务器内部错误\questions:' +error
     }, { status: 500 });
   } finally {
-    // 确保连接被释放，无论是否发生错误
+    // 确保连接被关闭，无论是否发生错误
     if (connection) {
       try {
-        connection.release();
+        await connection.end();
       } catch (releaseError) {
-        console.error('释放数据库连接时出错:', releaseError);
+        console.error('关闭数据库连接时出错:', releaseError);
       }
     }
   }

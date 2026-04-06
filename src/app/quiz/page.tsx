@@ -39,7 +39,7 @@ export default function QuizPage() {
     checkLoginStatus();
   }, [router]);
 
-  // 获取题库分类并预加载所有分类的题目
+  // 获取题库分类并预加载所有分类的题目（带重试机制）
   useEffect(() => {
     if (isLoggedIn) {
       const fetchCategories = async () => {
@@ -50,17 +50,32 @@ export default function QuizPage() {
           if (result.success) {
             setCategories(result.data);
             
-            // 预加载所有分类的题目
+            // 预加载所有分类的题目（带重试机制）
             const questionsMap = new Map<number, any[]>();
             const loadPromises = result.data.map(async (category: any) => {
-              try {
-                const questionsResponse = await fetch(`/api/quiz/questions?categoryId=${category.id}&limit=10`);
-                const questionsResult = await questionsResponse.json();
-                if (questionsResult.success) {
-                  questionsMap.set(category.id, questionsResult.data);
+              const maxRetries = 3;
+              const retryDelay = 1000; // 1秒延迟
+              
+              for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                  const questionsResponse = await fetch(`/api/quiz/questions?categoryId=${category.id}&limit=10`);
+                  const questionsResult = await questionsResponse.json();
+                  
+                  if (questionsResult.success) {
+                    questionsMap.set(category.id, questionsResult.data);
+                    break; // 成功，退出重试循环
+                  } else {
+                    console.warn(`加载分类 ${category.name} 的题目失败 (尝试 ${attempt}/${maxRetries}):`, questionsResult.error);
+                    if (attempt < maxRetries) {
+                      await new Promise(resolve => setTimeout(resolve, retryDelay * attempt)); // 递增延迟
+                    }
+                  }
+                } catch (err) {
+                  console.error(`加载分类 ${category.name} 的题目失败 (尝试 ${attempt}/${maxRetries}):`, err);
+                  if (attempt < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, retryDelay * attempt)); // 递增延迟
+                  }
                 }
-              } catch (err) {
-                console.error(`加载分类 ${category.name} 的题目失败:`, err);
               }
             });
             

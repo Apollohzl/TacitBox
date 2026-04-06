@@ -220,7 +220,7 @@ const HomePage = () => {
           ))}
         </div>
         
-        {/* 【去出题】按钮 - 仅在电脑端在文本动画完成后显示 */}
+        {/* 去出题按钮 - 仅在电脑端在文本动画完成后显示 */}
         {deviceType === 'desktop' && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -241,10 +241,10 @@ const HomePage = () => {
               }}
               onClick={() => window.location.href = '/quiz'}
             >
-              【去出题】
+              去出题
             </button>
             
-            {/* 电脑端其他按钮 - 放在【去出题】按钮右边 */}
+            {/* 电脑端其他按钮 - 放在去出题按钮右边 */}
             <div className="flex flex-col gap-4">
               <button 
                 className="text-lg font-bold rounded-lg py-2"
@@ -259,7 +259,7 @@ const HomePage = () => {
                 }}
                 onClick={() => window.location.href = '/quiz/my-activities'}
               >
-                【出题记录】
+                出题记录
               </button>
               <button 
                 className="text-lg font-bold rounded-lg py-2"
@@ -274,7 +274,7 @@ const HomePage = () => {
                 }}
                 onClick={() => window.location.href = '/quiz/my-participations'}
               >
-                【答题记录】
+                答题记录
               </button>
               <button 
                 className="text-lg font-bold rounded-lg py-2"
@@ -288,7 +288,7 @@ const HomePage = () => {
                   borderColor: '#52045B' // 深紫色边框
                 }}
               >
-                【获得的奖励】
+                获得的奖励
               </button>
             </div>
           </motion.div>
@@ -309,7 +309,7 @@ const HomePage = () => {
               }}
               onClick={() => window.location.href = '/quiz'}
             >
-              【去出题】
+              去出题
             </button>
             
             {/* 移动端其他按钮 - 垂直排列 */}
@@ -324,7 +324,7 @@ const HomePage = () => {
               }}
               onClick={() => window.location.href = '/quiz/my-activities'}
             >
-              【出题记录】
+              出题记录
             </button>
             <button 
               className="w-full text-lg font-bold rounded-lg mb-3 py-3"
@@ -337,7 +337,7 @@ const HomePage = () => {
               }}
               onClick={() => window.location.href = '/quiz/my-participations'}
             >
-              【答题记录】
+              答题记录
             </button>
             <button 
               className="w-full text-lg font-bold rounded-lg py-3"
@@ -349,7 +349,7 @@ const HomePage = () => {
                 borderColor: '#52045B' // 深紫色边框
               }}
             >
-              【获得的奖励】
+              获得的奖励
             </button>
           </div>
         )}

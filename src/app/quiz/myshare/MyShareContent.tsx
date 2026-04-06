@@ -273,32 +273,65 @@ export default function MyShareContent() {
     }
   };
 
-  // 获取指定参与者的答题记录
-  const fetchParticipantAnswers = async (participant: any) => {
-    if (!kValue) return;
+  // 直接使用参与者数据显示答案
+  const showParticipantAnswers = (participant: any) => {
+    if (!activityInfo?.questions) {
+      alert('题目数据加载失败');
+      return;
+    }
 
-    // 确认用户信息
-    console.log('获取参与者答题记录:', {
-      participant_user_id: participant.participant_user_id,
-      participant_user_type: participant.participant_user_type,
-      user_nickname: participant.userDetail?.nickname
+    // 安全地解析题目
+    let questions;
+    try {
+      if (typeof activityInfo.questions === 'string') {
+        questions = JSON.parse(activityInfo.questions || '[]');
+      } else if (typeof activityInfo.questions === 'object') {
+        questions = activityInfo.questions || [];
+      } else {
+        questions = [];
+      }
+    } catch (parseError) {
+      console.error('解析题目失败:', parseError);
+      questions = [];
+    }
+
+    // 安全地解析用户答案
+    let userAnswers;
+    try {
+      if (typeof participant.answers === 'string') {
+        userAnswers = JSON.parse(participant.answers || '[]');
+      } else if (typeof participant.answers === 'object') {
+        userAnswers = participant.answers || [];
+      } else {
+        userAnswers = [];
+      }
+    } catch (parseError) {
+      console.error('解析用户答案失败:', parseError);
+      userAnswers = [];
+    }
+
+    // 比对答案并生成结果
+    const results = questions.map((question: any, index: number) => {
+      const userAnswer = userAnswers[index] || '';
+      const isCorrect = userAnswer === question.correct_answer;
+
+      return {
+        questionNumber: index + 1,
+        questionText: question.question_text,
+        options: question.options || [],
+        userAnswer: userAnswer,
+        correctAnswer: question.correct_answer,
+        isCorrect: isCorrect
+      };
     });
 
-    try {
-      // 调用API获取该参与者的答题详情
-      const response = await fetch(`/api/quiz/my-answers?activityId=${encodeURIComponent(kValue)}&participantUserId=${encodeURIComponent(participant.participant_user_id)}&participantUserType=${encodeURIComponent(participant.participant_user_type)}`);
-      const result = await response.json();
-
-      if (result.success) {
-        setSelectedParticipantAnswers(result.data);
-        setShowAnswersModal(true);
-      } else {
-        alert(`获取答题记录失败: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('获取参与者答题记录失败:', error);
-      alert('获取答题记录失败，请稍后重试');
-    }
+    setSelectedParticipantAnswers({
+      userNickname: participant.userDetail?.nickname || '用户',
+      questions: results,
+      totalQuestions: questions.length,
+      correctCount: participant.correct_count
+    });
+    setShowAnswersModal(true);
   };
 
   if (loading) {
@@ -555,7 +588,7 @@ export default function MyShareContent() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-bold text-gray-800 truncate">{userNickname}</span>
-                            {/* "查看答案"按钮，存储用户信息并添加动画效果和点击事件 */}
+                            {/* "查看答案"按钮，直接使用本地数据，添加动画效果和点击事件 */}
                             <button 
                               className="text-xs bg-green-500 text-white py-1 px-2 rounded-full border border-green-500 hover:bg-green-600 animate-pulse transition-colors"
                               style={{
@@ -564,7 +597,7 @@ export default function MyShareContent() {
                               data-participant-user-id={participation.participant_user_id}
                               data-participant-user-type={participation.participant_user_type}
                               data-user-nickname={userNickname}
-                              onClick={() => fetchParticipantAnswers(participation)}
+                              onClick={() => showParticipantAnswers(participation)}
                             >
                               查看答案
                             </button>

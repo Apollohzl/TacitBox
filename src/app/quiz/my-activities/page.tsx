@@ -131,7 +131,7 @@ export default function MyActivitiesPage() {
                   
                   {/* 第四行：统计信息 */}
                   <div className="text-gray-500 text-sm mb-4">
-                    {activity.now_finish || 0}人答题 {activity.now_get_reward || 0}人获奖 还剩{(activity.max_reward_count || 0) - (activity.now_get_reward || 0)}个机会
+                    {activity.now_finish || 0}人答题 {activity.now_get_reward || 0}人获奖 还剩{activity.remaining_rewards || 0}个机会
                   </div>
                   
                   {/* 第五行：查看详情按钮 */}

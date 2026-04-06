@@ -83,8 +83,7 @@ export async function GET(request: NextRequest) {
               created_at,
               updated_at,
               now_finish,
-              creator_user_type,
-              now_get_reward
+              creator_user_type
              FROM quiz_activities 
              WHERE id = ?`,
             [activityId]
@@ -92,8 +91,22 @@ export async function GET(request: NextRequest) {
 
           if (activities && activities.length > 0) {
             const activity = activities[0];
+            
+            // 统计实际获奖人数
+            const [rewardStats] = await connection.execute(
+              `SELECT COUNT(*) as rewarded_count
+               FROM quiz_participations 
+               WHERE activity_id = ? AND has_rewarded = 1`,
+              [activity.id]
+            ) as [any[], any];
+            
+            const actualRewardedCount = rewardStats[0]?.rewarded_count || 0;
+            const remainingRewards = Math.max(0, (activity.max_reward_count || 0) - actualRewardedCount);
+            
             return {
               ...activity,
+              now_get_reward: actualRewardedCount,
+              remaining_rewards: remainingRewards,
               reward_name: rewardsMap.get(activity.reward_id)?.name || null,
               reward_description: rewardsMap.get(activity.reward_id)?.reward_message || null
             };

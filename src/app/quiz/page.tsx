@@ -39,7 +39,7 @@ export default function QuizPage() {
     checkLoginStatus();
   }, [router]);
 
-  // 获取题库分类并预加载所有分类的题目（带重试机制）
+  // 获取题库分类并预加载所有分类的题目（无限重试直到成功）
   useEffect(() => {
     if (isLoggedIn) {
       const fetchCategories = async () => {
@@ -50,31 +50,28 @@ export default function QuizPage() {
           if (result.success) {
             setCategories(result.data);
             
-            // 预加载所有分类的题目（带重试机制）
+            // 预加载所有分类的题目（无限重试直到成功）
             const questionsMap = new Map<number, any[]>();
             const loadPromises = result.data.map(async (category: any) => {
-              const maxRetries = 3;
               const retryDelay = 1000; // 1秒延迟
               
-              for (let attempt = 1; attempt <= maxRetries; attempt++) {
+              // 无限循环直到成功
+              while (true) {
                 try {
                   const questionsResponse = await fetch(`/api/quiz/questions?categoryId=${category.id}&limit=10`);
                   const questionsResult = await questionsResponse.json();
                   
                   if (questionsResult.success) {
                     questionsMap.set(category.id, questionsResult.data);
-                    break; // 成功，退出重试循环
+                    console.log(`成功加载分类 ${category.name} 的题目`);
+                    break; // 成功，退出循环
                   } else {
-                    console.warn(`加载分类 ${category.name} 的题目失败 (尝试 ${attempt}/${maxRetries}):`, questionsResult.error);
-                    if (attempt < maxRetries) {
-                      await new Promise(resolve => setTimeout(resolve, retryDelay * attempt)); // 递增延迟
-                    }
+                    console.warn(`加载分类 ${category.name} 的题目失败，准备重试...`);
+                    await new Promise(resolve => setTimeout(resolve, retryDelay)); // 等待后重试
                   }
                 } catch (err) {
-                  console.error(`加载分类 ${category.name} 的题目失败 (尝试 ${attempt}/${maxRetries}):`, err);
-                  if (attempt < maxRetries) {
-                    await new Promise(resolve => setTimeout(resolve, retryDelay * attempt)); // 递增延迟
-                  }
+                  console.error(`加载分类 ${category.name} 的题目失败，准备重试...`, err);
+                  await new Promise(resolve => setTimeout(resolve, retryDelay)); // 等待后重试
                 }
               }
             });

@@ -5,6 +5,39 @@ import pool from '../../../../lib/db';
 // 指定此路由为动态渲染
 export const dynamic = 'force-dynamic';
 
+// 无限重试数据库操作
+async function executeWithRetry(operation: () => Promise<void>, maxRetries = Infinity) {
+  const retryDelay = 1000; // 1秒延迟
+  let attempt = 0;
+  
+  while (attempt < maxRetries) {
+    try {
+      await operation();
+      return; // 成功，退出函数
+    } catch (error) {
+      attempt++;
+      console.error(`数据库操作失败 (尝试 ${attempt})，准备重试...`, error);
+      
+      // 释放连接（如果存在）
+      if (connection) {
+        try {
+          connection.release();
+          connection = null;
+        } catch (releaseError) {
+          console.error('释放数据库连接时出错:', releaseError);
+        }
+      }
+      
+      if (attempt >= maxRetries) {
+        throw error; // 达到最大重试次数，抛出错误
+      }
+      
+      // 等待后重试
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+    }
+  }
+}
+
 let connection;
 
 export async function GET(request: NextRequest) {
@@ -31,32 +64,34 @@ export async function GET(request: NextRequest) {
     // 将用户信息存储到数据库
     const { social_uid, access_token, faceimg, nickname, location, gender, ip } = userData;
 
-    // 检查用户是否已存在
-    connection = await pool.getConnection();
-    
-    const [existingUsers] = await connection.execute(
-      'SELECT id FROM users WHERE social_uid = ? AND social_type = ?',
-      [social_uid, type]
-    ) as [any[], any];
+    // 使用无限重试机制保存用户信息
+    await executeWithRetry(async () => {
+      connection = await pool.getConnection();
+      
+      const [existingUsers] = await connection.execute(
+        'SELECT id FROM users WHERE social_uid = ? AND social_type = ?',
+        [social_uid, type]
+      ) as [any[], any];
 
-    if (existingUsers.length > 0) {
-      // 更新现有用户信息
-      await connection.execute(
-        `UPDATE users 
-         SET nickname = ?, avatar_url = ?, gender = ?, location = ?, access_token = ?, 
-             ip_address = ?, last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
-         WHERE social_uid = ? AND social_type = ?`,
-        [nickname, faceimg, gender, location, access_token, ip, social_uid, type]
-      );
-    } else {
-      // 创建新用户
-      await connection.execute(
-        `INSERT INTO users 
-         (social_uid, social_type, nickname, avatar_url, gender, location, access_token, ip_address, last_login_at,published_activities,participated_activities) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, "[]", "[]")`,
-        [social_uid, type, nickname, faceimg, gender, location, access_token, ip]
-      );
-    }
+      if (existingUsers.length > 0) {
+        // 更新现有用户信息
+        await connection.execute(
+          `UPDATE users 
+           SET nickname = ?, avatar_url = ?, gender = ?, location = ?, access_token = ?, 
+               ip_address = ?, last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
+           WHERE social_uid = ? AND social_type = ?`,
+          [nickname, faceimg, gender, location, access_token, ip, social_uid, type]
+        );
+      } else {
+        // 创建新用户
+        await connection.execute(
+          `INSERT INTO users 
+           (social_uid, social_type, nickname, avatar_url, gender, location, access_token, ip_address, last_login_at,published_activities,participated_activities) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, "[]", "[]")`,
+          [social_uid, type, nickname, faceimg, gender, location, access_token, ip]
+        );
+      }
+    });
     
     // 重定向到成功页面，并传递用户信息
     const userInfo = {
@@ -75,12 +110,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${request.nextUrl.origin}/login/success?userInfo=${encodedUserInfo}`);
   } catch (error) {
     console.error('处理登录回调时发生错误:', error);
-    return NextResponse.json({ error: '服务器内部错误' }, { status: 500 });
+    return NextResponse.json({ error: '服务器内部错误，正在重试...' }, { status: 500 });
   } finally {
     // 确保连接被释放，无论是否发生错误
     if (connection) {
       try {
         connection.release();
+        connection = null; // 清空引用
       } catch (releaseError) {
         console.error('释放数据库连接时出错:', releaseError);
       }

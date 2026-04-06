@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const [activities] = await connection.execute(
       `SELECT questions, creator_user_id 
        FROM quiz_activities 
-       WHERE activity_id = ?`,
+       WHERE id = ?`,
       [encodeURIComponent(activityId)]
     ) as [any[], any];
 

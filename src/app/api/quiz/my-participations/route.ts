@@ -10,38 +10,42 @@ export async function GET(request: NextRequest) {
   
   try {
     const { searchParams } = new URL(request.url);
-    const participantUserId = searchParams.get('participant_user_id');
+    const socialUid = searchParams.get('social_uid');
+    const socialType = searchParams.get('social_type');
 
-    if (!participantUserId) {
+    if (!socialUid || !socialType) {
       return NextResponse.json({ 
         success: false, 
-        message: '缺少必要参数: participant_user_id' 
+        message: '缺少必要参数: social_uid, social_type' 
       }, { status: 400 });
     }
 
     connection = await pool.getConnection();
     
-    // 获取用户参与的所有测试，按参与时间倒序排列
-    const [participations] = await connection.execute(
+    // 从 users 表读取用户数据
+    const [users] = await connection.execute(
       `SELECT 
-        p.id,
-        p.activity_id,
-        p.answers,
-        p.correct_count,
-        p.has_rewarded,
-        p.participation_time,
-        p.participant_user_type,
-        a.creator_user_id,
-        a.reward_id,
-        a.min_correct
-       FROM quiz_participations p
-       INNER JOIN quiz_activities a ON p.activity_id = a.id
-       WHERE p.participant_user_id = ?
-       ORDER BY p.participation_time DESC`,
-      [participantUserId]
+        social_uid,
+        nickname,
+        participated_activities
+       FROM users 
+       WHERE social_uid = ? AND social_type = ?`,
+      [socialUid, socialType]
     ) as [any[], any];
 
-    if (!participations || participations.length === 0) {
+    if (!users || users.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          participations: []
+        }
+      });
+    }
+
+    const user = users[0];
+    const participatedActivities = user.participated_activities || [];
+
+    if (!participatedActivities || participatedActivities.length === 0) {
       return NextResponse.json({
         success: true,
         data: {
@@ -63,32 +67,68 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 为每个参与记录获取创建者信息和奖励信息
+    // 根据 participated_activities 查询 quiz_participations 表（查询 participant_unique_id）
     const participationsWithDetails = await Promise.all(
-      participations.map(async (participation: any) => {
-        // 获取创建者信息
-        const [creators] = await connection.execute(
-          `SELECT social_uid, nickname 
-           FROM users 
-           WHERE social_uid = ?`,
-          [participation.creator_user_id]
-        ) as [any[], any];
+      participatedActivities.map(async (participantUniqueId: string) => {
+        try {
+          const [participations] = await connection.execute(
+            `SELECT 
+              p.id,
+              p.activity_id,
+              p.answers,
+              p.correct_count,
+              p.has_rewarded,
+              p.participation_time,
+              p.participant_user_type,
+              a.creator_user_id,
+              a.creator_user_type,
+              a.reward_id,
+              a.min_correct,
+              a.created_at as activity_created_at
+             FROM quiz_participations p
+             INNER JOIN quiz_activities a ON p.activity_id = a.id
+             WHERE p.participant_unique_id = ?`,
+            [participantUniqueId]
+          ) as [any[], any];
 
-        const creator = creators[0] || {};
+          if (participations && participations.length > 0) {
+            const participation = participations[0];
+            
+            // 获取创建者信息
+            const [creators] = await connection.execute(
+              `SELECT social_uid, nickname, avatar_url
+               FROM users 
+               WHERE social_uid = ? AND social_type = ?`,
+              [participation.creator_user_id, participation.creator_user_type]
+            ) as [any[], any];
 
-        return {
-          ...participation,
-          creator_nickname: creator.nickname || '未知用户',
-          reward_name: rewardsMap.get(participation.reward_id)?.name || null,
-          reward_description: rewardsMap.get(participation.reward_id)?.reward_message || null
-        };
+            const creator = creators[0] || {};
+
+            return {
+              ...participation,
+              creator_nickname: creator.nickname || '未知用户',
+              creator_avatar_url: creator.avatar_url || null,
+              reward_name: rewardsMap.get(participation.reward_id)?.name || null,
+              reward_description: rewardsMap.get(participation.reward_id)?.reward_message || null
+            };
+          }
+          return null;
+        } catch (error) {
+          console.error(`查询参与记录 ${participantUniqueId} 失败:`, error);
+          return null;
+        }
       })
     );
+
+    // 过滤掉 null 值并按参与时间倒序排列
+    const validParticipations = participationsWithDetails
+      .filter((p): p is any => p !== null)
+      .sort((a, b) => new Date(b.participation_time).getTime() - new Date(a.participation_time).getTime());
 
     return NextResponse.json({
       success: true,
       data: {
-        participations: participationsWithDetails
+        participations: validParticipations
       }
     });
   } catch (error) {

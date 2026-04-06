@@ -8,6 +8,8 @@ export default function MyParticipationsPage() {
   const [userData, setUserData] = useState<any>(null);
   const [participations, setParticipations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -16,7 +18,7 @@ export default function MyParticipationsPage() {
       const storedLoginType = localStorage.getItem('login_type') || 'wx';
 
       if (!storedSocialUid) {
-        router.push('/login');
+        router.push('/');
         return;
       }
 
@@ -26,14 +28,14 @@ export default function MyParticipationsPage() {
         const userResult = await userResponse.json();
 
         if (!userResult.success) {
-          router.push('/login');
+          router.push('/');
           return;
         }
 
         setUserData(userResult.data);
 
         // 获取用户的答题记录
-        const participationsResponse = await fetch(`/api/quiz/my-participations?participant_user_id=${storedSocialUid}`);
+        const participationsResponse = await fetch(`/api/quiz/my-participations?social_uid=${storedSocialUid}&social_type=${storedLoginType}`);
         const participationsResult = await participationsResponse.json();
 
         if (participationsResult.success) {
@@ -43,6 +45,7 @@ export default function MyParticipationsPage() {
         }
       } catch (error) {
         console.error('获取数据失败:', error);
+        router.push('/');
       } finally {
         setLoading(false);
       }
@@ -57,43 +60,25 @@ export default function MyParticipationsPage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}.${month}.${day}`;
   };
 
-  const getPercentage = (correctCount: number, totalQuestions: number = 10) => {
-    return Math.round((correctCount / totalQuestions) * 100);
+  const handleViewDetail = (activityId: string) => {
+    const shareUrl = `https://tb.vicral.cn/quiz/share?k=${activityId}`;
+    window.open(shareUrl, '_blank');
   };
 
-  const getDescription = (percentage: number) => {
-    const descriptions: { [key: number]: string } = {
-      100: '全世界你最懂我！',
-      90: '我们之间只隔了一层窗户纸~',
-      80: '经受住了考验，真朋友无疑了~',
-      70: '默契度再高一点点，我就跟你走！',
-      60: '让我们的革命友谊再升华一下吧！',
-      50: '你保住了咋俩的革命友谊！',
-      40: '友谊的小船说翻就翻~',
-      30: '点赞之交是我们最深的交情！',
-      20: '你我本无缘，全靠朋友圈',
-      10: '扎心了老铁，我们见过吗？',
-      0: '你是如何完美避开所有正确答案的？'
-    };
+  // 计算分页
+  const totalPages = Math.ceil(participations.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentParticipations = participations.slice(startIndex, endIndex);
 
-    if (descriptions[percentage]) {
-      return descriptions[percentage];
-    }
-
-    // 找到最接近的值
-    const closest = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0].reduce((prev, curr) => 
-      Math.abs(curr - percentage) < Math.abs(prev - percentage) ? curr : prev
-    );
-    return descriptions[closest] || '未知默契度';
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   if (loading) {
@@ -122,77 +107,102 @@ export default function MyParticipationsPage() {
         </header>
 
         {/* 答题记录列表 */}
-        {participations.length > 0 ? (
-          <div className="space-y-4">
-            {participations.map((participation) => (
-              <div 
-                key={participation.id}
-                className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
-                onClick={() => router.push(`/quiz/result?k=${encodeURIComponent(participation.activity_id)}`)}
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">
-                      {participation.creator_nickname || '朋友'}的默契盒子测试卷
-                    </h3>
-                    <div className="text-sm text-gray-600">
-                      答题时间：{formatDate(participation.participation_time)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-3xl font-bold ${participation.has_rewarded ? 'text-yellow-500' : 'text-blue-500'}`}>
-                      {getPercentage(participation.correct_count || 0)}%
-                    </div>
-                    <div className="text-xs text-gray-500">默契度</div>
-                  </div>
-                </div>
-                
-                {/* 统计信息 */}
-                <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-200">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-gray-800">
-                      {participation.correct_count || 0}
-                    </div>
-                    <div className="text-xs text-gray-600">答对题数</div>
-                  </div>
-                  <div className="text-center">
-                    <div className={`text-lg font-bold ${participation.has_rewarded ? 'text-yellow-500' : 'text-gray-500'}`}>
-                      {participation.has_rewarded ? '✓ 已获奖' : '未获奖'}
-                    </div>
-                    <div className="text-xs text-gray-600">获奖状态</div>
-                  </div>
-                </div>
-
-                {/* 默契度描述 */}
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <div className="text-sm text-gray-700 font-medium">
-                    {getDescription(getPercentage(participation.correct_count || 0))}
-                  </div>
-                </div>
-
-                {/* 奖励信息 */}
-                {participation.has_rewarded && participation.reward_name && (
-                  <div className="mt-4 flex items-center bg-yellow-50 p-3 rounded-lg">
-                    <img 
-                      src={`/shareimages/${participation.reward_id}.png`} 
-                      alt="奖励" 
-                      className="w-12 h-12 object-contain mr-3"
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-800">
-                        {participation.reward_name}
+        {currentParticipations.length > 0 ? (
+          <>
+            <div className="space-y-4">
+              {currentParticipations.map((participation) => (
+                <div 
+                  key={participation.id}
+                  className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
+                  onClick={() => handleViewDetail(participation.activity_id)}
+                >
+                  {/* 第一行：头像、昵称、时间 */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center flex-1">
+                      {/* 圆形头像 */}
+                      <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center mr-3 flex-shrink-0">
+                        <img 
+                          src={participation.creator_avatar_url || '/images/logo-192x192.png'} 
+                          alt="出题者头像" 
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
                       </div>
-                      {participation.reward_description && (
-                        <div className="text-xs text-gray-600">
-                          {participation.reward_description}
-                        </div>
-                      )}
+                      {/* 黑色粗体显示昵称 */}
+                      <div className="font-bold text-black text-lg">
+                        {participation.creator_nickname || '朋友'}的默契测试试卷
+                      </div>
+                    </div>
+                    {/* 灰色显示时间 */}
+                    <div className="text-gray-500 text-sm">
+                      {formatDate(participation.activity_created_at)}
                     </div>
                   </div>
-                )}
+                  
+                  {/* 第二行：奖励状态 */}
+                  {participation.has_rewarded && participation.reward_name ? (
+                    <div className="text-base text-yellow-600 mb-2">
+                      获得奖励：{participation.reward_name}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500 mb-2">
+                      未获得奖励
+                    </div>
+                  )}
+                  
+                  {/* 第三行：答题统计 */}
+                  <div className="text-gray-700 text-sm mb-4">
+                    共10题 答对了{participation.correct_count || 0}题
+                  </div>
+                  
+                  {/* 查看详情按钮 */}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewDetail(participation.activity_id);
+                    }}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors"
+                  >
+                    查看详情
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* 分页控件 */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center mt-8 space-x-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-lg bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  上一页
+                </button>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-4 py-2 rounded-lg ${
+                      currentPage === page
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white hover:bg-gray-100'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-lg bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  下一页
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         ) : (
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <div className="text-6xl mb-4">🎯</div>

@@ -10,6 +10,7 @@ export default function ResultContent() {
   const [userData, setUserData] = useState<any>(null);
   const [activityInfo, setActivityInfo] = useState<any>(null);
   const [creatorUserData, setCreatorUserData] = useState<any>(null);
+  const [rewardDetail, setRewardDetail] = useState<any>(null);
   const [participationData, setParticipationData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,6 +57,24 @@ export default function ResultContent() {
         }
 
         setActivityInfo(activityResult.activity);
+
+        // 获取奖励详细信息
+        if (activityResult.activity?.reward_id) {
+          try {
+            const rewardResponse = await fetch(`/api/quiz/rewards`);
+            const rewardResult = await rewardResponse.json();
+            
+            if (rewardResult.success && rewardResult.data) {
+              // 根据 reward_id 查找对应的奖励
+              const reward = rewardResult.data.find((r: any) => r.reward_id === activityResult.activity.reward_id);
+              if (reward) {
+                setRewardDetail(reward);
+              }
+            }
+          } catch (error) {
+            console.error('获取奖励详情失败:', error);
+          }
+        }
 
         // 获取创建者详细信息
         if (activityResult.activity?.creator_user_id) {
@@ -265,7 +284,7 @@ export default function ResultContent() {
                         // 获奖显示金色高亮动态特效
                         return (
                           <div className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 font-bold text-xl animate-pulse">
-                            恭喜你！获得{activityInfo?.reward_name || '奖励'}，快去找朋友兑奖吧！
+                            恭喜你！获得{rewardDetail?.name || activityInfo?.reward_name || '奖励'}，快去找朋友兑奖吧！
                           </div>
                         );
                       } else {

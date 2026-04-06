@@ -11,12 +11,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const socialUid = searchParams.get('social_uid');
-    const loginType = searchParams.get('login_type');
+    const socialType = searchParams.get('social_type');
 
-    if (!socialUid || !loginType) {
+    if (!socialUid || !socialType) {
       return NextResponse.json({ 
         success: false, 
-        message: '缺少必要参数: social_uid, login_type' 
+        message: '缺少必要参数: social_uid, social_type' 
       }, { status: 400 });
     }
 
@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
         published_activities,
         participated_activities
        FROM users 
-       WHERE social_uid = ? AND login_type = ?`,
-      [socialUid, loginType]
+       WHERE social_uid = ? AND social_type = ?`,
+      [socialUid, socialType]
     ) as [any[], any];
 
     if (!users || users.length === 0) {

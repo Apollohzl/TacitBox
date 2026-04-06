@@ -35,7 +35,7 @@ export default function MyActivitiesPage() {
         setUserData(userResult.data);
 
         // 获取用户的出题记录
-        const activitiesResponse = await fetch(`/api/quiz/my-activities?social_uid=${storedSocialUid}&login_type=${storedLoginType}`);
+        const activitiesResponse = await fetch(`/api/quiz/my-activities?social_uid=${storedSocialUid}&social_type=${storedLoginType}`);
         const activitiesResult = await activitiesResponse.json();
 
         if (activitiesResult.success) {

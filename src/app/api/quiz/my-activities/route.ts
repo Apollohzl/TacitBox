@@ -10,34 +10,43 @@ export async function GET(request: NextRequest) {
   
   try {
     const { searchParams } = new URL(request.url);
-    const creatorUserId = searchParams.get('creator_user_id');
+    const socialUid = searchParams.get('social_uid');
+    const loginType = searchParams.get('login_type');
 
-    if (!creatorUserId) {
+    if (!socialUid || !loginType) {
       return NextResponse.json({ 
         success: false, 
-        message: '缺少必要参数: creator_user_id' 
+        message: '缺少必要参数: social_uid, login_type' 
       }, { status: 400 });
     }
 
     connection = await pool.getConnection();
     
-    // 获取用户创建的所有活动，按创建时间倒序排列
-    const [activities] = await connection.execute(
+    // 从 users 表读取用户数据
+    const [users] = await connection.execute(
       `SELECT 
-        id,
-        creator_user_id,
-        reward_id,
-        min_correct,
-        max_reward_count,
-        created_at,
-        updated_at
-       FROM quiz_activities 
-       WHERE creator_user_id = ?
-       ORDER BY created_at DESC`,
-      [creatorUserId]
+        social_uid,
+        nickname,
+        published_activities,
+        participated_activities
+       FROM users 
+       WHERE social_uid = ? AND login_type = ?`,
+      [socialUid, loginType]
     ) as [any[], any];
 
-    if (!activities || activities.length === 0) {
+    if (!users || users.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          activities: []
+        }
+      });
+    }
+
+    const user = users[0];
+    const publishedActivities = user.published_activities || [];
+
+    if (!publishedActivities || publishedActivities.length === 0) {
       return NextResponse.json({
         success: true,
         data: {
@@ -59,35 +68,53 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 为每个活动获取统计数据
-    const activitiesWithStats = await Promise.all(
-      activities.map(async (activity: any) => {
-        // 获取该活动的参与人数
-        const [participationStats] = await connection.execute(
-          `SELECT 
-            COUNT(*) as total_participations,
-            SUM(CASE WHEN has_rewarded = 1 THEN 1 ELSE 0 END) as rewarded_count
-           FROM quiz_participations 
-           WHERE activity_id = ?`,
-          [activity.id]
-        ) as [any[], any];
+    // 根据 published_activities 查询 quiz_activities 表
+    const activitiesWithIds = await Promise.all(
+      publishedActivities.map(async (activityId: string) => {
+        try {
+          const [activities] = await connection.execute(
+            `SELECT 
+              id,
+              creator_user_id,
+              questions,
+              reward_id,
+              min_correct,
+              max_reward_count,
+              created_at,
+              updated_at,
+              now_finish,
+              creator_user_type,
+              now_get_reward
+             FROM quiz_activities 
+             WHERE id = ?`,
+            [activityId]
+          ) as [any[], any];
 
-        const stats = participationStats[0] || {};
-
-        return {
-          ...activity,
-          now_finish: stats.total_participations || 0,
-          rewarded_count: stats.rewarded_count || 0,
-          reward_name: rewardsMap.get(activity.reward_id)?.name || null,
-          reward_description: rewardsMap.get(activity.reward_id)?.reward_message || null
-        };
+          if (activities && activities.length > 0) {
+            const activity = activities[0];
+            return {
+              ...activity,
+              reward_name: rewardsMap.get(activity.reward_id)?.name || null,
+              reward_description: rewardsMap.get(activity.reward_id)?.reward_message || null
+            };
+          }
+          return null;
+        } catch (error) {
+          console.error(`查询活动 ${activityId} 失败:`, error);
+          return null;
+        }
       })
     );
+
+    // 过滤掉 null 值并按创建时间倒序排列
+    const validActivities = activitiesWithIds
+      .filter((activity): activity is any => activity !== null)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return NextResponse.json({
       success: true,
       data: {
-        activities: activitiesWithStats
+        activities: validActivities
       }
     });
   } catch (error) {

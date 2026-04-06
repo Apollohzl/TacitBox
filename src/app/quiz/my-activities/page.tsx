@@ -8,6 +8,8 @@ export default function MyActivitiesPage() {
   const [userData, setUserData] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -16,7 +18,7 @@ export default function MyActivitiesPage() {
       const storedLoginType = localStorage.getItem('login_type') || 'wx';
 
       if (!storedSocialUid) {
-        router.push('/login');
+        router.push('/');
         return;
       }
 
@@ -26,14 +28,14 @@ export default function MyActivitiesPage() {
         const userResult = await userResponse.json();
 
         if (!userResult.success) {
-          router.push('/login');
+          router.push('/');
           return;
         }
 
         setUserData(userResult.data);
 
         // 获取用户的出题记录
-        const activitiesResponse = await fetch(`/api/quiz/my-activities?creator_user_id=${storedSocialUid}`);
+        const activitiesResponse = await fetch(`/api/quiz/my-activities?social_uid=${storedSocialUid}&login_type=${storedLoginType}`);
         const activitiesResult = await activitiesResponse.json();
 
         if (activitiesResult.success) {
@@ -43,6 +45,7 @@ export default function MyActivitiesPage() {
         }
       } catch (error) {
         console.error('获取数据失败:', error);
+        router.push('/');
       } finally {
         setLoading(false);
       }
@@ -51,19 +54,27 @@ export default function MyActivitiesPage() {
     fetchData();
   }, [router]);
 
-  const handleReturnHome = () => {
-    router.push('/');
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}.${month}.${day}`;
+  };
+
+  const handleViewDetail = (activityId: string) => {
+    const shareUrl = `https://tb.vicral.cn/quiz/share?k=${encodeURIComponent(activityId)}`;
+    window.open(shareUrl, '_blank');
+  };
+
+  // 计算分页
+  const totalPages = Math.ceil(activities.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentActivities = activities.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   if (loading) {
@@ -84,7 +95,7 @@ export default function MyActivitiesPage() {
         <header className="flex items-center justify-between py-6 mb-8">
           <h1 className="text-3xl font-bold text-gray-800">我的出题记录</h1>
           <button 
-            onClick={handleReturnHome}
+            onClick={() => router.push('/')}
             className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
           >
             返回首页
@@ -92,76 +103,86 @@ export default function MyActivitiesPage() {
         </header>
 
         {/* 出题记录列表 */}
-        {activities.length > 0 ? (
-          <div className="space-y-4">
-            {activities.map((activity) => (
-              <div 
-                key={activity.id}
-                className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
-                onClick={() => router.push(`/quiz/myshare?k=${encodeURIComponent(activity.id)}`)}
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">
-                      {userData?.nickname || '用户'}的默契盒子测试卷
-                    </h3>
-                    <div className="text-sm text-gray-600">
-                      创建时间：{formatDate(activity.created_at)}
-                    </div>
+        {currentActivities.length > 0 ? (
+          <>
+            <div className="space-y-4">
+              {currentActivities.map((activity) => (
+                <div 
+                  key={activity.id}
+                  className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
+                  onClick={() => handleViewDetail(activity.id)}
+                >
+                  {/* 第一行：粗体黑色文字 */}
+                  <div className="font-bold text-black text-lg mb-2">
+                    10道题，答对{activity.min_correct || 0}题可获得奖励
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-blue-500">
-                      {activity.now_finish || 0}
+                  
+                  {/* 第二行：小字金色显示奖励 */}
+                  {activity.reward_name && (
+                    <div className="text-sm text-yellow-600 mb-2">
+                      奖励：{activity.reward_name} × 1
                     </div>
-                    <div className="text-xs text-gray-500">参与人数</div>
+                  )}
+                  
+                  {/* 第三行：发布时间 */}
+                  <div className="text-gray-500 text-sm mb-2">
+                    {formatDate(activity.created_at)}
                   </div>
+                  
+                  {/* 第四行：统计信息 */}
+                  <div className="text-gray-500 text-sm mb-4">
+                    {activity.now_finish || 0}人答题 {activity.now_get_reward || 0}人获奖 还剩{(activity.max_reward_count || 0) - (activity.now_get_reward || 0)}个机会
+                  </div>
+                  
+                  {/* 第五行：查看详情按钮 */}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewDetail(activity.id);
+                    }}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors"
+                  >
+                    查看详情
+                  </button>
                 </div>
-                
-                {/* 统计信息 */}
-                <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-gray-200">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-gray-800">
-                      {activity.max_reward_count || 0}
-                    </div>
-                    <div className="text-xs text-gray-600">奖励总数</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-yellow-500">
-                      {activity.rewarded_count || 0}
-                    </div>
-                    <div className="text-xs text-gray-600">已发放</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-green-500">
-                      {activity.min_correct || 0}
-                    </div>
-                    <div className="text-xs text-gray-600">答对要求</div>
-                  </div>
-                </div>
+              ))}
+            </div>
 
-                {/* 奖励信息 */}
-                {activity.reward_id && (
-                  <div className="mt-4 flex items-center bg-yellow-50 p-3 rounded-lg">
-                    <img 
-                      src={`/shareimages/${activity.reward_id}.png`} 
-                      alt="奖励" 
-                      className="w-12 h-12 object-contain mr-3"
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-800">
-                        {activity.reward_name || '奖励'}
-                      </div>
-                      {activity.reward_description && (
-                        <div className="text-xs text-gray-600">
-                          {activity.reward_description}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+            {/* 分页控件 */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center mt-8 space-x-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-lg bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  上一页
+                </button>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-4 py-2 rounded-lg ${
+                      currentPage === page
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white hover:bg-gray-100'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-lg bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  下一页
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         ) : (
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <div className="text-6xl mb-4">📝</div>

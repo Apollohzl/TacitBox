@@ -249,21 +249,6 @@ const HomePage = () => {
               <button 
                 className="text-lg font-bold rounded-lg py-2"
                 style={{ 
-                  backgroundColor: '#4ECDC4', // 青色
-                  color: 'white',
-                  width: '170px',
-                  height: '60px',
-                  borderWidth: '5px',
-                  borderStyle: 'solid',
-                  borderColor: '#3AA89F' // 深青色边框
-                }}
-                onClick={() => window.location.href = '/quiz/create'}
-              >
-                【发出的奖励】
-              </button>
-              <button 
-                className="text-lg font-bold rounded-lg py-2"
-                style={{ 
                   backgroundColor: '#FF6B6B', // 红色
                   color: 'white',
                   width: '170px',
@@ -272,6 +257,7 @@ const HomePage = () => {
                   borderStyle: 'solid',
                   borderColor: '#E55555' // 深红色边框
                 }}
+                onClick={() => window.location.href = '/quiz/my-activities'}
               >
                 【出题记录】
               </button>
@@ -286,6 +272,7 @@ const HomePage = () => {
                   borderStyle: 'solid',
                   borderColor: '#DCC55D' // 深黄色边框
                 }}
+                onClick={() => window.location.href = '/quiz/my-participations'}
               >
                 【答题记录】
               </button>
@@ -329,25 +316,13 @@ const HomePage = () => {
             <button 
               className="w-full text-lg font-bold rounded-lg mb-3 py-3"
               style={{ 
-                backgroundColor: '#4ECDC4', // 青色
-                color: 'white',
-                borderWidth: '5px',
-                borderStyle: 'solid',
-                borderColor: '#3AA89F' // 深青色边框
-              }}
-              onClick={() => window.location.href = '/quiz/create'}
-            >
-              【发出的奖励】
-            </button>
-            <button 
-              className="w-full text-lg font-bold rounded-lg mb-3 py-3"
-              style={{ 
                 backgroundColor: '#FF6B6B', // 红色
                 color: 'white',
                 borderWidth: '5px',
                 borderStyle: 'solid',
                 borderColor: '#E55555' // 深红色边框
               }}
+              onClick={() => window.location.href = '/quiz/my-activities'}
             >
               【出题记录】
             </button>
@@ -360,6 +335,7 @@ const HomePage = () => {
                 borderStyle: 'solid',
                 borderColor: '#DCC55D' // 深黄色边框
               }}
+              onClick={() => window.location.href = '/quiz/my-participations'}
             >
               【答题记录】
             </button>

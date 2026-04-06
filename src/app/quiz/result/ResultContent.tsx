@@ -339,6 +339,12 @@ export default function ResultContent() {
             {/* 按钮组 */}
             <div className="flex justify-center space-x-4 mb-4">
               <button
+                className="bg-gradient-to-r from-gray-500 to-gray-600 text-white py-2 px-6 rounded-full text-sm"
+                onClick={() => router.push('/')}
+              >
+                返回首页
+              </button>
+              <button
                 className="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-6 rounded-full text-sm"
                 onClick={() => router.push('/quiz')}
               >

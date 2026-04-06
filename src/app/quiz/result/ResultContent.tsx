@@ -252,11 +252,32 @@ export default function ResultContent() {
                     className="h-full object-contain"
                     style={{ width: 'auto', maxHeight: '128px' }}
                   />
-                  {activityInfo?.reward_description && (
-                    <div className="text-yellow-500 font-bold text-lg flex-1 break-words">
-                      {activityInfo?.reward_description}
-                    </div>
-                  )}
+                  <div className="flex-1 text-center">
+                    {/* 判断当前用户是否获奖 */}
+                    {(() => {
+                      // 查找当前用户的参与记录
+                      const currentParticipation = participationData.find(
+                        (p: any) => p.participant_user_id === userData?.social_uid
+                      );
+                      const hasReward = currentParticipation?.has_rewarded === 1 || currentParticipation?.has_rewarded === '1' || currentParticipation?.has_rewarded === true;
+                      
+                      if (hasReward) {
+                        // 获奖显示金色高亮动态特效
+                        return (
+                          <div className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 font-bold text-xl animate-pulse">
+                            恭喜你！获得{activityInfo?.reward_name || '奖励'}，快去找朋友兑奖吧！
+                          </div>
+                        );
+                      } else {
+                        // 未获奖显示灰色粗体
+                        return (
+                          <div className="text-gray-500 font-bold text-xl">
+                            很遗憾，没办法获得奖励┭┮﹏┭┮
+                          </div>
+                        );
+                      }
+                    })()}
+                  </div>
                 </div>
               ) : (
                 <div className="text-gray-600 w-full">暂无奖励信息</div>

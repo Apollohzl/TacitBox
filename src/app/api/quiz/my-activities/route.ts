@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     // 获取奖励信息
     const [rewards] = await connection.execute(
       `SELECT reward_id, name, reward_message 
-       FROM quiz_rewards`
+       FROM quiz_reward`
     ) as [any[], any];
 
     const rewardsMap = new Map();

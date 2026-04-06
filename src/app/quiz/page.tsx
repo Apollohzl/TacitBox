@@ -17,6 +17,7 @@ export default function QuizPage() {
   const [showCategorySelection, setShowCategorySelection] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [categoryQuestions, setCategoryQuestions] = useState<any[]>([]);
+  const [allCategoryQuestions, setAllCategoryQuestions] = useState<Map<number, any[]>>(new Map()); // 预加载所有分类的题目
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<{questionId: number, option: string, questionText: string, correctAnswer: string, options: string[]}[]>([]);
@@ -38,7 +39,7 @@ export default function QuizPage() {
     checkLoginStatus();
   }, [router]);
 
-  // 获取题库分类
+  // 获取题库分类并预加载所有分类的题目
   useEffect(() => {
     if (isLoggedIn) {
       const fetchCategories = async () => {
@@ -48,6 +49,23 @@ export default function QuizPage() {
           
           if (result.success) {
             setCategories(result.data);
+            
+            // 预加载所有分类的题目
+            const questionsMap = new Map<number, any[]>();
+            const loadPromises = result.data.map(async (category: any) => {
+              try {
+                const questionsResponse = await fetch(`/api/quiz/questions?categoryId=${category.id}&limit=10`);
+                const questionsResult = await questionsResponse.json();
+                if (questionsResult.success) {
+                  questionsMap.set(category.id, questionsResult.data);
+                }
+              } catch (err) {
+                console.error(`加载分类 ${category.name} 的题目失败:`, err);
+              }
+            });
+            
+            await Promise.all(loadPromises);
+            setAllCategoryQuestions(questionsMap);
           } else {
             setError('获取题库分类失败');
           }
@@ -337,22 +355,14 @@ export default function QuizPage() {
                         ? 'bg-yellow-400 border-2 border-black' 
                         : 'bg-yellow-200 hover:bg-yellow-300'
                     }`}
-                    onClick={async () => {
+                    onClick={() => {
                       setSelectedCategory(category.name);
                       setSelectedCategoryId(category.id);
                       setIsCategoryManuallySelected(true); // 标记为手动选择分类
                       
-                      // 获取新分类的题目
-                      try {
-                        const response = await fetch(`/api/quiz/questions?categoryId=${category.id}&limit=10`);
-                        const result = await response.json();
-                        
-                        if (result.success) {
-                          setCategoryQuestions(result.data);
-                        }
-                      } catch (err) {
-                        console.error('获取分类题目失败:', err);
-                      }
+                      // 直接使用预加载的数据
+                      const questions = allCategoryQuestions.get(category.id) || [];
+                      setCategoryQuestions(questions);
                     }}
                   >
                     {category.name}
@@ -364,29 +374,40 @@ export default function QuizPage() {
             {/* 右侧题目列表 */}
             <div className="w-2/3 bg-white rounded-lg shadow p-4 h-[500px] overflow-y-auto">
               <h2 className="font-bold mb-3">题目列表 - {selectedCategory}</h2>
-              <div className="space-y-3">
-                {categoryQuestions.map((question) => (
-                                <div 
-                                  key={question.id} 
-                                  className="bg-pink-100 p-4 rounded-lg cursor-pointer hover:bg-pink-200 transition-colors"
-                                  onClick={() => {
-                                    // 设置当前题目
-                                    setCurrentQuestion(question);
-                                    setIsCategoryManuallySelected(true); // 标记为手动选择分类
-                                    // 更新历史记录，如果当前题目不在历史中
-                                    setQuestionsHistory(prev => {
-                                      const exists = prev.some(q => q.id === question.id);
-                                      if (!exists) {
-                                        return [...prev, question];
-                                      }
-                                      return prev;
-                                    });
-                                    setShowCategorySelection(false);
-                                  }}
-                                >
-                                  <p className="font-medium">{question.question_text}</p>
-                                </div>                ))}
-              </div>
+              
+              {selectedCategoryId && categoryQuestions.length === 0 && allCategoryQuestions.size === 0 ? (
+                <div className="text-center text-gray-500 py-8">
+                  <p>加载中...</p>
+                </div>
+              ) : categoryQuestions.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">
+                  <p>请选择一个题库分类</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {categoryQuestions.map((question) => (
+                                  <div 
+                                    key={question.id} 
+                                    className="bg-pink-100 p-4 rounded-lg cursor-pointer hover:bg-pink-200 transition-colors"
+                                    onClick={() => {
+                                      // 设置当前题目
+                                      setCurrentQuestion(question);
+                                      setIsCategoryManuallySelected(true); // 标记为手动选择分类
+                                      // 更新历史记录，如果当前题目不在历史中
+                                      setQuestionsHistory(prev => {
+                                        const exists = prev.some(q => q.id === question.id);
+                                        if (!exists) {
+                                          return [...prev, question];
+                                        }
+                                        return prev;
+                                      });
+                                      setShowCategorySelection(false);
+                                    }}
+                                  >
+                                    <p className="font-medium">{question.question_text}</p>
+                                  </div>                  ))}
+                </div>
+              )}
             </div>
           </div>
           

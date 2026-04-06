@@ -276,20 +276,6 @@ const HomePage = () => {
               >
                 答题记录
               </button>
-              <button 
-                className="text-lg font-bold rounded-lg py-2"
-                style={{ 
-                  backgroundColor: '#6A0572', // 紫色
-                  color: 'white',
-                  width: '170px',
-                  height: '60px',
-                  borderWidth: '5px',
-                  borderStyle: 'solid',
-                  borderColor: '#52045B' // 深紫色边框
-                }}
-              >
-                获得的奖励
-              </button>
             </div>
           </motion.div>
         )}
@@ -327,7 +313,7 @@ const HomePage = () => {
               出题记录
             </button>
             <button 
-              className="w-full text-lg font-bold rounded-lg mb-3 py-3"
+              className="w-full text-lg font-bold rounded-lg py-3"
               style={{ 
                 backgroundColor: '#FFE66D', // 黄色
                 color: '#333',
@@ -338,18 +324,6 @@ const HomePage = () => {
               onClick={() => window.location.href = '/quiz/my-participations'}
             >
               答题记录
-            </button>
-            <button 
-              className="w-full text-lg font-bold rounded-lg py-3"
-              style={{ 
-                backgroundColor: '#6A0572', // 紫色
-                color: 'white',
-                borderWidth: '5px',
-                borderStyle: 'solid',
-                borderColor: '#52045B' // 深紫色边框
-              }}
-            >
-              获得的奖励
             </button>
           </div>
         )}

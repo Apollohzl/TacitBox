@@ -208,12 +208,6 @@ export default function MyParticipationsPage() {
             <div className="text-6xl mb-4">🎯</div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">暂无答题记录</h2>
             <p className="text-gray-600 mb-6">还没有参与过测试，快去答题吧！</p>
-            <button 
-              onClick={() => router.push('/quiz')}
-              className="bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 px-8 rounded-full font-bold"
-            >
-              去找题目
-            </button>
           </div>
         )}
       </div>

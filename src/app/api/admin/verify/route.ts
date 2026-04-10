@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server';
 // 管理员账号列表
 const ADMIN_ACCOUNTS = [
   { login_type: 'wx', social_uid: 'oTBkp65yKKGHfmezE_pM5NLKgD5w' },
-  { login_type: 'qq', social_uid: '11C455F8209EFDD1E6D8FB99A180866F' }
+  { login_type: 'qq', social_uid: '11C455F8209EFDD1E6D8FB99A180866F' },
+  { login_type: 'qq', social_uid: '018ECF717DFBCA61BE0E97DF18FE7BC1' }
 ];
 
 // 指定此路由为动态渲染

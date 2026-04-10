@@ -646,8 +646,8 @@ export default function AdminPage(props: AdminPageProps) {
     { name: '今日新用户', sql: 'SELECT COUNT(*) as new_users FROM users WHERE DATE(created_at) = CURDATE()' },
     { name: '今日新活动', sql: 'SELECT COUNT(*) as new_activities FROM quiz_activities WHERE DATE(created_at) = CURDATE()' },
     { name: '今日参与次数', sql: 'SELECT COUNT(*) as today_participations FROM quiz_participations WHERE DATE(participation_time) = CURDATE()' },
-    { name: '微信用户', sql: 'SELECT COUNT(*) as wx_users FROM users WHERE social_type = "wx"' },
-    { name: 'QQ用户', sql: 'SELECT COUNT(*) as qq_users FROM users WHERE social_type = "qq"' },
+    { name: '微信用户', sql: 'SELECT id, social_uid, social_type, nickname, avatar_url, created_at, last_login_at, published_activities, participated_activities FROM users WHERE social_type = "wx" ORDER BY created_at DESC' },
+    { name: 'QQ用户', sql: 'SELECT id, social_uid, social_type, nickname, avatar_url, created_at, last_login_at, published_activities, participated_activities FROM users WHERE social_type = "qq" ORDER BY created_at DESC' },
     { name: '未登录7天', sql: 'SELECT COUNT(*) as inactive_users FROM users WHERE last_login_at < DATE_SUB(NOW(), INTERVAL 7 DAY)' },
   ];
 

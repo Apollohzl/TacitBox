@@ -29,6 +29,13 @@ export default function AdminPage(props: AdminPageProps) {
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [tableContent, setTableContent] = useState<TableContent | null>(null);
   const [tableLoading, setTableLoading] = useState(false);
+  const [editingRow, setEditingRow] = useState<any | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingRow, setDeletingRow] = useState<any | null>(null);
+  const [editData, setEditData] = useState<any>({});
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   
   // SQL相关状态
   const [sqlCommand, setSqlCommand] = useState('');
@@ -114,6 +121,126 @@ export default function AdminPage(props: AdminPageProps) {
       console.error('加载表内容失败:', error);
     } finally {
       setTableLoading(false);
+    }
+  };
+
+  // 打开编辑模态框
+  const openEditModal = (row: any) => {
+    setEditingRow(row);
+    setEditData({...row});
+    setShowEditModal(true);
+  };
+
+  // 关闭编辑模态框
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setEditingRow(null);
+    setEditData({});
+  };
+
+  // 保存编辑
+  const saveEdit = async () => {
+    if (!selectedTable || !editingRow) return;
+
+    setSaving(true);
+    
+    try {
+      // 获取主键列名
+      const primaryKey = tableContent?.columns[0]; // 假设第一列是主键
+      const primaryKeyValue = editingRow[primaryKey];
+
+      // 构建UPDATE语句和参数
+      const updateFields = [];
+      const updateValues = [];
+      
+      Object.keys(editData).forEach(key => {
+        if (key !== primaryKey) {
+          const value = editData[key];
+          // 如果是对象，转换为JSON字符串
+          const paramValue = typeof value === 'object' ? JSON.stringify(value) : value;
+          updateFields.push(`${key} = ?`);
+          updateValues.push(paramValue);
+        }
+      });
+
+      if (updateFields.length === 0) {
+        alert('没有可更新的字段');
+        setSaving(false);
+        return;
+      }
+
+      const sql = `UPDATE ${selectedTable} SET ${updateFields.join(', ')} WHERE ${primaryKey} = ?`;
+      updateValues.push(primaryKeyValue);
+
+      const response = await fetch('/api/admin/database', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sql, params: updateValues }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('更新成功');
+        closeEditModal();
+        loadTableContent(selectedTable); // 重新加载数据
+      } else {
+        alert(`更新失败: ${result.error}`);
+      }
+    } catch (error: any) {
+      alert(`更新失败: ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // 打开删除确认对话框
+  const openDeleteModal = (row: any) => {
+    setDeletingRow(row);
+    setShowDeleteModal(true);
+  };
+
+  // 关闭删除确认对话框
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setDeletingRow(null);
+  };
+
+  // 确认删除
+  const confirmDelete = async () => {
+    if (!selectedTable || !deletingRow) return;
+
+    setDeleting(true);
+    
+    try {
+      const primaryKey = tableContent?.columns[0]; // 假设第一列是主键
+      const primaryKeyValue = deletingRow[primaryKey];
+
+      const sql = `DELETE FROM ${selectedTable} WHERE ${primaryKey} = ?`;
+
+      const response = await fetch('/api/admin/database', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sql, params: [primaryKeyValue] }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('删除成功');
+        closeDeleteModal();
+        loadTableContent(selectedTable); // 重新加载数据
+      } else {
+        alert(`删除失败: ${result.error}`);
+      }
+    } catch (error: any) {
+      alert(`删除失败: ${error.message}`);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -304,6 +431,7 @@ export default function AdminPage(props: AdminPageProps) {
                               {col}
                             </th>
                           ))}
+                          <th className="px-4 py-2 text-left">操作</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -326,6 +454,22 @@ export default function AdminPage(props: AdminPageProps) {
                                 ) : 'NULL'}
                               </td>
                             ))}
+                            <td className="px-4 py-2 whitespace-nowrap">
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => openEditModal(row)}
+                                  className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs transition-colors"
+                                >
+                                  编辑
+                                </button>
+                                <button
+                                  onClick={() => openDeleteModal(row)}
+                                  className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs transition-colors"
+                                >
+                                  删除
+                                </button>
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -410,6 +554,99 @@ export default function AdminPage(props: AdminPageProps) {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* 编辑模态框 */}
+        {showEditModal && editingRow && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-xl p-6 max-w-4xl w-full max-h-[80vh] flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-green-300">编辑数据</h3>
+                <button
+                  onClick={closeEditModal}
+                  className="text-gray-400 hover:text-white text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="overflow-y-auto flex-grow">
+                {tableContent?.columns.map((col, index) => (
+                  <div key={index} className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {col}
+                      {col === tableContent.columns[0] && <span className="text-red-400 ml-2">(主键)</span>}
+                    </label>
+                    {typeof editingRow[col] === 'object' && editingRow[col] !== null ? (
+                      <textarea
+                        value={typeof editData[col] === 'object' ? JSON.stringify(editData[col], null, 2) : String(editData[col])}
+                        onChange={(e) => {
+                          try {
+                            const parsed = JSON.parse(e.target.value);
+                            setEditData({...editData, [col]: parsed});
+                          } catch {
+                            setEditData({...editData, [col]: e.target.value});
+                          }
+                        }}
+                        className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono"
+                        rows={3}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={editData[col] || ''}
+                        onChange={(e) => setEditData({...editData, [col]: e.target.value})}
+                        className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        disabled={col === tableContent.columns[0]}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex gap-2 mt-4 pt-4 border-t border-gray-700">
+                <button
+                  onClick={saveEdit}
+                  disabled={saving}
+                  className="flex-1 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {saving ? '保存中...' : '保存'}
+                </button>
+                <button
+                  onClick={closeEditModal}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 删除确认模态框 */}
+        {showDeleteModal && deletingRow && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-xl p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold text-red-400 mb-4">确认删除</h3>
+              <p className="text-gray-300 mb-6">您确定要删除这条数据吗？此操作不可恢复。</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                  className="flex-1 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {deleting ? '删除中...' : '确认删除'}
+                </button>
+                <button
+                  onClick={closeDeleteModal}
+                  disabled={deleting}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

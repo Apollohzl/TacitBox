@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   let connection;
   
   try {
-    const { sql } = await request.json();
+    const { sql, params } = await request.json();
 
     if (!sql) {
       return NextResponse.json({ 
@@ -88,7 +88,14 @@ export async function POST(request: NextRequest) {
 
     connection = await pool.getConnection();
 
-    const result = await connection.execute(sql);
+    let result: any = null;
+    
+    // 如果有参数，使用参数化查询
+    if (params && Array.isArray(params)) {
+      result = await connection.execute(sql, params);
+    } else {
+      result = await connection.execute(sql);
+    }
     
     let data: any = null;
     

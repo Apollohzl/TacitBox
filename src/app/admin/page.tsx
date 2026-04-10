@@ -17,148 +17,277 @@ interface TableContent {
   rowCount: number;
 }
 
-// JSON编辑器组件
+// JSON树形编辑器组件
 interface JsonEditorProps {
   value: any;
   onChange: (value: any) => void;
   disabled?: boolean;
+  path?: string[];
 }
 
-function JsonEditor({ value, onChange, disabled }: JsonEditorProps) {
-  const [entries, setEntries] = useState<Array<{ key: string; value: string }>>([]);
-  const [tempKey, setTempKey] = useState('');
-  const [tempValue, setTempValue] = useState('');
+function JsonEditor({ value, onChange, disabled = false, path = [] }: JsonEditorProps) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [editingPath, setEditingPath] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
 
-  useEffect(() => {
-    if (typeof value === 'object' && value !== null) {
-      setEntries(
-        Object.entries(value).map(([key, val]) => ({
-          key,
-          value: typeof val === 'object' ? JSON.stringify(val) : String(val)
-        }))
+  const toggleExpand = (nodePath: string) => {
+    setExpanded(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(nodePath)) {
+        newSet.delete(nodePath);
+      } else {
+        newSet.add(nodePath);
+      }
+      return newSet;
+    });
+  };
+
+  const isExpanded = (nodePath: string) => expanded.has(nodePath);
+
+  const handleValueChange = (currentPath: string[], newValue: any) => {
+    const newObject = value;
+    let current = newObject;
+    
+    for (let i = 0; i < currentPath.length - 1; i++) {
+      current = current[currentPath[i]];
+    }
+    
+    if (currentPath.length === 0) {
+      onChange(newValue);
+    } else {
+      const lastKey = currentPath[currentPath.length - 1];
+      current[lastKey] = newValue;
+      onChange(newObject);
+    }
+  };
+
+  const startEdit = (nodePath: string, currentValue: any) => {
+    setEditingPath(nodePath);
+    setEditValue(typeof currentValue === 'object' ? JSON.stringify(currentValue) : String(currentValue));
+  };
+
+  const saveEdit = (nodePath: string) => {
+    try {
+      const parsed = JSON.parse(editValue);
+      const pathParts = nodePath.split('.').filter(p => p);
+      handleValueChange(pathParts, parsed);
+    } catch {
+      // 如果解析失败，作为字符串处理
+      const pathParts = nodePath.split('.').filter(p => p);
+      handleValueChange(pathParts, editValue);
+    }
+    setEditingPath(null);
+    setEditValue('');
+  };
+
+  const addItem = (nodePath: string, isArray: boolean) => {
+    const pathParts = nodePath.split('.').filter(p => p);
+    const newObject = value;
+    let current = newObject;
+    
+    for (let i = 0; i < pathParts.length - 1; i++) {
+      current = current[pathParts[i]];
+    }
+    
+    if (pathParts.length === 0) {
+      if (Array.isArray(newObject)) {
+        newObject.push(null);
+      } else {
+        current['newKey'] = '';
+      }
+      onChange(newObject);
+    } else {
+      const lastKey = pathParts[pathParts.length - 1];
+      const target = lastKey ? current[lastKey] : current;
+      
+      if (Array.isArray(target)) {
+        target.push(null);
+      } else {
+        target['newKey'] = '';
+      }
+      onChange(newObject);
+    }
+    
+    setExpanded(prev => new Set([...prev, nodePath]));
+  };
+
+  const deleteItem = (nodePath: string, indexOrKey: string | number) => {
+    const pathParts = nodePath.split('.').filter(p => p);
+    const newObject = value;
+    let current = newObject;
+    
+    for (let i = 0; i < pathParts.length - 1; i++) {
+      current = current[pathParts[i]];
+    }
+    
+    if (pathParts.length === 0) {
+      if (Array.isArray(newObject)) {
+        newObject.splice(Number(indexOrKey), 1);
+      } else {
+        delete newObject[indexOrKey];
+      }
+      onChange(newObject);
+    } else {
+      const lastKey = pathParts[pathParts.length - 1];
+      const target = current[lastKey];
+      
+      if (Array.isArray(target)) {
+        target.splice(Number(indexOrKey), 1);
+      } else {
+        delete target[indexOrKey];
+      }
+      onChange(newObject);
+    }
+  };
+
+  const getNodePath = (key: string | number) => [...path, String(key)].join('.');
+
+  const isComplex = (val: any) => typeof val === 'object' && val !== null;
+
+  const renderValue = (val: any, key: string | number, nodePath: string, index: number) => {
+    const isObj = isComplex(val);
+    const expanded = isExpanded(nodePath);
+
+    if (editingPath === nodePath) {
+      return (
+        <div key={index} className="flex items-center gap-2 py-1 hover:bg-gray-700 px-2">
+          <span className="text-yellow-400">{key}: </span>
+          <input
+            type="text"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveEdit(nodePath);
+              if (e.key === 'Escape') {
+                setEditingPath(null);
+                setEditValue('');
+              }
+            }}
+            className="flex-1 bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500 font-mono text-sm"
+            autoFocus
+          />
+          <button
+            onClick={() => saveEdit(nodePath)}
+            className="text-green-400 hover:text-green-300 text-xs"
+          >
+            ✓
+          </button>
+          <button
+            onClick={() => {
+              setEditingPath(null);
+              setEditValue('');
+            }}
+            className="text-red-400 hover:text-red-300 text-xs"
+          >
+            ✗
+          </button>
+        </div>
       );
     }
-  }, [value]);
 
-  const handleKeyChange = (index: number, newKey: string) => {
-    const newEntries = [...entries];
-    newEntries[index].key = newKey;
-    setEntries(newEntries);
-    updateJson(newEntries);
+    return (
+      <div key={index} className="hover:bg-gray-700 px-2">
+        <div className="flex items-center gap-2 py-1">
+          {isObj && (
+            <button
+              onClick={() => toggleExpand(nodePath)}
+              className="text-gray-400 hover:text-white select-none"
+            >
+              {expanded ? '▼' : '▶'}
+            </button>
+          )}
+          {!isObj && <span className="w-4"></span>}
+          <span className="text-yellow-400">{key}: </span>
+          {!isObj && (
+            <span 
+              className="text-green-400 cursor-pointer hover:underline"
+              onClick={() => !disabled && startEdit(nodePath, val)}
+            >
+              {typeof val === 'string' ? `"${val}"` : String(val)}
+            </span>
+          )}
+          {isObj && (
+            <span className="text-gray-400">
+              {Array.isArray(val) ? `Array(${val.length})` : `Object{${Object.keys(val).length}}`}
+            </span>
+          )}
+          {!disabled && (
+            <button
+              onClick={() => deleteItem(nodePath, key)}
+              className="text-red-400 hover:text-red-300 text-xs ml-auto"
+            >
+              删除
+            </button>
+          )}
+        </div>
+        {isObj && expanded && (
+          <div className="ml-4 pl-2 border-l border-gray-600">
+            {Array.isArray(val) ? (
+              val.map((item, idx) => renderValue(item, idx, getNodePath(idx), idx))
+            ) : (
+              Object.entries(val).map(([k, v], idx) => renderValue(v, k, getNodePath(k), idx))
+            )}
+          </div>
+        )}
+      </div>
+    );
   };
 
-  const handleValueChange = (index: number, newValue: string) => {
-    const newEntries = [...entries];
-    newEntries[index].value = newValue;
-    setEntries(newEntries);
-    updateJson(newEntries);
-  };
+  if (value === null) {
+    return <span className="text-gray-500">null</span>;
+  }
 
-  const handleDelete = (index: number) => {
-    const newEntries = entries.filter((_, i) => i !== index);
-    setEntries(newEntries);
-    updateJson(newEntries);
-  };
+  if (typeof value !== 'object') {
+    return (
+      <div className="border border-gray-600 rounded-lg p-2">
+        <div className="flex items-center gap-2">
+          <span className="text-green-400 font-mono">
+            {typeof value === 'string' ? `"${value}"` : String(value)}
+          </span>
+          {!disabled && (
+            <button
+              onClick={() => startEdit('', value)}
+              className="text-blue-400 hover:text-blue-300 text-xs"
+            >
+              编辑
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
-  const handleAdd = () => {
-    if (!tempKey.trim()) return;
-    
-    const newEntries = [...entries, { key: tempKey, value: tempValue }];
-    setEntries(newEntries);
-    setTempKey('');
-    setTempValue('');
-    updateJson(newEntries);
-  };
-
-  const updateJson = (currentEntries: Array<{ key: string; value: string }>) => {
-    const newObj: any = {};
-    currentEntries.forEach(({ key, value }) => {
-      if (key.trim()) {
-        // 尝试解析值
-        try {
-          newObj[key] = JSON.parse(value);
-        } catch {
-          newObj[key] = value;
-        }
-      }
-    });
-    onChange(newObj);
-  };
+  const currentPath = path.join('.');
 
   return (
     <div className="border border-gray-600 rounded-lg overflow-hidden">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="bg-gray-700">
-            <th className="px-3 py-2 text-left text-gray-300">键</th>
-            <th className="px-3 py-2 text-left text-gray-300">值</th>
-            <th className="px-3 py-2 text-center text-gray-300 w-20">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {entries.map((entry, index) => (
-            <tr key={index} className="border-t border-gray-700">
-              <td className="px-3 py-2">
-                <input
-                  type="text"
-                  value={entry.key}
-                  onChange={(e) => handleKeyChange(index, e.target.value)}
-                  disabled={disabled}
-                  className="w-full bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
-                />
-              </td>
-              <td className="px-3 py-2">
-                <input
-                  type="text"
-                  value={entry.value}
-                  onChange={(e) => handleValueChange(index, e.target.value)}
-                  disabled={disabled}
-                  className="w-full bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
-                />
-              </td>
-              <td className="px-3 py-2 text-center">
-                <button
-                  onClick={() => handleDelete(index)}
-                  disabled={disabled}
-                  className="text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  删除
-                </button>
-              </td>
-            </tr>
-          ))}
-          {!disabled && (
-            <tr className="border-t border-gray-700 bg-gray-750">
-              <td className="px-3 py-2">
-                <input
-                  type="text"
-                  placeholder="新键名"
-                  value={tempKey}
-                  onChange={(e) => setTempKey(e.target.value)}
-                  className="w-full bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
-                />
-              </td>
-              <td className="px-3 py-2">
-                <input
-                  type="text"
-                  placeholder="新值"
-                  value={tempValue}
-                  onChange={(e) => setTempValue(e.target.value)}
-                  className="w-full bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
-                />
-              </td>
-              <td className="px-3 py-2 text-center">
-                <button
-                  onClick={handleAdd}
-                  className="text-green-400 hover:text-green-300"
-                >
-                  添加
-                </button>
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      <div className="bg-gray-700 px-3 py-2 flex items-center justify-between">
+        <span className="text-gray-300 text-sm">
+          {Array.isArray(value) ? `Array [${value.length}]` : `Object {${Object.keys(value).length}}`}
+        </span>
+        <button
+          onClick={() => !disabled && addItem(currentPath, Array.isArray(value))}
+          disabled={disabled}
+          className="text-green-400 hover:text-green-300 text-xs disabled:opacity-50"
+        >
+          + 添加
+        </button>
+      </div>
+      <div className="p-2">
+        {Array.isArray(value) ? (
+          value.length === 0 ? (
+            <span className="text-gray-500 text-sm">空数组</span>
+          ) : (
+            value.map((item, idx) => renderValue(item, idx, getNodePath(idx), idx))
+          )
+        ) : (
+          Object.keys(value).length === 0 ? (
+            <span className="text-gray-500 text-sm">空对象</span>
+          ) : (
+            Object.entries(value).map(([k, v], idx) => renderValue(v, k, getNodePath(k), idx))
+          )
+        )}
+      </div>
     </div>
   );
 }

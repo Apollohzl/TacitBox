@@ -153,14 +153,31 @@ export default function AdminPage(props: AdminPageProps) {
 
   // 快捷SQL命令
   const quickSqlCommands = [
-    { name: '所有用户', sql: 'SELECT * FROM users LIMIT 50' },
-    { name: '所有活动', sql: 'SELECT * FROM quiz_activities LIMIT 50' },
-    { name: '所有参与记录', sql: 'SELECT * FROM quiz_participations LIMIT 50' },
-    { name: '所有题目', sql: 'SELECT * FROM quiz_questions LIMIT 50' },
-    { name: '所有奖励', sql: 'SELECT * FROM quiz_reward' },
-    { name: '用户统计', sql: 'SELECT COUNT(*) as total FROM users' },
-    { name: '活动统计', sql: 'SELECT COUNT(*) as total FROM quiz_activities' },
-    { name: '参与统计', sql: 'SELECT COUNT(*) as total FROM quiz_participations' },
+    { name: '用户总数', sql: 'SELECT COUNT(*) as total FROM users' },
+    { name: '活动总数', sql: 'SELECT COUNT(*) as total FROM quiz_activities' },
+    { name: '参与总数', sql: 'SELECT COUNT(*) as total FROM quiz_participations' },
+    { name: '题目总数', sql: 'SELECT COUNT(*) as total FROM quiz_questions' },
+    { name: '奖励总数', sql: 'SELECT COUNT(*) as total FROM quiz_reward' },
+    { name: '分类总数', sql: 'SELECT COUNT(*) as total FROM quiz_categories' },
+    { name: '最近10个用户', sql: 'SELECT id, social_uid, nickname, created_at FROM users ORDER BY created_at DESC LIMIT 10' },
+    { name: '最近10个活动', sql: 'SELECT id, creator_user_id, reward_id, now_finish, created_at FROM quiz_activities ORDER BY created_at DESC LIMIT 10' },
+    { name: '最近10次参与', sql: 'SELECT id, activity_id, participant_user_id, correct_count, participation_time FROM quiz_participations ORDER BY participation_time DESC LIMIT 10' },
+    { name: '所有分类', sql: 'SELECT id, name FROM quiz_categories ORDER BY id' },
+    { name: '所有奖励', sql: 'SELECT * FROM quiz_reward ORDER BY reward_id' },
+    { name: '高难度题目', sql: 'SELECT id, question_text, category_id FROM quiz_questions WHERE difficulty = "hard" LIMIT 20' },
+    { name: '简单题目', sql: 'SELECT id, question_text, category_id FROM quiz_questions WHERE difficulty = "easy" LIMIT 20' },
+    { name: '活跃用户', sql: 'SELECT social_uid, nickname, last_login_at FROM users WHERE last_login_at > DATE_SUB(NOW(), INTERVAL 7 DAY)' },
+    { name: '已发奖励', sql: 'SELECT COUNT(*) as rewarded FROM quiz_participations WHERE has_rewarded = 1' },
+    { name: '待发奖励', sql: 'SELECT COUNT(*) as waiting FROM quiz_participations WHERE has_rewarded = 0 AND correct_count >= (SELECT min_correct FROM quiz_activities WHERE id = quiz_participations.activity_id)' },
+    { name: '用户活动统计', sql: 'SELECT social_uid, JSON_LENGTH(published_activities) as published, JSON_LENGTH(participated_activities) as participated FROM users WHERE published_activities IS NOT NULL OR participated_activities IS NOT NULL' },
+    { name: '活动完成情况', sql: 'SELECT id, creator_user_id, now_finish, max_reward_count, now_get_reward FROM quiz_activities ORDER BY created_at DESC LIMIT 20' },
+    { name: '各分类题目数', sql: 'SELECT category_id, COUNT(*) as count FROM quiz_questions GROUP BY category_id ORDER BY count DESC' },
+    { name: '今日新用户', sql: 'SELECT COUNT(*) as new_users FROM users WHERE DATE(created_at) = CURDATE()' },
+    { name: '今日新活动', sql: 'SELECT COUNT(*) as new_activities FROM quiz_activities WHERE DATE(created_at) = CURDATE()' },
+    { name: '今日参与次数', sql: 'SELECT COUNT(*) as today_participations FROM quiz_participations WHERE DATE(participation_time) = CURDATE()' },
+    { name: '微信用户', sql: 'SELECT COUNT(*) as wx_users FROM users WHERE social_type = "wx"' },
+    { name: 'QQ用户', sql: 'SELECT COUNT(*) as qq_users FROM users WHERE social_type = "qq"' },
+    { name: '未登录7天', sql: 'SELECT COUNT(*) as inactive_users FROM users WHERE last_login_at < DATE_SUB(NOW(), INTERVAL 7 DAY)' },
   ];
 
   if (loading) {
@@ -294,9 +311,19 @@ export default function AdminPage(props: AdminPageProps) {
                           <tr key={rowIndex} className="border-b border-gray-700 hover:bg-gray-700">
                             {tableContent.columns.map((col, colIndex) => (
                               <td key={colIndex} className="px-4 py-2">
-                                {row[col] !== null && row[col] !== undefined 
-                                  ? String(row[col]).substring(0, 100) 
-                                  : 'NULL'}
+                                {row[col] !== null && row[col] !== undefined ? (
+                                  (() => {
+                                    const value = row[col];
+                                    // 检查是否是对象或数组（JSON类型）
+                                    if (typeof value === 'object' && value !== null) {
+                                      const jsonStr = JSON.stringify(value);
+                                      return jsonStr.length > 100 
+                                        ? jsonStr.substring(0, 100) + '...' 
+                                        : jsonStr;
+                                    }
+                                    return String(value).substring(0, 100);
+                                  })()
+                                ) : 'NULL'}
                               </td>
                             ))}
                           </tr>

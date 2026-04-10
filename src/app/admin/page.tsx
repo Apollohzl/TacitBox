@@ -17,6 +17,152 @@ interface TableContent {
   rowCount: number;
 }
 
+// JSON编辑器组件
+interface JsonEditorProps {
+  value: any;
+  onChange: (value: any) => void;
+  disabled?: boolean;
+}
+
+function JsonEditor({ value, onChange, disabled }: JsonEditorProps) {
+  const [entries, setEntries] = useState<Array<{ key: string; value: string }>>([]);
+  const [tempKey, setTempKey] = useState('');
+  const [tempValue, setTempValue] = useState('');
+
+  useEffect(() => {
+    if (typeof value === 'object' && value !== null) {
+      setEntries(
+        Object.entries(value).map(([key, val]) => ({
+          key,
+          value: typeof val === 'object' ? JSON.stringify(val) : String(val)
+        }))
+      );
+    }
+  }, [value]);
+
+  const handleKeyChange = (index: number, newKey: string) => {
+    const newEntries = [...entries];
+    newEntries[index].key = newKey;
+    setEntries(newEntries);
+    updateJson(newEntries);
+  };
+
+  const handleValueChange = (index: number, newValue: string) => {
+    const newEntries = [...entries];
+    newEntries[index].value = newValue;
+    setEntries(newEntries);
+    updateJson(newEntries);
+  };
+
+  const handleDelete = (index: number) => {
+    const newEntries = entries.filter((_, i) => i !== index);
+    setEntries(newEntries);
+    updateJson(newEntries);
+  };
+
+  const handleAdd = () => {
+    if (!tempKey.trim()) return;
+    
+    const newEntries = [...entries, { key: tempKey, value: tempValue }];
+    setEntries(newEntries);
+    setTempKey('');
+    setTempValue('');
+    updateJson(newEntries);
+  };
+
+  const updateJson = (currentEntries: Array<{ key: string; value: string }>) => {
+    const newObj: any = {};
+    currentEntries.forEach(({ key, value }) => {
+      if (key.trim()) {
+        // 尝试解析值
+        try {
+          newObj[key] = JSON.parse(value);
+        } catch {
+          newObj[key] = value;
+        }
+      }
+    });
+    onChange(newObj);
+  };
+
+  return (
+    <div className="border border-gray-600 rounded-lg overflow-hidden">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-gray-700">
+            <th className="px-3 py-2 text-left text-gray-300">键</th>
+            <th className="px-3 py-2 text-left text-gray-300">值</th>
+            <th className="px-3 py-2 text-center text-gray-300 w-20">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {entries.map((entry, index) => (
+            <tr key={index} className="border-t border-gray-700">
+              <td className="px-3 py-2">
+                <input
+                  type="text"
+                  value={entry.key}
+                  onChange={(e) => handleKeyChange(index, e.target.value)}
+                  disabled={disabled}
+                  className="w-full bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                />
+              </td>
+              <td className="px-3 py-2">
+                <input
+                  type="text"
+                  value={entry.value}
+                  onChange={(e) => handleValueChange(index, e.target.value)}
+                  disabled={disabled}
+                  className="w-full bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                />
+              </td>
+              <td className="px-3 py-2 text-center">
+                <button
+                  onClick={() => handleDelete(index)}
+                  disabled={disabled}
+                  className="text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  删除
+                </button>
+              </td>
+            </tr>
+          ))}
+          {!disabled && (
+            <tr className="border-t border-gray-700 bg-gray-750">
+              <td className="px-3 py-2">
+                <input
+                  type="text"
+                  placeholder="新键名"
+                  value={tempKey}
+                  onChange={(e) => setTempKey(e.target.value)}
+                  className="w-full bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                />
+              </td>
+              <td className="px-3 py-2">
+                <input
+                  type="text"
+                  placeholder="新值"
+                  value={tempValue}
+                  onChange={(e) => setTempValue(e.target.value)}
+                  className="w-full bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+                />
+              </td>
+              <td className="px-3 py-2 text-center">
+                <button
+                  onClick={handleAdd}
+                  className="text-green-400 hover:text-green-300"
+                >
+                  添加
+                </button>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function AdminPage(props: AdminPageProps) {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -579,18 +725,10 @@ export default function AdminPage(props: AdminPageProps) {
                       {col === tableContent.columns[0] && <span className="text-red-400 ml-2">(主键)</span>}
                     </label>
                     {typeof editingRow[col] === 'object' && editingRow[col] !== null ? (
-                      <textarea
-                        value={typeof editData[col] === 'object' ? JSON.stringify(editData[col], null, 2) : String(editData[col])}
-                        onChange={(e) => {
-                          try {
-                            const parsed = JSON.parse(e.target.value);
-                            setEditData({...editData, [col]: parsed});
-                          } catch {
-                            setEditData({...editData, [col]: e.target.value});
-                          }
-                        }}
-                        className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono"
-                        rows={3}
+                      <JsonEditor
+                        value={editData[col]}
+                        onChange={(value) => setEditData({...editData, [col]: value})}
+                        disabled={col === tableContent.columns[0]}
                       />
                     ) : (
                       <input

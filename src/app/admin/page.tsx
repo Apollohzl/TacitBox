@@ -108,7 +108,7 @@ function JsonEditor({ value, onChange, disabled = false, path = [] }: JsonEditor
       onChange(newObject);
     }
     
-    setExpanded(prev => new Set([...prev, nodePath]));
+    setExpanded(prev => new Set(Array.from(prev).concat(nodePath)));
   };
 
   const deleteItem = (nodePath: string, indexOrKey: string | number) => {

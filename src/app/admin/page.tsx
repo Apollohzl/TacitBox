@@ -5,14 +5,36 @@ import { useRouter } from 'next/navigation';
 
 interface AdminPageProps {}
 
+interface TableData {
+  name: string;
+  count: number;
+}
+
+interface TableContent {
+  table: string;
+  columns: string[];
+  rows: any[];
+  rowCount: number;
+}
+
 export default function AdminPage(props: AdminPageProps) {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [activeTab, setActiveTab] = useState<'gui' | 'cli'>('gui');
-  const [cliCommand, setCliCommand] = useState('');
-  const [cliOutput, setCliOutput] = useState('');
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'database' | 'sql'>('database');
+  
+  // 数据库相关状态
+  const [tables, setTables] = useState<TableData[]>([]);
+  const [selectedTable, setSelectedTable] = useState<string | null>(null);
+  const [tableContent, setTableContent] = useState<TableContent | null>(null);
+  const [tableLoading, setTableLoading] = useState(false);
+  
+  // SQL相关状态
+  const [sqlCommand, setSqlCommand] = useState('');
+  const [sqlResult, setSqlResult] = useState<any>(null);
+  const [sqlError, setSqlError] = useState<string | null>(null);
+  const [sqlLoading, setSqlLoading] = useState(false);
 
   // 验证管理员权限
   useEffect(() => {
@@ -43,6 +65,8 @@ export default function AdminPage(props: AdminPageProps) {
           if (result.data.login_type === loginType && result.data.social_uid === socialUid) {
             setIsAdmin(true);
             setIsVerified(true);
+            // 加载数据库表列表
+            loadDatabaseTables();
           } else {
             router.push('/');
           }
@@ -60,58 +84,84 @@ export default function AdminPage(props: AdminPageProps) {
     verifyAdmin();
   }, [router]);
 
-  // 快捷操作按钮功能
-  const handleQuickAction = async (action: string) => {
+  // 加载数据库表列表
+  const loadDatabaseTables = async () => {
     try {
-      const response = await fetch('/api/admin/quick-action', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action }),
-      });
-
+      const response = await fetch('/api/admin/database');
       const result = await response.json();
       
       if (result.success) {
-        alert(`${action} 操作成功`);
-      } else {
-        alert(`${action} 操作失败: ${result.error}`);
+        setTables(result.data.tables);
       }
-    } catch (error: any) {
-      alert(`${action} 操作失败: ${error.message}`);
+    } catch (error) {
+      console.error('加载数据库表失败:', error);
     }
   };
 
-  // 执行CLI命令
-  const executeCliCommand = async () => {
-    if (!cliCommand.trim()) {
-      setCliOutput('请输入命令');
+  // 加载表内容
+  const loadTableContent = async (tableName: string) => {
+    setSelectedTable(tableName);
+    setTableLoading(true);
+    
+    try {
+      const response = await fetch(`/api/admin/database?table=${encodeURIComponent(tableName)}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        setTableContent(result.data);
+      }
+    } catch (error) {
+      console.error('加载表内容失败:', error);
+    } finally {
+      setTableLoading(false);
+    }
+  };
+
+  // 执行SQL命令
+  const executeSql = async () => {
+    if (!sqlCommand.trim()) {
+      setSqlError('请输入SQL命令');
       return;
     }
 
-    setCliOutput('执行中...');
+    setSqlLoading(true);
+    setSqlResult(null);
+    setSqlError(null);
 
     try {
-      const response = await fetch('/api/admin/cli', {
+      const response = await fetch('/api/admin/database', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ command: cliCommand }),
+        body: JSON.stringify({ sql: sqlCommand }),
       });
 
       const result = await response.json();
 
       if (result.success) {
-        setCliOutput(result.output || '命令执行成功');
+        setSqlResult(result.data);
       } else {
-        setCliOutput(`错误: ${result.error}`);
+        setSqlError(result.error);
       }
     } catch (error: any) {
-      setCliOutput(`执行失败: ${error.message}`);
+      setSqlError(error.message);
+    } finally {
+      setSqlLoading(false);
     }
   };
+
+  // 快捷SQL命令
+  const quickSqlCommands = [
+    { name: '所有用户', sql: 'SELECT * FROM users LIMIT 50' },
+    { name: '所有活动', sql: 'SELECT * FROM quiz_activities LIMIT 50' },
+    { name: '所有参与记录', sql: 'SELECT * FROM quiz_participations LIMIT 50' },
+    { name: '所有题目', sql: 'SELECT * FROM quiz_questions LIMIT 50' },
+    { name: '所有奖励', sql: 'SELECT * FROM quiz_reward' },
+    { name: '用户统计', sql: 'SELECT COUNT(*) as total FROM users' },
+    { name: '活动统计', sql: 'SELECT COUNT(*) as total FROM quiz_activities' },
+    { name: '参与统计', sql: 'SELECT COUNT(*) as total FROM quiz_participations' },
+  ];
 
   if (loading) {
     return (
@@ -155,266 +205,184 @@ export default function AdminPage(props: AdminPageProps) {
           </button>
         </div>
 
-        {/* 快捷操作按钮 */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4 text-green-300">⚡ 快捷操作</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button
-              onClick={() => handleQuickAction('get_all_users')}
-              className="bg-blue-600 hover:bg-blue-700 p-4 rounded-lg transition-colors"
-            >
-              📋 获取所有用户
-            </button>
-            <button
-              onClick={() => handleQuickAction('get_all_activities')}
-              className="bg-purple-600 hover:bg-purple-700 p-4 rounded-lg transition-colors"
-            >
-              📝 获取所有活动
-            </button>
-            <button
-              onClick={() => handleQuickAction('get_all_participations')}
-              className="bg-pink-600 hover:bg-pink-700 p-4 rounded-lg transition-colors"
-            >
-              👥 获取所有参与记录
-            </button>
-            <button
-              onClick={() => handleQuickAction('get_all_questions')}
-              className="bg-yellow-600 hover:bg-yellow-700 p-4 rounded-lg transition-colors"
-            >
-              ❓ 获取所有题目
-            </button>
-            <button
-              onClick={() => handleQuickAction('get_all_rewards')}
-              className="bg-green-600 hover:bg-green-700 p-4 rounded-lg transition-colors"
-            >
-              🎁 获取所有奖励
-            </button>
-            <button
-              onClick={() => handleQuickAction('cleanup_expired_activities')}
-              className="bg-red-600 hover:bg-red-700 p-4 rounded-lg transition-colors"
-            >
-              🧹 清理过期活动
-            </button>
-            <button
-              onClick={() => handleQuickAction('get_system_stats')}
-              className="bg-indigo-600 hover:bg-indigo-700 p-4 rounded-lg transition-colors"
-            >
-              📊 获取系统统计
-            </button>
-            <button
-              onClick={() => handleQuickAction('backup_database')}
-              className="bg-teal-600 hover:bg-teal-700 p-4 rounded-lg transition-colors"
-            >
-              💾 备份数据库
-            </button>
-          </div>
-        </div>
-
         {/* Tab切换 */}
         <div className="mb-4">
           <div className="flex gap-2">
             <button
-              onClick={() => setActiveTab('gui')}
+              onClick={() => setActiveTab('database')}
               className={`px-6 py-2 rounded-lg transition-colors ${
-                activeTab === 'gui'
+                activeTab === 'database'
                   ? 'bg-green-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              🖥️ 图形化操作
+              📊 数据库浏览
             </button>
             <button
-              onClick={() => setActiveTab('cli')}
+              onClick={() => setActiveTab('sql')}
               className={`px-6 py-2 rounded-lg transition-colors ${
-                activeTab === 'cli'
+                activeTab === 'sql'
                   ? 'bg-green-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              💻 命令行操作
+              💻 SQL命令
             </button>
           </div>
         </div>
 
-        {/* 图形化操作面板 */}
-        {activeTab === 'gui' && (
+        {/* 数据库浏览页面 */}
+        {activeTab === 'database' && (
           <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-6 text-green-300">🖥️ 图形化操作面板</h2>
+            <h2 className="text-2xl font-bold mb-6 text-green-300">📊 数据库浏览</h2>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* 用户管理 */}
-              <div className="bg-gray-700 rounded-lg p-4">
-                <h3 className="text-lg font-bold mb-4 text-blue-300">👤 用户管理</h3>
-                <div className="space-y-2">
-                  <button className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-left">
-                    查看用户列表
+            {/* 表列表 */}
+            <div className="mb-6">
+              <h3 className="text-lg font-bold mb-4 text-blue-300">数据表列表</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {tables.map((table) => (
+                  <button
+                    key={table.name}
+                    onClick={() => loadTableContent(table.name)}
+                    className={`p-4 rounded-lg transition-colors ${
+                      selectedTable === table.name
+                        ? 'bg-blue-600 hover:bg-blue-700'
+                        : 'bg-gray-700 hover:bg-gray-600'
+                    }`}
+                  >
+                    <div className="text-sm font-medium mb-1">{table.name}</div>
+                    <div className="text-xs text-gray-400">{table.count} 行</div>
                   </button>
-                  <button className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-left">
-                    搜索用户
-                  </button>
-                  <button className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-left">
-                    删除用户
-                  </button>
-                  <button className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-left">
-                    修改用户信息
-                  </button>
-                </div>
-              </div>
-
-              {/* 活动管理 */}
-              <div className="bg-gray-700 rounded-lg p-4">
-                <h3 className="text-lg font-bold mb-4 text-purple-300">📝 活动管理</h3>
-                <div className="space-y-2">
-                  <button className="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-left">
-                    查看活动列表
-                  </button>
-                  <button className="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-left">
-                    创建活动
-                  </button>
-                  <button className="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-left">
-                    删除活动
-                  </button>
-                  <button className="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-left">
-                    修改活动信息
-                  </button>
-                </div>
-              </div>
-
-              {/* 题目管理 */}
-              <div className="bg-gray-700 rounded-lg p-4">
-                <h3 className="text-lg font-bold mb-4 text-yellow-300">❓ 题目管理</h3>
-                <div className="space-y-2">
-                  <button className="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-left">
-                    查看题目列表
-                  </button>
-                  <button className="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-left">
-                    添加题目
-                  </button>
-                  <button className="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-left">
-                    删除题目
-                  </button>
-                  <button className="w-full bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-left">
-                    修改题目
-                  </button>
-                </div>
-              </div>
-
-              {/* 奖励管理 */}
-              <div className="bg-gray-700 rounded-lg p-4">
-                <h3 className="text-lg font-bold mb-4 text-green-300">🎁 奖励管理</h3>
-                <div className="space-y-2">
-                  <button className="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-left">
-                    查看奖励列表
-                  </button>
-                  <button className="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-left">
-                    添加奖励
-                  </button>
-                  <button className="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-left">
-                    删除奖励
-                  </button>
-                  <button className="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-left">
-                    修改奖励
-                  </button>
-                </div>
-              </div>
-
-              {/* 数据统计 */}
-              <div className="bg-gray-700 rounded-lg p-4">
-                <h3 className="text-lg font-bold mb-4 text-indigo-300">📊 数据统计</h3>
-                <div className="space-y-2">
-                  <button className="w-full bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-left">
-                    用户统计
-                  </button>
-                  <button className="w-full bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-left">
-                    活动统计
-                  </button>
-                  <button className="w-full bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-left">
-                    参与统计
-                  </button>
-                  <button className="w-full bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-left">
-                    奖励统计
-                  </button>
-                </div>
-              </div>
-
-              {/* 系统管理 */}
-              <div className="bg-gray-700 rounded-lg p-4">
-                <h3 className="text-lg font-bold mb-4 text-red-300">⚙️ 系统管理</h3>
-                <div className="space-y-2">
-                  <button className="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-left">
-                    清理缓存
-                  </button>
-                  <button className="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-left">
-                    备份数据
-                  </button>
-                  <button className="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-left">
-                    恢复数据
-                  </button>
-                  <button className="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-left">
-                    系统日志
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
+
+            {/* 表内容 */}
+            {selectedTable && tableContent && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-purple-300">
+                    表: {selectedTable} ({tableContent.rowCount} 行)
+                  </h3>
+                  <button
+                    onClick={() => setSelectedTable(null)}
+                    className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg"
+                  >
+                    关闭
+                  </button>
+                </div>
+
+                {tableLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
+                    <p className="text-gray-400">加载数据中...</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-700">
+                          {tableContent.columns.map((col, index) => (
+                            <th key={index} className="px-4 py-2 text-left">
+                              {col}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tableContent.rows.map((row, rowIndex) => (
+                          <tr key={rowIndex} className="border-b border-gray-700 hover:bg-gray-700">
+                            {tableContent.columns.map((col, colIndex) => (
+                              <td key={colIndex} className="px-4 py-2">
+                                {row[col] !== null && row[col] !== undefined 
+                                  ? String(row[col]).substring(0, 100) 
+                                  : 'NULL'}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
-        {/* 命令行操作面板 */}
-        {activeTab === 'cli' && (
+        {/* SQL命令页面 */}
+        {activeTab === 'sql' && (
           <div className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-6 text-green-300">💻 命令行操作面板</h2>
+            <h2 className="text-2xl font-bold mb-6 text-green-300">💻 SQL命令</h2>
             
-            {/* 命令输入 */}
+            {/* 快捷命令 */}
+            <div className="mb-6">
+              <h3 className="text-lg font-bold mb-4 text-yellow-300">⚡ 快捷命令</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {quickSqlCommands.map((cmd, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSqlCommand(cmd.sql)}
+                    className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors"
+                  >
+                    {cmd.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* SQL输入 */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                输入命令
+                SQL命令
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={cliCommand}
-                  onChange={(e) => setCliCommand(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && executeCliCommand()}
-                  placeholder="例如: users:list, activities:delete --id=123"
-                  className="flex-1 bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
+              <textarea
+                value={sqlCommand}
+                onChange={(e) => setSqlCommand(e.target.value)}
+                placeholder="SELECT * FROM users LIMIT 10"
+                className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono"
+                rows={4}
+              />
+              <div className="flex gap-2 mt-2">
                 <button
-                  onClick={executeCliCommand}
-                  className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg transition-colors"
+                  onClick={executeSql}
+                  disabled={sqlLoading}
+                  className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg transition-colors disabled:opacity-50"
                 >
-                  执行
+                  {sqlLoading ? '执行中...' : '执行'}
+                </button>
+                <button
+                  onClick={() => {
+                    setSqlCommand('');
+                    setSqlResult(null);
+                    setSqlError(null);
+                  }}
+                  className="bg-gray-600 hover:bg-gray-700 px-6 py-2 rounded-lg transition-colors"
+                >
+                  清空
                 </button>
               </div>
             </div>
 
-            {/* 命令输出 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                输出结果
-              </label>
-              <div className="bg-black text-green-400 p-4 rounded-lg font-mono min-h-[200px] max-h-[400px] overflow-y-auto">
-                <pre>{cliOutput || '等待命令输入...'}</pre>
+            {/* SQL结果 */}
+            {(sqlResult || sqlError) && (
+              <div>
+                <h3 className="text-lg font-bold mb-4 text-purple-300">执行结果</h3>
+                {sqlError && (
+                  <div className="bg-red-900 border border-red-700 p-4 rounded-lg mb-4">
+                    <p className="text-red-300 font-bold">错误:</p>
+                    <p className="text-red-200 mt-2 font-mono text-sm">{sqlError}</p>
+                  </div>
+                )}
+                {sqlResult && (
+                  <div className="bg-black border border-gray-700 p-4 rounded-lg">
+                    <pre className="text-green-400 font-mono text-sm overflow-x-auto">
+                      {JSON.stringify(sqlResult, null, 2)}
+                    </pre>
+                  </div>
+                )}
               </div>
-            </div>
-
-            {/* 常用命令提示 */}
-            <div className="mt-6">
-              <h3 className="text-lg font-bold mb-3 text-yellow-300">📖 常用命令</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">users:list</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">users:get --uid=xxx</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">users:delete --uid=xxx</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">activities:list</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">activities:get --id=xxx</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">activities:delete --id=xxx</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">questions:list</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">questions:delete --id=xxx</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">rewards:list</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">stats:all</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">backup:create</code>
-                <code className="bg-gray-700 px-3 py-2 rounded text-sm">cleanup:expired</code>
-              </div>
-            </div>
+            )}
           </div>
         )}
       </div>

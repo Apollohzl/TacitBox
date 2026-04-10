@@ -8,6 +8,8 @@ export default function AccountPage() {
   const [userData, setUserData] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showUserId, setShowUserId] = useState(false);
+  const [showAdminButton, setShowAdminButton] = useState(false);
+  const [isAdminVerified, setIsAdminVerified] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -18,6 +20,7 @@ export default function AccountPage() {
 
     if (storedIsLoggedIn === 'true' && storedSocialUid) {
       setIsLoggedIn(true);
+      
       // 获取完整用户信息
       const fetchUserInfo = async () => {
         try {
@@ -27,6 +30,9 @@ export default function AccountPage() {
             const localData = await localResponse.json();
             if (localData.success) {
               setUserData(localData.data);
+              
+              // 验证管理员权限
+              verifyAdminPermission(storedLoginType, storedSocialUid);
               return;
             }
           }
@@ -43,6 +49,49 @@ export default function AccountPage() {
       router.push('/');
     }
   }, [router]);
+
+  // 验证管理员权限
+  const verifyAdminPermission = async (loginType: string, socialUid: string) => {
+    try {
+      const response = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          login_type: loginType,
+          social_uid: socialUid
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // 后端返回的数据与浏览器数据对比
+        if (result.data.login_type === loginType && result.data.social_uid === socialUid) {
+          setIsAdminVerified(true);
+          setShowAdminButton(true);
+        }
+      }
+    } catch (error) {
+      console.error('管理员验证失败:', error);
+    }
+  };
+
+  // 处理管理员按钮点击
+  const handleAdminButtonClick = () => {
+    const loginType = localStorage.getItem('login_type');
+    const socialUid = localStorage.getItem('social_uid');
+    
+    // 双重验证
+    verifyAdminPermission(loginType || '', socialUid || '').then(() => {
+      if (isAdminVerified) {
+        router.push('/admin');
+      } else {
+        alert('管理员权限验证失败');
+      }
+    });
+  };
 
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   
@@ -202,7 +251,17 @@ export default function AccountPage() {
         {/* 账号功能选项 */}
         <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-4 sm:gap-6">
           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">账号安全</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800">账号安全</h3>
+              {showAdminButton && (
+                <button
+                  onClick={handleAdminButtonClick}
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                >
+                  管理员
+                </button>
+              )}
+            </div>
             <ul className="space-y-3">
               <li className="flex flex-col sm:flex-row sm:items-center justify-between py-2 border-b border-gray-100 gap-1 sm:gap-0">
                 <span className="text-gray-700 text-sm sm:text-base">登录方式</span>

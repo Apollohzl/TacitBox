@@ -17,6 +17,37 @@ interface TableContent {
   rowCount: number;
 }
 
+// Toast通知组件
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error';
+  onClose: () => void;
+}
+
+function Toast({ message, type, onClose }: ToastProps) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = type === 'success' ? 'bg-cyan-600' : 'bg-red-600';
+
+  return (
+    <div className={`fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 animate-slide-in flex items-center gap-3 min-w-[300px]`}>
+      <span className="text-xl font-bold">
+        {type === 'success' ? '✓' : '✗'}
+      </span>
+      <span className="font-medium flex-1">{message}</span>
+      <button
+        onClick={onClose}
+        className="ml-4 hover:opacity-80 transition-opacity text-2xl leading-none"
+      >
+        ×
+      </button>
+    </div>
+  );
+}
+
 // JSON树形编辑器组件
 interface JsonEditorProps {
   value: any;
@@ -317,6 +348,14 @@ export default function AdminPage(props: AdminPageProps) {
   const [sqlResult, setSqlResult] = useState<any>(null);
   const [sqlError, setSqlError] = useState<string | null>(null);
   const [sqlLoading, setSqlLoading] = useState(false);
+  
+  // Toast通知状态
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // 显示Toast通知
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+  };
 
   // 验证管理员权限
   useEffect(() => {
@@ -439,7 +478,7 @@ export default function AdminPage(props: AdminPageProps) {
       });
 
       if (updateFields.length === 0) {
-        alert('没有可更新的字段');
+        showToast('没有可更新的字段', 'error');
         setSaving(false);
         return;
       }
@@ -458,14 +497,14 @@ export default function AdminPage(props: AdminPageProps) {
       const result = await response.json();
 
       if (result.success) {
-        alert('更新成功');
+        showToast('更新成功');
         closeEditModal();
         loadTableContent(selectedTable); // 重新加载数据
       } else {
-        alert(`更新失败: ${result.error}`);
+        showToast(`更新失败: ${result.error}`, 'error');
       }
     } catch (error: any) {
-      alert(`更新失败: ${error.message}`);
+      showToast(`更新失败: ${error.message}`, 'error');
     } finally {
       setSaving(false);
     }
@@ -506,14 +545,14 @@ export default function AdminPage(props: AdminPageProps) {
       const result = await response.json();
 
       if (result.success) {
-        alert('删除成功');
+        showToast('删除成功');
         closeDeleteModal();
         loadTableContent(selectedTable); // 重新加载数据
       } else {
-        alert(`删除失败: ${result.error}`);
+        showToast(`删除失败: ${result.error}`, 'error');
       }
     } catch (error: any) {
-      alert(`删除失败: ${error.message}`);
+      showToast(`删除失败: ${error.message}`, 'error');
     } finally {
       setDeleting(false);
     }
@@ -537,6 +576,36 @@ export default function AdminPage(props: AdminPageProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ sql: sqlCommand }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSqlResult(result.data);
+      } else {
+        setSqlError(result.error);
+      }
+    } catch (error: any) {
+      setSqlError(error.message);
+    } finally {
+      setSqlLoading(false);
+    }
+  };
+
+  // 快捷命令处理
+  const handleQuickCommand = async (sql: string) => {
+    setSqlCommand(sql);
+    setSqlLoading(true);
+    setSqlResult(null);
+    setSqlError(null);
+
+    try {
+      const response = await fetch('/api/admin/database', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sql }),
       });
 
       const result = await response.json();
@@ -768,10 +837,11 @@ export default function AdminPage(props: AdminPageProps) {
                 {quickSqlCommands.map((cmd, index) => (
                   <button
                     key={index}
-                    onClick={() => setSqlCommand(cmd.sql)}
-                    className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors"
+                    onClick={() => handleQuickCommand(cmd.sql)}
+                    disabled={sqlLoading}
+                    className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {cmd.name}
+                    {sqlLoading && sqlCommand === cmd.sql ? '执行中...' : cmd.name}
                   </button>
                 ))}
               </div>
@@ -915,6 +985,15 @@ export default function AdminPage(props: AdminPageProps) {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Toast通知 */}
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
         )}
       </div>
     </div>

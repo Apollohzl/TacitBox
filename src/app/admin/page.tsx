@@ -343,6 +343,10 @@ export default function AdminPage(props: AdminPageProps) {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   
+  // 翻页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  
   // SQL相关状态
   const [sqlCommand, setSqlCommand] = useState('');
   const [sqlResult, setSqlResult] = useState<any>(null);
@@ -549,8 +553,11 @@ export default function AdminPage(props: AdminPageProps) {
   };
 
   // 加载表内容
-  const loadTableContent = async (tableName: string) => {
+  const loadTableContent = async (tableName: string, resetPage: boolean = true) => {
     setSelectedTable(tableName);
+    if (resetPage) {
+      setCurrentPage(1); // 重置到第一页
+    }
     setTableLoading(true);
     
     try {
@@ -628,7 +635,7 @@ export default function AdminPage(props: AdminPageProps) {
       if (result.success) {
         showToast('更新成功');
         closeEditModal();
-        loadTableContent(selectedTable); // 重新加载数据
+        loadTableContent(selectedTable, false); // 重新加载数据，不重置页码
       } else {
         showToast(`更新失败: ${result.error}`, 'error');
       }
@@ -676,7 +683,7 @@ export default function AdminPage(props: AdminPageProps) {
       if (result.success) {
         showToast('删除成功');
         closeDeleteModal();
-        loadTableContent(selectedTable); // 重新加载数据
+        loadTableContent(selectedTable, false); // 重新加载数据，不重置页码
       } else {
         showToast(`删除失败: ${result.error}`, 'error');
       }
@@ -916,7 +923,9 @@ export default function AdminPage(props: AdminPageProps) {
                         </tr>
                       </thead>
                       <tbody>
-                        {tableContent.rows.map((row, rowIndex) => (
+                        {tableContent.rows
+                          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                          .map((row, rowIndex) => (
                           <tr key={rowIndex} className="border-b border-gray-700 hover:bg-gray-700">
                             {tableContent.columns.map((col, colIndex) => (
                               <td key={colIndex} className="px-4 py-2">
@@ -955,6 +964,71 @@ export default function AdminPage(props: AdminPageProps) {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                )}
+                
+                {/* 翻页控件 */}
+                {tableContent && tableContent.rows.length > 0 && (
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-700">
+                    <div className="text-sm text-gray-400">
+                      显示 {Math.min((currentPage - 1) * itemsPerPage + 1, tableContent.rowCount)} - {Math.min(currentPage * itemsPerPage, tableContent.rowCount)} 条，共 {tableContent.rowCount} 条
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        上一页
+                      </button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.ceil(tableContent.rowCount / itemsPerPage) }, (_, i) => i + 1).map(page => {
+                          const totalPages = Math.ceil(tableContent.rowCount / itemsPerPage);
+                          let showPage = false;
+                          
+                          // 总是显示第一页、最后一页、当前页前后各一页
+                          if (page === 1 || page === totalPages || 
+                              (page >= currentPage - 1 && page <= currentPage + 1)) {
+                            showPage = true;
+                          }
+                          
+                          // 显示省略号
+                          const showEllipsisBefore = page === currentPage - 2 && page > 2;
+                          const showEllipsisAfter = page === currentPage + 2 && page < totalPages - 1;
+                          
+                          if (showEllipsisBefore || showEllipsisAfter) {
+                            return (
+                              <span key={page} className="px-2 text-gray-400">...</span>
+                            );
+                          }
+                          
+                          if (showPage) {
+                            return (
+                              <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-3 py-1 rounded text-sm transition-colors ${
+                                  currentPage === page
+                                    ? 'bg-green-600 text-white'
+                                    : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            );
+                          }
+                          
+                          return null;
+                        })}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(Math.ceil(tableContent.rowCount / itemsPerPage), prev + 1))}
+                        disabled={currentPage >= Math.ceil(tableContent.rowCount / itemsPerPage)}
+                        className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        下一页
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

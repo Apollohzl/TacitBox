@@ -328,7 +328,7 @@ export default function AdminPage(props: AdminPageProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'database' | 'sql'>('database');
+  const [activeTab, setActiveTab] = useState<'database' | 'sql' | 'quick-add'>('database');
   
   // 数据库相关状态
   const [tables, setTables] = useState<TableData[]>([]);
@@ -351,13 +351,133 @@ export default function AdminPage(props: AdminPageProps) {
   
   // Toast通知状态
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  
+  // 快捷配置状态
+  const [quickAddType, setQuickAddType] = useState<'reward' | 'question' | 'category' | null>(null);
+  const [quickAddLoading, setQuickAddLoading] = useState(false);
+  
+  // 奖励表单
+  const [rewardForm, setRewardForm] = useState({
+    reward_name: '',
+    reward_description: ''
+  });
+  
+  // 分类表单
+  const [categoryForm, setCategoryForm] = useState({
+    name: '',
+    description: ''
+  });
+  
+  // 题目表单
+  const [questionForm, setQuestionForm] = useState({
+    category_id: '',
+    question_text: '',
+    options: '',
+    correct_answer: '',
+    difficulty: 'easy'
+  });
+  const [categories, setCategories] = useState<any[]>([]);
 
   // 显示Toast通知
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
   };
 
-  // 验证管理员权限
+  // 加载分类列表
+  const loadCategories = async () => {
+    try {
+      const response = await fetch('/api/admin/database?table=quiz_categories');
+      const result = await response.json();
+      if (result.success && result.data) {
+        setCategories(result.data.rows || []);
+      }
+    } catch (error) {
+      console.error('加载分类失败:', error);
+    }
+  };
+
+  // 快捷配置处理
+  const handleQuickAdd = async () => {
+    const loginType = localStorage.getItem('login_type');
+    const socialUid = localStorage.getItem('social_uid');
+
+    if (!loginType || !socialUid) {
+      showToast('未登录，无法执行操作', 'error');
+      return;
+    }
+
+    setQuickAddLoading(true);
+
+    try {
+      let data: any = {
+        login_type: loginType,
+        social_uid: socialUid
+      };
+
+      if (quickAddType === 'reward') {
+        if (!rewardForm.reward_name.trim()) {
+          showToast('请输入奖励名称', 'error');
+          setQuickAddLoading(false);
+          return;
+        }
+        data.type = 'reward';
+        data.reward_name = rewardForm.reward_name;
+        data.reward_description = rewardForm.reward_description;
+      } else if (quickAddType === 'category') {
+        if (!categoryForm.name.trim()) {
+          showToast('请输入分类名称', 'error');
+          setQuickAddLoading(false);
+          return;
+        }
+        data.type = 'category';
+        data.name = categoryForm.name;
+        data.description = categoryForm.description;
+      } else if (quickAddType === 'question') {
+        if (!questionForm.category_id || !questionForm.question_text.trim() || !questionForm.options.trim() || !questionForm.correct_answer.trim()) {
+          showToast('请填写所有必填字段', 'error');
+          setQuickAddLoading(false);
+          return;
+        }
+        data.type = 'question';
+        data.category_id = questionForm.category_id;
+        data.question_text = questionForm.question_text;
+        data.options = questionForm.options.split(',').map(opt => opt.trim());
+        data.correct_answer = questionForm.correct_answer;
+        data.difficulty = questionForm.difficulty;
+      }
+
+      const response = await fetch('/api/admin/quick-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        showToast('添加成功');
+        // 清空表单
+        if (quickAddType === 'reward') {
+          setRewardForm({ reward_name: '', reward_description: '' });
+        } else if (quickAddType === 'category') {
+          setCategoryForm({ name: '', description: '' });
+          loadCategories(); // 重新加载分类
+        } else if (quickAddType === 'question') {
+          setQuestionForm({ category_id: '', question_text: '', options: '', correct_answer: '', difficulty: 'easy' });
+        }
+      } else {
+        showToast(`添加失败: ${result.error}`, 'error');
+      }
+    } catch (error: any) {
+      showToast(`添加失败: ${error.message}`, 'error');
+    } finally {
+      setQuickAddLoading(false);
+    }
+  };
+
+// 验证管理员权限
   useEffect(() => {
     const verifyAdmin = async () => {
       const loginType = localStorage.getItem('login_type');
@@ -388,6 +508,8 @@ export default function AdminPage(props: AdminPageProps) {
             setIsVerified(true);
             // 加载数据库表列表
             loadDatabaseTables();
+            // 加载分类列表
+            loadCategories();
           } else {
             router.push('/');
           }
@@ -716,6 +838,16 @@ export default function AdminPage(props: AdminPageProps) {
             >
               💻 SQL命令
             </button>
+            <button
+              onClick={() => setActiveTab('quick-add')}
+              className={`px-6 py-2 rounded-lg transition-colors ${
+                activeTab === 'quick-add'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              ⚡ 快捷配置
+            </button>
           </div>
         </div>
 
@@ -897,6 +1029,226 @@ export default function AdminPage(props: AdminPageProps) {
                     </pre>
                   </div>
                 )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 快捷配置页面 */}
+        {activeTab === 'quick-add' && (
+          <div className="bg-gray-800 rounded-lg p-6">
+            <h2 className="text-2xl font-bold mb-6 text-green-300">⚡ 快捷配置</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <button
+                onClick={() => {
+                  setQuickAddType('reward');
+                  setRewardForm({ reward_name: '', reward_description: '' });
+                }}
+                className={`p-6 rounded-lg transition-colors ${
+                  quickAddType === 'reward'
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-gray-700 hover:bg-gray-600'
+                }`}
+              >
+                <div className="text-4xl mb-2">🎁</div>
+                <div className="text-lg font-bold">新增奖励</div>
+                <div className="text-sm text-gray-400 mt-1">添加新的quiz_reward</div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setQuickAddType('category');
+                  setCategoryForm({ name: '', description: '' });
+                }}
+                className={`p-6 rounded-lg transition-colors ${
+                  quickAddType === 'category'
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-gray-700 hover:bg-gray-600'
+                }`}
+              >
+                <div className="text-4xl mb-2">📂</div>
+                <div className="text-lg font-bold">新增分类</div>
+                <div className="text-sm text-gray-400 mt-1">添加新的quiz_categories</div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setQuickAddType('question');
+                  setQuestionForm({ category_id: '', question_text: '', options: '', correct_answer: '', difficulty: 'easy' });
+                  loadCategories();
+                }}
+                className={`p-6 rounded-lg transition-colors ${
+                  quickAddType === 'question'
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-gray-700 hover:bg-gray-600'
+                }`}
+              >
+                <div className="text-4xl mb-2">❓</div>
+                <div className="text-lg font-bold">新增题目</div>
+                <div className="text-sm text-gray-400 mt-1">添加新的quiz_questions</div>
+              </button>
+            </div>
+            
+            {/* 奖励表单 */}
+            {quickAddType === 'reward' && (
+              <div className="bg-gray-700 rounded-lg p-6">
+                <h3 className="text-xl font-bold mb-4 text-yellow-300">🎁 新增奖励</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      奖励名称 <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={rewardForm.reward_name}
+                      onChange={(e) => setRewardForm({...rewardForm, reward_name: e.target.value})}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="请输入奖励名称"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      奖励描述
+                    </label>
+                    <textarea
+                      value={rewardForm.reward_description}
+                      onChange={(e) => setRewardForm({...rewardForm, reward_description: e.target.value})}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      rows={3}
+                      placeholder="请输入奖励描述（可选）"
+                    />
+                  </div>
+                  <button
+                    onClick={handleQuickAdd}
+                    disabled={quickAddLoading}
+                    className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {quickAddLoading ? '添加中...' : '添加奖励'}
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* 分类表单 */}
+            {quickAddType === 'category' && (
+              <div className="bg-gray-700 rounded-lg p-6">
+                <h3 className="text-xl font-bold mb-4 text-yellow-300">📂 新增分类</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      分类名称 <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={categoryForm.name}
+                      onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="请输入分类名称"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      分类描述
+                    </label>
+                    <textarea
+                      value={categoryForm.description}
+                      onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      rows={3}
+                      placeholder="请输入分类描述（可选）"
+                    />
+                  </div>
+                  <button
+                    onClick={handleQuickAdd}
+                    disabled={quickAddLoading}
+                    className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {quickAddLoading ? '添加中...' : '添加分类'}
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* 题目表单 */}
+            {quickAddType === 'question' && (
+              <div className="bg-gray-700 rounded-lg p-6">
+                <h3 className="text-xl font-bold mb-4 text-yellow-300">❓ 新增题目</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      所属分类 <span className="text-red-400">*</span>
+                    </label>
+                    <select
+                      value={questionForm.category_id}
+                      onChange={(e) => setQuestionForm({...questionForm, category_id: e.target.value})}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="">请选择分类</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      题目内容 <span className="text-red-400">*</span>
+                    </label>
+                    <textarea
+                      value={questionForm.question_text}
+                      onChange={(e) => setQuestionForm({...questionForm, question_text: e.target.value})}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      rows={3}
+                      placeholder="请输入题目内容"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      选项 <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={questionForm.options}
+                      onChange={(e) => setQuestionForm({...questionForm, options: e.target.value})}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="请输入选项，用逗号分隔，例如：选项1,选项2,选项3,选项4"
+                    />
+                    <p className="text-gray-400 text-sm mt-1">多个选项用英文逗号分隔</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      正确答案 <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={questionForm.correct_answer}
+                      onChange={(e) => setQuestionForm({...questionForm, correct_answer: e.target.value})}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="请输入正确答案（必须与选项中的一个完全一致）"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      难度
+                    </label>
+                    <select
+                      value={questionForm.difficulty}
+                      onChange={(e) => setQuestionForm({...questionForm, difficulty: e.target.value})}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="easy">简单</option>
+                      <option value="medium">中等</option>
+                      <option value="hard">困难</option>
+                    </select>
+                  </div>
+                  <button
+                    onClick={handleQuickAdd}
+                    disabled={quickAddLoading}
+                    className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {quickAddLoading ? '添加中...' : '添加题目'}
+                  </button>
+                </div>
               </div>
             )}
           </div>

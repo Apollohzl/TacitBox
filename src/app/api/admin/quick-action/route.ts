@@ -6,10 +6,104 @@ import pool from '../../../../lib/db';
 // 指定此路由为动态渲染
 export const dynamic = 'force-dynamic';
 
+// 管理员账号列表（与verify端点保持一致）
+const ADMIN_ACCOUNTS = [
+  { login_type: 'wx', social_uid: 'oTBkp65yKKGHfmezE_pM5NLKgD5w' },
+  { login_type: 'qq', social_uid: '11C455F8209EFDD1E6D8FB99A180866F' },
+  { login_type: 'qq', social_uid: '018ECF717DFBCA61BE0E97DF18FE7BC1' }
+];
+
 export async function POST(request: NextRequest) {
   let connection;
   
   try {
+    const { type, login_type, social_uid, ...data } = await request.json();
+
+    // 验证用户身份
+    if (!login_type || !social_uid) {
+      return NextResponse.json({ 
+        success: false, 
+        error: '缺少身份信息' 
+      }, { status: 401 });
+    }
+
+    // 验证是否为管理员
+    const isAdmin = ADMIN_ACCOUNTS.some(
+      admin => admin.login_type === login_type && admin.social_uid === social_uid
+    );
+
+    if (!isAdmin) {
+      return NextResponse.json({ 
+        success: false, 
+        error: '无权限访问' 
+      }, { status: 403 });
+    }
+
+    // 如果是快捷配置类型
+    if (type === 'reward' || type === 'category' || type === 'question') {
+      connection = await pool.getConnection();
+
+      if (type === 'reward') {
+        const { reward_name, reward_description } = data;
+        
+        if (!reward_name || !reward_name.trim()) {
+          return NextResponse.json({ 
+            success: false, 
+            error: '奖励名称不能为空' 
+          }, { status: 400 });
+        }
+
+        const [result] = await connection.execute(
+          'INSERT INTO quiz_reward (name, description) VALUES (?, ?)',
+          [reward_name.trim(), reward_description || null]
+        ) as ResultSetHeader;
+
+        return NextResponse.json({
+          success: true,
+          data: { insertedId: result.insertId }
+        });
+      } else if (type === 'category') {
+        const { name, description } = data;
+        
+        if (!name || !name.trim()) {
+          return NextResponse.json({ 
+            success: false, 
+            error: '分类名称不能为空' 
+          }, { status: 400 });
+        }
+
+        const [result] = await connection.execute(
+          'INSERT INTO quiz_categories (name, description) VALUES (?, ?)',
+          [name.trim(), description || null]
+        ) as ResultSetHeader;
+
+        return NextResponse.json({
+          success: true,
+          data: { insertedId: result.insertId }
+        });
+      } else if (type === 'question') {
+        const { category_id, question_text, options, correct_answer, difficulty } = data;
+        
+        if (!category_id || !question_text || !question_text.trim() || !options || !options.length || !correct_answer || !correct_answer.trim()) {
+          return NextResponse.json({ 
+            success: false, 
+            error: '请填写所有必填字段' 
+          }, { status: 400 });
+        }
+
+        const [result] = await connection.execute(
+          'INSERT INTO quiz_questions (category_id, question_text, options, correct_answer, difficulty, is_active) VALUES (?, ?, ?, ?, ?, 1)',
+          [category_id, question_text.trim(), JSON.stringify(options), correct_answer.trim(), difficulty || 'easy']
+        ) as ResultSetHeader;
+
+        return NextResponse.json({
+          success: true,
+          data: { insertedId: result.insertId }
+        });
+      }
+    }
+
+    // 原有的action逻辑（保留兼容性）
     const { action } = await request.json();
 
     if (!action) {

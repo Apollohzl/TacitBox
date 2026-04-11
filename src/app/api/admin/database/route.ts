@@ -15,8 +15,14 @@ export async function GET(request: NextRequest) {
     connection = await pool.getConnection();
 
     if (table) {
-      // 获取指定表的数据
-      const [rows] = await connection.execute(`SELECT * FROM ${table} LIMIT 100`) as [any[], any];
+      // 获取表的总行数
+      const [countResult] = await connection.execute(
+        `SELECT COUNT(*) as total FROM ${table}`
+      ) as [any[], any];
+      const totalCount = countResult[0]?.total || 0;
+      
+      // 获取指定表的所有数据
+      const [rows] = await connection.execute(`SELECT * FROM ${table}`) as [any[], any];
       
       // 获取表结构
       const [columns] = await connection.execute(`DESCRIBE ${table}`) as [any[], any];
@@ -27,7 +33,7 @@ export async function GET(request: NextRequest) {
           table,
           columns: columns.map((col: any) => col.Field),
           rows,
-          rowCount: rows.length
+          rowCount: totalCount // 使用真实的总行数
         }
       });
     } else {

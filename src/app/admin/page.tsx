@@ -770,6 +770,7 @@ export default function AdminPage(props: AdminPageProps) {
     { name: '最近10个活动', sql: 'SELECT id, creator_user_id, reward_id, now_finish, created_at FROM quiz_activities ORDER BY created_at DESC LIMIT 10' },
     { name: '最近10次参与', sql: 'SELECT id, activity_id, participant_user_id, correct_count, participation_time FROM quiz_participations ORDER BY participation_time DESC LIMIT 10' },
     { name: '所有分类', sql: 'SELECT id, name FROM quiz_categories ORDER BY id' },
+    { name: '查询题目BY分类', sql: 'SELECT * FROM quiz_questions WHERE category_id = 1' },
     { name: '所有奖励', sql: 'SELECT * FROM quiz_reward ORDER BY reward_id' },
     { name: '高难度题目', sql: 'SELECT id, question_text, category_id FROM quiz_questions WHERE difficulty = "hard" LIMIT 20' },
     { name: '简单题目', sql: 'SELECT id, question_text, category_id FROM quiz_questions WHERE difficulty = "easy" LIMIT 20' },

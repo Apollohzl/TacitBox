@@ -44,18 +44,18 @@ export async function POST(request: NextRequest) {
       connection = await pool.getConnection();
 
       if (type === 'reward') {
-        const { reward_name, reward_description } = data;
+        const { reward_id, reward_message, name } = data;
         
-        if (!reward_name || !reward_name.trim()) {
+        if (!reward_id || !reward_id.trim() || !name || !name.trim()) {
           return NextResponse.json({ 
             success: false, 
-            error: '奖励名称不能为空' 
+            error: '奖励ID和名称不能为空' 
           }, { status: 400 });
         }
 
         const result = await connection.execute(
-          'INSERT INTO quiz_reward (name, description) VALUES (?, ?)',
-          [reward_name.trim(), reward_description || null]
+          'INSERT INTO quiz_reward (reward_id, reward_message, name) VALUES (?, ?, ?)',
+          [reward_id.trim(), reward_message || null, name.trim()]
         ) as [ResultSetHeader, any];
 
         return NextResponse.json({
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
           data: { insertedId: result[0].insertId }
         });
       } else if (type === 'category') {
-        const { name, description } = data;
+        const { name } = data;
         
         if (!name || !name.trim()) {
           return NextResponse.json({ 
@@ -73,8 +73,8 @@ export async function POST(request: NextRequest) {
         }
 
         const result = await connection.execute(
-          'INSERT INTO quiz_categories (name, description) VALUES (?, ?)',
-          [name.trim(), description || null]
+          'INSERT INTO quiz_categories (name) VALUES (?)',
+          [name.trim()]
         ) as [ResultSetHeader, any];
 
         return NextResponse.json({
@@ -84,16 +84,17 @@ export async function POST(request: NextRequest) {
       } else if (type === 'question') {
         const { category_id, question_text, options, correct_answer, difficulty } = data;
         
-        if (!category_id || !question_text || !question_text.trim() || !options || !options.length || !correct_answer || !correct_answer.trim()) {
+        if (!category_id || !question_text || !question_text.trim() || !options || !options.A || !options.B || !options.C || !options.D || !correct_answer || !correct_answer.trim()) {
           return NextResponse.json({ 
             success: false, 
             error: '请填写所有必填字段' 
           }, { status: 400 });
         }
 
+        const optionsArray = [options.A, options.B, options.C, options.D];
         const result = await connection.execute(
           'INSERT INTO quiz_questions (category_id, question_text, options, correct_answer, difficulty, is_active) VALUES (?, ?, ?, ?, ?, 1)',
-          [category_id, question_text.trim(), JSON.stringify(options), correct_answer.trim(), difficulty || 'easy']
+          [category_id, question_text.trim(), JSON.stringify(optionsArray), correct_answer.trim(), difficulty || 'easy']
         ) as [ResultSetHeader, any];
 
         return NextResponse.json({

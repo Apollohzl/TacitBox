@@ -348,6 +348,7 @@ export default function AdminPage(props: AdminPageProps) {
   const [sqlResult, setSqlResult] = useState<any>(null);
   const [sqlError, setSqlError] = useState<string | null>(null);
   const [sqlLoading, setSqlLoading] = useState(false);
+  const [quickCommandSearch, setQuickCommandSearch] = useState('');
   
   // Toast通知状态
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -358,22 +359,25 @@ export default function AdminPage(props: AdminPageProps) {
   
   // 奖励表单
   const [rewardForm, setRewardForm] = useState({
-    reward_name: '',
-    reward_description: ''
+    reward_id: '',
+    reward_message: '',
+    name: ''
   });
   
   // 分类表单
   const [categoryForm, setCategoryForm] = useState({
-    name: '',
-    description: ''
+    name: ''
   });
   
   // 题目表单
   const [questionForm, setQuestionForm] = useState({
     category_id: '',
     question_text: '',
-    options: '',
-    correct_answer: '',
+    optionA: '',
+    optionB: '',
+    optionC: '',
+    optionD: '',
+    correct_answer: 'A',
     difficulty: 'easy'
   });
   const [categories, setCategories] = useState<any[]>([]);
@@ -415,14 +419,15 @@ export default function AdminPage(props: AdminPageProps) {
       };
 
       if (quickAddType === 'reward') {
-        if (!rewardForm.reward_name.trim()) {
-          showToast('请输入奖励名称', 'error');
+        if (!rewardForm.reward_id.trim() || !rewardForm.name.trim()) {
+          showToast('请输入奖励ID和名称', 'error');
           setQuickAddLoading(false);
           return;
         }
         data.type = 'reward';
-        data.reward_name = rewardForm.reward_name;
-        data.reward_description = rewardForm.reward_description;
+        data.reward_id = rewardForm.reward_id.trim();
+        data.reward_message = rewardForm.reward_message.trim();
+        data.name = rewardForm.name.trim();
       } else if (quickAddType === 'category') {
         if (!categoryForm.name.trim()) {
           showToast('请输入分类名称', 'error');
@@ -430,18 +435,22 @@ export default function AdminPage(props: AdminPageProps) {
           return;
         }
         data.type = 'category';
-        data.name = categoryForm.name;
-        data.description = categoryForm.description;
+        data.name = categoryForm.name.trim();
       } else if (quickAddType === 'question') {
-        if (!questionForm.category_id || !questionForm.question_text.trim() || !questionForm.options.trim() || !questionForm.correct_answer.trim()) {
+        if (!questionForm.category_id || !questionForm.question_text.trim() || !questionForm.optionA.trim() || !questionForm.optionB.trim() || !questionForm.optionC.trim() || !questionForm.optionD.trim()) {
           showToast('请填写所有必填字段', 'error');
           setQuickAddLoading(false);
           return;
         }
         data.type = 'question';
         data.category_id = questionForm.category_id;
-        data.question_text = questionForm.question_text;
-        data.options = questionForm.options.split(',').map(opt => opt.trim());
+        data.question_text = questionForm.question_text.trim();
+        data.options = {
+          A: questionForm.optionA.trim(),
+          B: questionForm.optionB.trim(),
+          C: questionForm.optionC.trim(),
+          D: questionForm.optionD.trim()
+        };
         data.correct_answer = questionForm.correct_answer;
         data.difficulty = questionForm.difficulty;
       }
@@ -460,12 +469,12 @@ export default function AdminPage(props: AdminPageProps) {
         showToast('添加成功');
         // 清空表单
         if (quickAddType === 'reward') {
-          setRewardForm({ reward_name: '', reward_description: '' });
+          setRewardForm({ reward_id: '', reward_message: '', name: '' });
         } else if (quickAddType === 'category') {
-          setCategoryForm({ name: '', description: '' });
+          setCategoryForm({ name: '' });
           loadCategories(); // 重新加载分类
         } else if (quickAddType === 'question') {
-          setQuestionForm({ category_id: '', question_text: '', options: '', correct_answer: '', difficulty: 'easy' });
+          setQuestionForm({ category_id: '', question_text: '', optionA: '', optionB: '', optionC: '', optionD: '', correct_answer: 'A', difficulty: 'easy' });
         }
       } else {
         showToast(`添加失败: ${result.error}`, 'error');
@@ -760,8 +769,6 @@ export default function AdminPage(props: AdminPageProps) {
     { name: '高难度题目', sql: 'SELECT id, question_text, category_id FROM quiz_questions WHERE difficulty = "hard" LIMIT 20' },
     { name: '简单题目', sql: 'SELECT id, question_text, category_id FROM quiz_questions WHERE difficulty = "easy" LIMIT 20' },
     { name: '活跃用户', sql: 'SELECT social_uid, nickname, last_login_at FROM users WHERE last_login_at > DATE_SUB(NOW(), INTERVAL 7 DAY)' },
-    { name: '已发奖励', sql: 'SELECT COUNT(*) as rewarded FROM quiz_participations WHERE has_rewarded = 1' },
-    { name: '待发奖励', sql: 'SELECT COUNT(*) as waiting FROM quiz_participations WHERE has_rewarded = 0 AND correct_count >= (SELECT min_correct FROM quiz_activities WHERE id = quiz_participations.activity_id)' },
     { name: '用户活动统计', sql: 'SELECT social_uid, JSON_LENGTH(published_activities) as published, JSON_LENGTH(participated_activities) as participated FROM users WHERE published_activities IS NOT NULL OR participated_activities IS NOT NULL' },
     { name: '活动完成情况', sql: 'SELECT id, creator_user_id, now_finish, max_reward_count, now_get_reward FROM quiz_activities ORDER BY created_at DESC LIMIT 20' },
     { name: '各分类题目数', sql: 'SELECT category_id, COUNT(*) as count FROM quiz_questions GROUP BY category_id ORDER BY count DESC' },
@@ -965,8 +972,19 @@ export default function AdminPage(props: AdminPageProps) {
             {/* 快捷命令 */}
             <div className="mb-6">
               <h3 className="text-lg font-bold mb-4 text-yellow-300">⚡ 快捷命令</h3>
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={quickCommandSearch}
+                  onChange={(e) => setQuickCommandSearch(e.target.value)}
+                  placeholder="搜索快捷命令..."
+                  className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {quickSqlCommands.map((cmd, index) => (
+                {quickSqlCommands
+                  .filter(cmd => cmd.name.toLowerCase().includes(quickCommandSearch.toLowerCase()))
+                  .map((cmd, index) => (
                   <button
                     key={index}
                     onClick={() => handleQuickCommand(cmd.sql)}
@@ -1043,7 +1061,7 @@ export default function AdminPage(props: AdminPageProps) {
               <button
                 onClick={() => {
                   setQuickAddType('reward');
-                  setRewardForm({ reward_name: '', reward_description: '' });
+                  setRewardForm({ reward_id: '', reward_message: '', name: '' });
                 }}
                 className={`p-6 rounded-lg transition-colors ${
                   quickAddType === 'reward'
@@ -1059,7 +1077,7 @@ export default function AdminPage(props: AdminPageProps) {
               <button
                 onClick={() => {
                   setQuickAddType('category');
-                  setCategoryForm({ name: '', description: '' });
+                  setCategoryForm({ name: '' });
                 }}
                 className={`p-6 rounded-lg transition-colors ${
                   quickAddType === 'category'
@@ -1075,7 +1093,7 @@ export default function AdminPage(props: AdminPageProps) {
               <button
                 onClick={() => {
                   setQuickAddType('question');
-                  setQuestionForm({ category_id: '', question_text: '', options: '', correct_answer: '', difficulty: 'easy' });
+                  setQuestionForm({ category_id: '', question_text: '', optionA: '', optionB: '', optionC: '', optionD: '', correct_answer: 'A', difficulty: 'easy' });
                   loadCategories();
                 }}
                 className={`p-6 rounded-lg transition-colors ${
@@ -1097,26 +1115,38 @@ export default function AdminPage(props: AdminPageProps) {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      奖励名称 <span className="text-red-400">*</span>
+                      奖励ID <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="text"
-                      value={rewardForm.reward_name}
-                      onChange={(e) => setRewardForm({...rewardForm, reward_name: e.target.value})}
+                      value={rewardForm.reward_id}
+                      onChange={(e) => setRewardForm({...rewardForm, reward_id: e.target.value})}
                       className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="请输入奖励名称"
+                      placeholder="请输入奖励ID"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      奖励描述
+                      奖励消息
                     </label>
-                    <textarea
-                      value={rewardForm.reward_description}
-                      onChange={(e) => setRewardForm({...rewardForm, reward_description: e.target.value})}
+                    <input
+                      type="text"
+                      value={rewardForm.reward_message}
+                      onChange={(e) => setRewardForm({...rewardForm, reward_message: e.target.value})}
                       className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      rows={3}
-                      placeholder="请输入奖励描述（可选）"
+                      placeholder="请输入奖励消息"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      奖励名称 <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={rewardForm.name}
+                      onChange={(e) => setRewardForm({...rewardForm, name: e.target.value})}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="请输入奖励名称"
                     />
                   </div>
                   <button
@@ -1145,18 +1175,6 @@ export default function AdminPage(props: AdminPageProps) {
                       onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})}
                       className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       placeholder="请输入分类名称"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      分类描述
-                    </label>
-                    <textarea
-                      value={categoryForm.description}
-                      onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})}
-                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      rows={3}
-                      placeholder="请输入分类描述（可选）"
                     />
                   </div>
                   <button
@@ -1194,39 +1212,54 @@ export default function AdminPage(props: AdminPageProps) {
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       题目内容 <span className="text-red-400">*</span>
                     </label>
-                    <textarea
+                    <input
+                      type="text"
                       value={questionForm.question_text}
-                      onChange={(e) => setQuestionForm({...questionForm, question_text: e.target.value})}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 20) {
+                          setQuestionForm({...questionForm, question_text: e.target.value});
+                        }
+                      }}
                       className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      rows={3}
-                      placeholder="请输入题目内容"
+                      placeholder="请输入题目内容（最多20个字符）"
+                      maxLength={20}
                     />
+                    <p className="text-gray-400 text-sm mt-1">{questionForm.question_text.length}/20</p>
                   </div>
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       选项 <span className="text-red-400">*</span>
                     </label>
-                    <input
-                      type="text"
-                      value={questionForm.options}
-                      onChange={(e) => setQuestionForm({...questionForm, options: e.target.value})}
-                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="请输入选项，用逗号分隔，例如：选项1,选项2,选项3,选项4"
-                    />
-                    <p className="text-gray-400 text-sm mt-1">多个选项用英文逗号分隔</p>
+                    <div className="space-y-3">
+                      {['A', 'B', 'C', 'D'].map((option) => (
+                        <div key={option} className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setQuestionForm({...questionForm, correct_answer: option})}
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold transition-colors ${
+                              questionForm.correct_answer === option
+                                ? 'bg-green-600 text-white'
+                                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                            }`}
+                          >
+                            {option}
+                          </button>
+                          <input
+                            type="text"
+                            value={questionForm[`option${option}` as keyof typeof questionForm] as string}
+                            onChange={(e) => setQuestionForm({...questionForm, [`option${option}`]: e.target.value})}
+                            className={`flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 ${
+                              questionForm.correct_answer === option ? 'ring-green-500' : 'ring-gray-500'
+                            }`}
+                            placeholder={`选项${option}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-gray-400 text-sm mt-1">点击左侧按钮设置正确答案</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      正确答案 <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={questionForm.correct_answer}
-                      onChange={(e) => setQuestionForm({...questionForm, correct_answer: e.target.value})}
-                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="请输入正确答案（必须与选项中的一个完全一致）"
-                    />
-                  </div>
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       难度
@@ -1241,6 +1274,7 @@ export default function AdminPage(props: AdminPageProps) {
                       <option value="hard">困难</option>
                     </select>
                   </div>
+                  
                   <button
                     onClick={handleQuickAdd}
                     disabled={quickAddLoading}

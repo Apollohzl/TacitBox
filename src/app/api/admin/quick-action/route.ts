@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       } else if (type === 'question') {
         const { category_id, question_text, options, correct_answer, difficulty } = data;
         
-        if (!category_id || !question_text || !question_text.trim() || !options || !options.A || !options.B || !options.C || !options.D || !correct_answer || !correct_answer.trim()) {
+        if (!category_id || !question_text || !question_text.trim() || !options || !options.A || !options.B || !options.C || !options.D) {
           return NextResponse.json({ 
             success: false, 
             error: '请填写所有必填字段' 
@@ -93,8 +93,8 @@ export async function POST(request: NextRequest) {
 
         const optionsArray = [options.A, options.B, options.C, options.D];
         const result = await connection.execute(
-          'INSERT INTO quiz_questions (category_id, question_text, options, correct_answer, difficulty, is_active) VALUES (?, ?, ?, ?, ?, 1)',
-          [category_id, question_text.trim(), JSON.stringify(optionsArray), correct_answer.trim(), difficulty || 'easy']
+          'INSERT INTO quiz_questions (category_id, question_text, options, difficulty, is_active) VALUES (?, ?, ?, ?, 1)',
+          [category_id, question_text.trim(), JSON.stringify(optionsArray), difficulty || 'easy']
         ) as [ResultSetHeader, any];
 
         return NextResponse.json({

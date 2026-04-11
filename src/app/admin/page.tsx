@@ -377,7 +377,6 @@ export default function AdminPage(props: AdminPageProps) {
     optionB: '',
     optionC: '',
     optionD: '',
-    correct_answer: 'A',
     difficulty: 'easy'
   });
   const [categories, setCategories] = useState<any[]>([]);
@@ -451,7 +450,6 @@ export default function AdminPage(props: AdminPageProps) {
           C: questionForm.optionC.trim(),
           D: questionForm.optionD.trim()
         };
-        data.correct_answer = questionForm.correct_answer;
         data.difficulty = questionForm.difficulty;
       }
 
@@ -474,7 +472,7 @@ export default function AdminPage(props: AdminPageProps) {
           setCategoryForm({ name: '' });
           loadCategories(); // 重新加载分类
         } else if (quickAddType === 'question') {
-          setQuestionForm({ category_id: '', question_text: '', optionA: '', optionB: '', optionC: '', optionD: '', correct_answer: 'A', difficulty: 'easy' });
+          setQuestionForm({ category_id: '', question_text: '', optionA: '', optionB: '', optionC: '', optionD: '', difficulty: 'easy' });
         }
       } else {
         showToast(`添加失败: ${result.error}`, 'error');
@@ -1093,7 +1091,7 @@ export default function AdminPage(props: AdminPageProps) {
               <button
                 onClick={() => {
                   setQuickAddType('question');
-                  setQuestionForm({ category_id: '', question_text: '', optionA: '', optionB: '', optionC: '', optionD: '', correct_answer: 'A', difficulty: 'easy' });
+                  setQuestionForm({ category_id: '', question_text: '', optionA: '', optionB: '', optionC: '', optionD: '', difficulty: 'easy' });
                   loadCategories();
                 }}
                 className={`p-6 rounded-lg transition-colors ${
@@ -1234,30 +1232,19 @@ export default function AdminPage(props: AdminPageProps) {
                     <div className="space-y-3">
                       {['A', 'B', 'C', 'D'].map((option) => (
                         <div key={option} className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setQuestionForm({...questionForm, correct_answer: option})}
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold transition-colors ${
-                              questionForm.correct_answer === option
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                            }`}
-                          >
+                          <span className="w-10 h-10 rounded-lg flex items-center justify-center font-bold bg-gray-600 text-gray-300">
                             {option}
-                          </button>
+                          </span>
                           <input
                             type="text"
                             value={questionForm[`option${option}` as keyof typeof questionForm] as string}
                             onChange={(e) => setQuestionForm({...questionForm, [`option${option}`]: e.target.value})}
-                            className={`flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 ${
-                              questionForm.correct_answer === option ? 'ring-green-500' : 'ring-gray-500'
-                            }`}
+                            className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
                             placeholder={`选项${option}`}
                           />
                         </div>
                       ))}
                     </div>
-                    <p className="text-gray-400 text-sm mt-1">点击左侧按钮设置正确答案</p>
                   </div>
                   
                   <div>

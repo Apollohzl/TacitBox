@@ -760,30 +760,39 @@ export default function AdminPage(props: AdminPageProps) {
 
   // 快捷SQL命令
   const quickSqlCommands = [
-    { name: '用户总数', sql: 'SELECT COUNT(*) as total FROM users' },
-    { name: '活动总数', sql: 'SELECT COUNT(*) as total FROM quiz_activities' },
-    { name: '参与总数', sql: 'SELECT COUNT(*) as total FROM quiz_participations' },
-    { name: '题目总数', sql: 'SELECT COUNT(*) as total FROM quiz_questions' },
-    { name: '奖励总数', sql: 'SELECT COUNT(*) as total FROM quiz_reward' },
-    { name: '分类总数', sql: 'SELECT COUNT(*) as total FROM quiz_categories' },
-    { name: '最近10个用户', sql: 'SELECT id, social_uid, nickname, created_at FROM users ORDER BY created_at DESC LIMIT 10' },
-    { name: '最近10个活动', sql: 'SELECT id, creator_user_id, reward_id, now_finish, created_at FROM quiz_activities ORDER BY created_at DESC LIMIT 10' },
-    { name: '最近10次参与', sql: 'SELECT id, activity_id, participant_user_id, correct_count, participation_time FROM quiz_participations ORDER BY participation_time DESC LIMIT 10' },
-    { name: '所有分类', sql: 'SELECT id, name FROM quiz_categories ORDER BY id' },
-    { name: '查询题目BY分类', sql: 'SELECT * FROM quiz_questions WHERE category_id = 1' },
-    { name: '所有奖励', sql: 'SELECT * FROM quiz_reward ORDER BY reward_id' },
-    { name: '高难度题目', sql: 'SELECT id, question_text, category_id FROM quiz_questions WHERE difficulty = "hard" LIMIT 20' },
-    { name: '简单题目', sql: 'SELECT id, question_text, category_id FROM quiz_questions WHERE difficulty = "easy" LIMIT 20' },
-    { name: '活跃用户', sql: 'SELECT social_uid, nickname, last_login_at FROM users WHERE last_login_at > DATE_SUB(NOW(), INTERVAL 7 DAY)' },
-    { name: '用户活动统计', sql: 'SELECT social_uid, JSON_LENGTH(published_activities) as published, JSON_LENGTH(participated_activities) as participated FROM users WHERE published_activities IS NOT NULL OR participated_activities IS NOT NULL' },
-    { name: '活动完成情况', sql: 'SELECT id, creator_user_id, now_finish, max_reward_count, now_get_reward FROM quiz_activities ORDER BY created_at DESC LIMIT 20' },
-    { name: '各分类题目数', sql: 'SELECT category_id, COUNT(*) as count FROM quiz_questions GROUP BY category_id ORDER BY count DESC' },
-    { name: '今日新用户', sql: 'SELECT COUNT(*) as new_users FROM users WHERE DATE(created_at) = CURDATE()' },
-    { name: '今日新活动', sql: 'SELECT COUNT(*) as new_activities FROM quiz_activities WHERE DATE(created_at) = CURDATE()' },
-    { name: '今日参与次数', sql: 'SELECT COUNT(*) as today_participations FROM quiz_participations WHERE DATE(participation_time) = CURDATE()' },
-    { name: '微信用户', sql: 'SELECT id, social_uid, social_type, nickname, avatar_url, created_at, last_login_at, published_activities, participated_activities FROM users WHERE social_type = "wx" ORDER BY created_at DESC' },
-    { name: 'QQ用户', sql: 'SELECT id, social_uid, social_type, nickname, avatar_url, created_at, last_login_at, published_activities, participated_activities FROM users WHERE social_type = "qq" ORDER BY created_at DESC' },
-    { name: '未登录7天', sql: 'SELECT COUNT(*) as inactive_users FROM users WHERE last_login_at < DATE_SUB(NOW(), INTERVAL 7 DAY)' },
+    // 统计查询
+    { name: '用户总数', sql: 'SELECT COUNT(*) as total FROM users', category: '统计查询' },
+    { name: '活动总数', sql: 'SELECT COUNT(*) as total FROM quiz_activities', category: '统计查询' },
+    { name: '参与总数', sql: 'SELECT COUNT(*) as total FROM quiz_participations', category: '统计查询' },
+    { name: '题目总数', sql: 'SELECT COUNT(*) as total FROM quiz_questions', category: '统计查询' },
+    { name: '奖励总数', sql: 'SELECT COUNT(*) as total FROM quiz_reward', category: '统计查询' },
+    { name: '分类总数', sql: 'SELECT COUNT(*) as total FROM quiz_categories', category: '统计查询' },
+    { name: '今日新用户', sql: 'SELECT COUNT(*) as new_users FROM users WHERE DATE(created_at) = CURDATE()', category: '统计查询' },
+    { name: '今日新活动', sql: 'SELECT COUNT(*) as new_activities FROM quiz_activities WHERE DATE(created_at) = CURDATE()', category: '统计查询' },
+    { name: '今日参与次数', sql: 'SELECT COUNT(*) as today_participations FROM quiz_participations WHERE DATE(participation_time) = CURDATE()', category: '统计查询' },
+    { name: '未登录7天', sql: 'SELECT COUNT(*) as inactive_users FROM users WHERE last_login_at < DATE_SUB(NOW(), INTERVAL 7 DAY)', category: '统计查询' },
+    
+    // 用户相关
+    { name: '最近10个用户', sql: 'SELECT id, social_uid, nickname, created_at FROM users ORDER BY created_at DESC LIMIT 10', category: '用户相关' },
+    { name: '活跃用户', sql: 'SELECT social_uid, nickname, last_login_at FROM users WHERE last_login_at > DATE_SUB(NOW(), INTERVAL 7 DAY)', category: '用户相关' },
+    { name: '用户活动统计', sql: 'SELECT social_uid, JSON_LENGTH(published_activities) as published, JSON_LENGTH(participated_activities) as participated FROM users WHERE published_activities IS NOT NULL OR participated_activities IS NOT NULL', category: '用户相关' },
+    { name: '微信用户', sql: 'SELECT id, social_uid, social_type, nickname, avatar_url, created_at, last_login_at, published_activities, participated_activities FROM users WHERE social_type = "wx" ORDER BY created_at DESC', category: '用户相关' },
+    { name: 'QQ用户', sql: 'SELECT id, social_uid, social_type, nickname, avatar_url, created_at, last_login_at, published_activities, participated_activities FROM users WHERE social_type = "qq" ORDER BY created_at DESC', category: '用户相关' },
+    
+    // 活动相关
+    { name: '最近10个活动', sql: 'SELECT id, creator_user_id, reward_id, now_finish, created_at FROM quiz_activities ORDER BY created_at DESC LIMIT 10', category: '活动相关' },
+    { name: '活动完成情况', sql: 'SELECT id, creator_user_id, now_finish, max_reward_count, now_get_reward FROM quiz_activities ORDER BY created_at DESC LIMIT 20', category: '活动相关' },
+    { name: '最近10次参与', sql: 'SELECT id, activity_id, participant_user_id, correct_count, participation_time FROM quiz_participations ORDER BY participation_time DESC LIMIT 10', category: '活动相关' },
+    
+    // 题目相关
+    { name: '所有分类', sql: 'SELECT id, name FROM quiz_categories ORDER BY id', category: '题目相关' },
+    { name: '查询题目BY分类', sql: 'SELECT * FROM quiz_questions WHERE category_id = 1', category: '题目相关' },
+    { name: '高难度题目', sql: 'SELECT id, question_text, category_id FROM quiz_questions WHERE difficulty = "hard" LIMIT 20', category: '题目相关' },
+    { name: '简单题目', sql: 'SELECT id, question_text, category_id FROM quiz_questions WHERE difficulty = "easy" LIMIT 20', category: '题目相关' },
+    { name: '各分类题目数', sql: 'SELECT category_id, COUNT(*) as count FROM quiz_questions GROUP BY category_id ORDER BY count DESC', category: '题目相关' },
+    
+    // 奖励相关
+    { name: '所有奖励', sql: 'SELECT * FROM quiz_reward ORDER BY reward_id', category: '奖励相关' },
   ];
 
   if (loading) {
@@ -1054,20 +1063,45 @@ export default function AdminPage(props: AdminPageProps) {
                   className="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {quickSqlCommands
-                  .filter(cmd => cmd.name.toLowerCase().includes(quickCommandSearch.toLowerCase()))
-                  .map((cmd, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleQuickCommand(cmd.sql)}
-                    disabled={sqlLoading}
-                    className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {sqlLoading && sqlCommand === cmd.sql ? '执行中...' : cmd.name}
-                  </button>
-                ))}
-              </div>
+              
+              {/* 分类显示 */}
+              {(() => {
+                const filteredCommands = quickSqlCommands.filter(cmd => 
+                  cmd.name.toLowerCase().includes(quickCommandSearch.toLowerCase())
+                );
+                
+                // 按分类分组
+                const groupedCommands = filteredCommands.reduce((acc, cmd) => {
+                  if (!acc[cmd.category]) {
+                    acc[cmd.category] = [];
+                  }
+                  acc[cmd.category].push(cmd);
+                  return acc;
+                }, {} as Record<string, typeof quickSqlCommands>);
+                
+                const categories = Object.keys(groupedCommands);
+                
+                return categories.map(category => (
+                  <div key={category} className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-400 mb-3 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      {category}
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {groupedCommands[category].map((cmd, index) => (
+                        <button
+                          key={`${category}-${index}`}
+                          onClick={() => handleQuickCommand(cmd.sql)}
+                          disabled={sqlLoading}
+                          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {sqlLoading && sqlCommand === cmd.sql ? '执行中...' : cmd.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ));
+              })()}
             </div>
 
             {/* SQL输入 */}

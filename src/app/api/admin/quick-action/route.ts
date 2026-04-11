@@ -53,14 +53,14 @@ export async function POST(request: NextRequest) {
           }, { status: 400 });
         }
 
-        const [result] = await connection.execute(
+        const result = await connection.execute(
           'INSERT INTO quiz_reward (name, description) VALUES (?, ?)',
           [reward_name.trim(), reward_description || null]
-        ) as ResultSetHeader;
+        ) as [ResultSetHeader, any];
 
         return NextResponse.json({
           success: true,
-          data: { insertedId: result.insertId }
+          data: { insertedId: result[0].insertId }
         });
       } else if (type === 'category') {
         const { name, description } = data;
@@ -72,14 +72,14 @@ export async function POST(request: NextRequest) {
           }, { status: 400 });
         }
 
-        const [result] = await connection.execute(
+        const result = await connection.execute(
           'INSERT INTO quiz_categories (name, description) VALUES (?, ?)',
           [name.trim(), description || null]
-        ) as ResultSetHeader;
+        ) as [ResultSetHeader, any];
 
         return NextResponse.json({
           success: true,
-          data: { insertedId: result.insertId }
+          data: { insertedId: result[0].insertId }
         });
       } else if (type === 'question') {
         const { category_id, question_text, options, correct_answer, difficulty } = data;
@@ -91,14 +91,14 @@ export async function POST(request: NextRequest) {
           }, { status: 400 });
         }
 
-        const [result] = await connection.execute(
+        const result = await connection.execute(
           'INSERT INTO quiz_questions (category_id, question_text, options, correct_answer, difficulty, is_active) VALUES (?, ?, ?, ?, ?, 1)',
           [category_id, question_text.trim(), JSON.stringify(options), correct_answer.trim(), difficulty || 'easy']
-        ) as ResultSetHeader;
+        ) as [ResultSetHeader, any];
 
         return NextResponse.json({
           success: true,
-          data: { insertedId: result.insertId }
+          data: { insertedId: result[0].insertId }
         });
       }
     }
